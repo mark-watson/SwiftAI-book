@@ -1,3 +1,10 @@
 preface.md
 intro.md
+commandline.md
+sqlite.md
+search.md
+webscrape.md
+sw.md
+deeplearning.md
+nlp.md
 
