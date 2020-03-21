@@ -7,7 +7,7 @@ Using the Microsoft Bing Search APIs in Swift
 import Foundation
 
 let endpoint = "https://api.cognitive.microsoft.com/bing/v7.0/search"
-let apiKey = "" // ProcessInfo.processInfo.environment["BING_SEARCH_V7_SUBSCRIPTION_KEY"]
+let apiKey = "???" value of BING_SEARCH_V7_SUBSCRIPTION_KEY
 
 public func searchText(query: String, completionHandler: @escaping (String) -> Void) {
     print("+ entering searchText: ", query)

@@ -2,6 +2,12 @@
 
 Why use Swift for hacking AI? The transition to using Swift was a slow transition for me. During my transition to using Swift I prototyped a new product in parallel using both Swift and Common Lisp, weighing the advantages of both for my current requirements.
 
+## This Book is Specific for macOS and iOS, with some support for Linux
+
+Swift is a general purpose language that is well supported in macOS, iOS, and Linux, with some support in Windows. Here, we cover the use of Swift on macOS and iOS. Most of the examples in this book rely on libraries that are specifically available on macOS and iOS like CoreML and the NLP libraries. We will also be using TensorFlow for Swift and these examples also work on Linux.
+
+## Author's Background
+
 I have used Common Lisp for AI research projects and for AI product developmen t and delivery since 1982. There is something special about using a language for almost forty years. All that said, I find Swift a compelling choice now for several reasons:
 
 - Flexible language with many features I rely on like supporting closures and an interactive functional programming style.
