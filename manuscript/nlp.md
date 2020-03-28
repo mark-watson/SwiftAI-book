@@ -7,3 +7,8 @@ I will not cover older symbolic methods of NLP here, rather I refer you to my pr
 You will learn how to apply both DL and NLP by using the state-of-the-art full-feature libraries that Apple provides in their iOS and macOS development tools.
 
 TBD....
+
+## Using Apple's **NaturalLanguage** Swift Library
+
+TBD
+

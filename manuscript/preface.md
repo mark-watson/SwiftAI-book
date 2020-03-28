@@ -1,16 +1,16 @@
 # Preface
 
-Why use Swift for hacking AI? The transition to using Swift was a slow transition for me. During my transition to using Swift I prototyped a new product in parallel using both Swift and Common Lisp, weighing the advantages of both for my current requirements.
+Why use Swift for hacking AI? Common Lisp has been my go-to language for artificial intelligence development and research since 1982. The transition to using Swift was a slow transition for me. During this transition I prototyped a new product in parallel using both Swift and Common Lisp, weighing the advantages of both for my current requirements.
 
-Swift is a programmer efficient language: code is concise and easy to read, and high quality libraries from Apple and third parties mean that often there is less code to write. I share my Swift development work flow that combines interactive development of code in playgrounds, development of higher level libraries in text only or cammand line applications, and my general strategy for writing iOS and macOS applications after low level and intermediate code is written and debugged.
+Swift is a programmer-efficient language: code is concise and easy to read, and high quality libraries from Apple and third parties mean that often there is less code to write. I will share with you my Swift development work flow that combines interactive development of code in playgrounds, development of higher level libraries in text only or command line applications, and my general strategy for writing iOS and macOS applications after low level and intermediate code is written and debugged.
 
-## This Book is Specific for macOS and iOS, with some support for Linux
+## Parts of this Book are Specific for macOS and iOS, with some support for Linux and Windows
 
-Swift is a general purpose language that is well supported in macOS, iOS, and Linux, with some support in Windows. Here, we cover the use of Swift on macOS and iOS. Most of the examples in this book rely on libraries that are specifically available on macOS and iOS like CoreML and the NLP libraries. We will also be using TensorFlow for Swift and these examples also work on Linux.
+Swift is a general purpose language that is well supported in macOS, iOS, and Linux, with some support in Windows. Here, we cover the use of Swift on macOS and iOS. Some of the examples in this book rely on libraries that are specifically available on macOS and iOS like CoreML and the NLP libraries. We will also be using TensorFlow for Swift and these examples also work on Linux, as do the examples using SQLite, the Microsoft Azure search APIs, web scraping, and semantic web/linked data.
 
 ## Author's Background
 
-I have used Common Lisp for AI research projects and for AI product developmen t and delivery since 1982. There is something special about using a language for almost forty years. All that said, I find Swift a compelling choice now for several reasons:
+I have used Common Lisp for AI research projects and for AI product development and delivery since 1982. There is something special about using a language for almost forty years. All that said, I find Swift a compelling choice now for several reasons:
 
 - Flexible language with many features I rely on like supporting closures and an interactive functional programming style.
 - Builtin support for deep learning neural network models for natural language processing, predictive models, etc.
@@ -26,11 +26,11 @@ As an author, I hope that the material in this book entertains you and will be u
 
 I spent time writing this book to help you, dear reader. I release this book under the Creative Commons "share and share alike, no modifications, no commercial reuse" license and set the minimum purchase price to $5.00 in order to reach the most readers. Under this license you can share a PDF version of this book with your friends and coworkers. If you found this book on the web (or it was given to you) and if it provides value to you then please consider doing one of the following to support my future writing efforts and also to support future updates to this book:
 
-- Purchase a copy of this book or any other of my leanpub books at [https://leanpub.com/u/markwatson](https://leanpub.com/u/markwatson)
+- Purchase a copy of [this book](https://leanpub.com/SwiftAI) or any other of my leanpub books at [https://leanpub.com/u/markwatson](https://leanpub.com/u/markwatson)
 - [Hire me as a consultant](https://markwatson.com/)
 
 I enjoy writing and your support helps me write new editions and updates for my books and to develop new book projects. Thank you!
 
 ## Acknowledgements
 
-I thank my wife Carol for editing this manuscript, finding typos, and suggesting improvements.%               
+I thank my wife Carol for editing this manuscript, finding typos, and suggesting improvements.
