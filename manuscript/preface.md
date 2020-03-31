@@ -14,6 +14,14 @@ Swift is a programmer-efficient language: code is concise and easy to read, and 
 
 Swift is a general purpose language that is well supported in macOS, iOS, and Linux, with some support in Windows. Here, we cover the use of Swift on macOS and iOS. Some of the examples in this book rely on libraries that are specifically available on macOS and iOS like CoreML and the NLP libraries. We will also be using TensorFlow for Swift and these examples also work on Linux, as do the examples using SQLite, the Microsoft Azure search APIs, web scraping, and semantic web/linked data.
 
+## Code for this Book
+
+The github repo for this book is [https://github.com/mark-watson/SwiftAI-book-code](https://github.com/mark-watson/SwiftAI-book-code). All of the code examples are licensed using the Apache 2 license *except* the last example which is the personal edition of a [combination iOS and macOS application written using SwiftUI](http://www.knowledgegraphnavigator.com/) that I sell as a commercial product. This combination application is licensed under the AGPL version 3 license.
+
+Except for the last SwiftUI applications, all sample programs are written as command line utilities. I considered using Swift playgrounds for some of the examples but decided that packaging as a combination of libraries and command line utilities would tend to make the example code more useful for your own projects.
+
+http://www.knowledgegraphnavigator.com/
+
 ## Author's Background
 
 I live in Sedona Arizona with my wife and pet parrot. Our children and grandchildren live in California, Rhode Island, and the state of Washington.
