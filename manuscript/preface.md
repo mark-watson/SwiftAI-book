@@ -41,6 +41,10 @@ I spent time writing this book to help you, dear reader. I release this book und
 
 I enjoy writing and your support helps me write new editions and updates for my books and to develop new book projects. Thank you!
 
+## Cover Art
+
+The cover picture was taken by [WikiMedia Commons user Keta](https://commons.wikimedia.org/wiki/User:Keta) and is available for use under the Creative Commons License CC BY-SA 2.5.
+
 ## Acknowledgements
 
 I thank my wife Carol for editing this manuscript, finding typos, and suggesting improvements.

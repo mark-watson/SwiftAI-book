@@ -8,21 +8,19 @@ There will be four search examples in the [github repo for this book](https://gi
 
 TBD
 
-## Swift Playgrounds for Experimenting with Search
+## SwiftUI Project
+
+{width=75%}
+![You need to set an environment variable in your XCode project](images/xcode-env.png)
+
 
 TBD
 
-## macOS Command Line Application for Search
+{width=75%}
+![You need to allow network connections in your XCode project](images/xcode-allow-network)
 
-TBD
 
-## A Cross-Platform Command Line Search Application
 
-TBD
-
-## SwiftUI Search APplications for iOS and macOS
-
-TBD
 
 
 
