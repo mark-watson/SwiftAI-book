@@ -1,0 +1,7 @@
+# Part 1: Introduction and Short Examples
+
+We start this book with a sufficient introduction for Swift to understand the programming examples. After introducing the language we will look at a few short examples:
+
+- Writing command line utilities.
+- Using the SQLite embedded database.
+- Using the Microsoft Azure Bing search APIs.
