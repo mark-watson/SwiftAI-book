@@ -1,4 +1,4 @@
-# Natural Language Processing
+# Natural Language Processing Using Apple's Natural Language Framework
 
 I have been working in the field of Natural Language Processing (NLP) since 1985 so I 'lived through' the revolutionary change in NLP that has occurred since 2014: Deep Learning results out-classed results from previous symbolic methods.
 

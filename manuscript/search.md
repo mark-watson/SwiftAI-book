@@ -8,7 +8,7 @@ There will be four search examples in the [github repo for this book](https://gi
 
 TBD
 
-## SwiftUI Project
+## SwiftUI Project for macOS and iOS
 
 {width=75%}
 ![You need to set an environment variable in your XCode project](images/xcode-env.png)
@@ -77,3 +77,7 @@ public func searchText(query: String, completionHandler: @escaping (String) -> V
 //PlaygroundPage.current.needsIndefiniteExecution = true
 
 ~~~~~~~~
+
+## Swift Project for Linux
+
+TBD

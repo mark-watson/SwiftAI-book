@@ -5,5 +5,5 @@ In this part we cover:
 - Web scraping.
 - Introduction to the semantic web and linked data.
 - A general discussion of Knowledge Representation
-- Create Knowledge Graphs for text input
-- Knowledge Graph Explorer
+- Create Knowledge Graphs from text input
+- Knowledge Graph Explorer application
