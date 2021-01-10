@@ -8,3 +8,7 @@ For my work and research, I have been most interested in using web scraping to c
 
 TBD:....
 
+We will use [https://vapor.codes web services library](https://vapor.codes)
+in this chapter to fetch data from web services and also in the next chapter for building a web application.
+
+

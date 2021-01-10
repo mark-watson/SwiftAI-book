@@ -17,7 +17,7 @@ TBD
 TBD
 
 {width=75%}
-![You need to allow network connections in your XCode project](images/xcode-allow-network)
+![You need to allow network connections in your XCode project](images/xcode-allow-network.png)
 
 
 

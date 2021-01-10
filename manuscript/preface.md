@@ -46,6 +46,12 @@ I enjoy writing and your support helps me write new editions and updates for my 
 
 The cover picture was taken by [WikiMedia Commons user Keta](https://commons.wikimedia.org/wiki/User:Keta) and is available for use under the Creative Commons License CC BY-SA 2.5.
 
+## Swift 3rd Party Libraries
+
+We use several 3rd party libraries:
+
+- [https://vapor.codes web services library](https://vapor.codes)
+
 ## Acknowledgements
 
 I thank my wife Carol for editing this manuscript, finding typos, and suggesting improvements.
