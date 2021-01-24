@@ -8,10 +8,9 @@ TBD
 
 ## Installing Swift Packages
 
-We will use the [SwiftBrew package manager](https://github.com/swiftbrew/Swiftbrew) so please install SwiftBrew right now following directions for your operating system.
+We will use the [Swift Package Manager](https://swift.org/package-manager/).
 
-
-We will use [https://vapor.codes](https://vapor.codes) as an example. Start by cloning the git repository [https://github.com/vapor/vapor](https://github.com/vapor/vapor). Then:
+We will use [https://vapor.codes web framework](https://vapor.codes) as an example. Start by cloning the git repository [https://github.com/vapor/vapor](https://github.com/vapor/vapor). Then:
 
 {linenos=off}
 ~~~~~~~~
@@ -20,7 +19,6 @@ cd vapor
 swift build
 ~~~~~~~~
 
-Then in a Swift repl you can use the library:
 
 {linenos=off}
 ~~~~~~~~
@@ -50,6 +48,8 @@ mkdir SparqlQuery
 cd SparqlQuery
 swift package init --type library
 ~~~~~~~~
+
+## Accessing Libraries that You Write in Other Projects
 
 
 

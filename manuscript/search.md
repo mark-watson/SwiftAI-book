@@ -1,6 +1,6 @@
 # Using the Microsoft Bing Search APIs in Swift
 
-You wll need to register with Microsoft's Azure search service to use the material in this book. It is likely that you view search as a manual human-centered activity. I hope to expand your thinking to considering applications that automate search, finding information on the web, and automatically organize information.
+You will need to register with Microsoft's Azure search service to use the material in this chapter. It is likely that you view search as a manual human-centered activity. I hope to expand your thinking to considering applications that automate search, finding information on the web, and automatically organize information.
 
 There will be four search examples in the [github repo for this book](https://github.com/mark-watson/SwiftAI-book-code): a Swift Playground (versions for iOS and macOS), a macOS specific comand line utility, a command line utility that is cross-platform, and a simple app written using SwiftUI (versions for both macOS and iOS).
 

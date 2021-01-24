@@ -4,14 +4,16 @@ As an AI practitioner, I have several modes of exploring ideas by writing code: 
 
 We saw how to use the Swift Package Manager to create two types of command line applications:
 
-- Executable, for example: swift package init --type executable
-- Library with optional main test function, for example: swift package init --type library
+- Executable, for example: **swift package init --type executable**
+- Library with optional main test function, for example: **swift package init --type library**
 
-Before I first started doing REPL based Swift development, I created small command line executable applications. My habbits changed when I realized that only library projects lended themselves to the style of REPL development that I have enjoyed for many decades using languages such as Common lisp.
+Before I first started doing REPL based Swift development, I Swift to create small command line executable applications. My habbits changed when I realized that only library projects lended themselves to the style of REPL development that I have enjoyed for many decades using languages such as Common lisp.
 
 ## SparqlQuery Library
 
 TBD
+
+I placed this library in its own github repository [https://github.com/mark-watson/SparqlQuery](https://github.com/mark-watson/SparqlQuery) because it is convenient to add Swift libraries to projects by refering to their github URI, possibly adding a version number.
 
 The Swift Package Manager creates a template project. The following listing shows the directory structure after I implemented the library:
 
@@ -25,10 +27,11 @@ $ tree
 └── Tests
     └── SparqlQueryTests
         └── main.swift
+```
 
 A file Package.swift was also generated. Here is the package after editing:
 
-```
+```swift
 $ cat Package.swift 
 // swift-tools-version:5.3
 // The swift-tools-version declares the minimum version of Swift required to build this package.
@@ -63,6 +66,9 @@ let package = Package(
 
 ## REPL Adventures with the SparqlQuery Library
 
+Working in the directoy for the SparqlQuery library, it is simple to open a REPL session with the library loaded and available.
+
+Notice on line 8 that I do need to import the library:
 
 ```swift
 $ swift run --repl 
@@ -122,6 +128,8 @@ $R1: String? = "http://www.w3.org/2000/01/rdf-schema#label"
   6> $R0
 $R2: String? = "http://dbpedia.org/resource/Bill_Gates"
  ```
+
+On line 43 I created a new local valiable **first_result** whose type is a hashtable with string keys and string values.
 
 There are two documentation web pages that you can use as references:
 [Apple's Swift Developer Blog of REPL](https://developer.apple.com/swift/blog/?id=18)
