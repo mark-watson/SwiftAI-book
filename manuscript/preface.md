@@ -52,6 +52,8 @@ We use several 3rd party libraries:
 
 - [https://vapor.codes web services library](https://vapor.codes)
 
+TBD: add SwiftyJson, etc.....
+
 ## Acknowledgements
 
 I thank my wife Carol for editing this manuscript, finding typos, and suggesting improvements.
