@@ -5,7 +5,8 @@ commandline.md
 sqlite.md
 search.md
 part2.md
-coreml.md
+coreml_intro.md
+coreml_apps.md
 nlp.md
 part3.md
 tensorflow_intro.md

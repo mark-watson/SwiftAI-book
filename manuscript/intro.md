@@ -6,6 +6,54 @@ There are great free resources for the Swift language on the web, in other comme
 
 TBD
 
+## Installing Swift Packages
+
+We will use the [SwiftBrew package manager](https://github.com/swiftbrew/Swiftbrew) so please install SwiftBrew right now following directions for your operating system.
+
+
+We will use [https://vapor.codes](https://vapor.codes) as an example. Start by cloning the git repository [https://github.com/vapor/vapor](https://github.com/vapor/vapor). Then:
+
+{linenos=off}
+~~~~~~~~
+git clone https://github.com/vapor/vapor.git
+cd vapor
+swift build
+~~~~~~~~
+
+Then in a Swift repl you can use the library:
+
+{linenos=off}
+~~~~~~~~
+
+~~~~~~~~
+
+## Creating Swift Packages
+
+We will cover using the Swift Package Manager using the command line here. Later we will create projects using Apple's XCode IDE when we devlop the example application Knowledge Graph Navigator.
+
+You will want to use the [Swift Package Manager documentation](https://github.com/apple/swift-package-manager/blob/main/Documentation/Usage.md) for reference.
+
+We will be generting executable projects and library (with a sample main program) projects. The commands for generating an executable application project is
+
+{linenos=off}
+~~~~~~~~
+mkdir BingSearch
+cd BingSearch
+swift package init --type executable
+~~~~~~~~
+
+and build a library with a demo main program:
+
+{linenos=off}
+~~~~~~~~
+mkdir SparqlQuery
+cd SparqlQuery
+swift package init --type library
+~~~~~~~~
+
+
+
+
 ## Primer of Swift Language Features that You Will Need to Know to Use this Book
 
 TBD
