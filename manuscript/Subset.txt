@@ -12,9 +12,9 @@ part3.md
 tensorflow_intro.md
 deeplearning_apps.md
 part4.md
+knowledgerepresentation.md
 webscrape.md
-webapp.md
 sw.md
 kgcreator.md
 kgn.md
-knowledgerepresentation.md
+webapp.md
