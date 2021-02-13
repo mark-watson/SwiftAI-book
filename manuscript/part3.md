@@ -1,7 +1,10 @@
-# Part 3: Introduction to TensorFlow for Swift
+# Part 4: Knowledge Representation and Data Acquisition
 
-The examples in this section are set up as Google Colab Swift Notebooks. With some effort, TensorFLow and dependencies for the examples can be installed on Linux and macOS. Here we cover:
+In this part we cover:
 
-- Introduction to Deep Learning
-- An introduction to TensorFlow and Keras
-- Examples using TensorFlow for Swift
+- General discusion of Knowledge Representation
+- Introduction to the semantic web and linked data.
+- A general discussion of Knowledge Representation
+- Create Knowledge Graphs from text input
+- Knowledge Graph Explorer application
+- Web application development
