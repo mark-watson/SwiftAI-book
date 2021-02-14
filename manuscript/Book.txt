@@ -2,10 +2,7 @@ preface.md
 part1.md
 intro.md
 commandline.md
-sqlite.md
-search.md
 webscrape.md
-webapp.md
 part2.md
 deeplearning_intro.md
 coreml_intro.md
