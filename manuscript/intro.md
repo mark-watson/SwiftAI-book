@@ -4,6 +4,13 @@ Swift is a general purpose language that is well supported in macOS and iOS, wit
 
 There are great free resources for the Swift language on the web, in other commercial books, and Apple's free Swift books. Here I provide just enough material on the Swift language for you to understand and work with the book examples. After working through this book's material you will be able to add machine learning, natural language processing, and knowledge representation to your applications. There will be parts of the Swift language that we don't need for the material here, and we won't cover.
 
+## Opening Examples in Xcode
+
+You notice that many of the examples are command line apps and the README.md files in the example subdirectories provide instructions for building and running on the command line.
+
+You can also run Xcode and from the File Menu open an example's  package.swift file. You can then use the Product / Test menu to run the test code for the example. You might need to use the View / Debug Area / Active Console menu to show the output area.
+
+
 TBD
 
 ## Installing Swift Packages
