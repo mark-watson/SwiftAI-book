@@ -17,6 +17,10 @@ Swift is a general purpose language that is well supported in macOS, iOS, and Li
 
 ## Code for this Book
 
+Because of the way the Swift Package Manager works, I organized all book examples that build libraries as separate GitHub repos so the libraries can be easily used in other book examples as well as your own software projects. The separate library GitHub repositories are:
+
+- 
+
 The github repo for this book is [https://github.com/mark-watson/SwiftAI-book-code](https://github.com/mark-watson/SwiftAI-book-code). All of the code examples are licensed using the Apache 2 license *except* the last example which is the personal edition of a [combination iOS and macOS application written using SwiftUI](http://www.knowledgegraphnavigator.com/) that I sell as a commercial product. This combination application is licensed under the AGPL version 3 license.
 
 Except for the last SwiftUI applications, all sample programs are written as command line utilities. I considered using Swift playgrounds for some of the examples but decided that packaging as a combination of libraries and command line utilities would tend to make the example code more useful for your own projects.
