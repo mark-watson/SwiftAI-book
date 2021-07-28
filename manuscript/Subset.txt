@@ -2,15 +2,12 @@ preface.md
 part1.md
 intro.md
 commandline.md
-csvtools.md
-jsontools.md
 webscrape.md
 pythonkit.md
 part2.md
 deeplearning_intro.md
 coreml_intro.md
 coreml_apps.md
-entitydetection.md
 summarizingtext.md
 nlp.md
 part3.md
@@ -18,5 +15,3 @@ knowledgerepresentation.md
 sw.md
 kgcreator.md
 kgn.md
-part4.md
-anomalydetection.md
