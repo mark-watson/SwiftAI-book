@@ -39,7 +39,7 @@ As an author, I hope that the material in this book entertains you and will be u
 
 ## A Request from the Author
 
-I spent time writing this book to help you, dear reader. I release this book under the Creative Commons "share and share alike, no modifications, no commercial reuse" license and set the minimum purchase price to $5.00 in order to reach the most readers. Under this license you can share a PDF version of this book with your friends and coworkers. If you found this book on the web (or it was given to you) and if it provides value to you then please consider doing one of the following to support my future writing efforts and also to support future updates to this book:
+I spent time writing this book to help you, dear reader. I release this book under the Creative Commons "share and share alike, no modifications, no commercial reuse" license and set the minimum purchase price to $5.00 in order to reach the most readers. Under this license you can share a PDF version of this book with your friends and coworkers. You can also get this book free on LeanPub by setting the price to "Free." If you found this book on the web (or it was given to you) and if it provides value to you then please consider doing one of the following to support my future writing efforts and also to support future updates to this book:
 
 - Purchase a copy of [this book](https://leanpub.com/SwiftAI) or any other of my leanpub books at [https://leanpub.com/u/markwatson](https://leanpub.com/u/markwatson)
 - [Hire me as a consultant](https://markwatson.com/)
@@ -49,6 +49,19 @@ I enjoy writing and your support helps me write new editions and updates for my 
 ## Cover Art
 
 The cover picture was taken by [WikiMedia Commons user Keta](https://commons.wikimedia.org/wiki/User:Keta) and is available for use under the Creative Commons License CC BY-SA 2.5.
+
+## GitHub Repositories for Book Examples
+
+While I do have one main repository for this book, all code examples that can be used as libraries live in their own GitHub repository. I suggest that you clone the following repositories now so you will have them while working through the examples in this book:
+
+- https://github.com/mark-watson/SwiftAI-book-code - main book repository
+- https://github.com/mark-watson/ShellProcess_swift
+- https://github.com/mark-watson/SparqlQuery_swift
+- https://github.com/mark-watson/NLP_swift
+- https://github.com/mark-watson/KnowledgeGraphNavigator_swift - command line tool for Knowledge Graph Navigator
+- https://github.com/mark-watson/KGN - SwiftUI app code for iPad and macOS Knowledge Graph Navigator (Mac app is on the App Store)
+- https://github.com/mark-watson/QuestionAnswering_BERT_swift
+- https://github.com/mark-watson/create_deep_learning_model_swift - create a CoreML model and use it for making predictions
 
 ## Swift 3rd Party Libraries
 
