@@ -6,8 +6,7 @@ webscrape.md
 pythonkit.md
 part2.md
 deeplearning_intro.md
-coreml_intro.md
-coreml_apps.md
+coreml.md
 summarizingtext.md
 nlp.md
 part3.md
