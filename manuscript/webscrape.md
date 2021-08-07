@@ -113,16 +113,11 @@ TBD:....
 We will use [https://vapor.codes web services library](https://vapor.codes)
 in this chapter to fetch data from web services and also in the next chapter for building a web application.
 
-The =tests with much output not shown for brevity:
+The tests with much output not shown for brevity:
 
 {lang="bash",linenos=on}
 ~~~~~~~~
-$ st
-[3/3] Build complete!
-Test Suite 'All tests' started at 2021-08-06 17:37:10.590
-Test Suite 'WebScraping_swiftPackageTests.xctest' started at 2021-08-06 17:37:10.591
-Test Suite 'WebScrapingTests' started at 2021-08-06 17:37:10.591
-Test Case '-[WebScrapingTests.WebScrapingTests testGetWebPage]' started.
+$ swift test
 
 	TEXT FROM MARK's WEB SITE:
 
@@ -130,22 +125,12 @@ Test Case '-[WebScrapingTests.WebScrapingTests testGetWebPage]' started.
 
 ++ h1_headers: ["Mark Watson: AI Practitioner and Polyglot Programmer", "The books that I have written", "Fun stuff", "Open Source", "Hire Me", "Free Mentoring", "Privacy Policy"]
 
-
 ++ h2_headers: ["I am the author of 20+ books on Artificial Intelligence, Common Lisp, Deep Learning, Haskell, Clojure, Java, Ruby, Hy language, and the Semantic Web. I have 55 US Patents.", "Other published books:"]
 
-
-++ anchors: [["Read my Blog", "https://mark-watson.blogspot.com"], ["Fun stuff", "https://markwatson.com#fun"], ["My Books", "https://markwatson.com#books"], ["My Open Source Projects", "https://markwatson.com#opensource"], ["Hire Me", "https://markwatson.com#consulting"], ["Free Mentoring", "https://markwatson.com#mentoring"], ["Privacy Policy", "https://markwatson.com/privacy.html"], ["leanpub", "https://leanpub.com/u/markwatson"], ["GitHub", "https://github.com/mark-watson"], ["LinkedIn", "https://www.linkedin.com/in/marklwatson/"], ["Twitter", "https://twitter.com/mark_l_watson"], ["KnowledgeBooks.org", "https://knowledgebooks.org"], ["KnowledgeBooks.com", "https://knowledgebooks.com"], ["XML RDF", "http://markwatson.com/index.rdf"], ["Turtle RDF", "http://markwatson.com/index.ttl"], ["WikiData", "https://www.wikidata.org/wiki/Q18670263"], ["leanpub", "https://leanpub.com/clojureai"], ["leanpub", "https://leanpub.com/lovinglisp"], ["leanpub", "https://leanpub.com/haskell-cookbook/"], ["leanpub", "https://leanpub.com/javaai"], 
+++ anchors: [["Read my Blog", "https://mark-watson.blogspot.com"], ["Fun stuff", "https://markwatson.com#fun"], ["My Books", "https://markwatson.com#books"], ["My Open Source Projects", "https://markwatson.com#opensource"], ["Hire Me", "https://markwatson.com#consulting"], ["Free Mentoring", "https://markwatson.com#mentoring"], ["Privacy Policy", "https://markwatson.com/privacy.html"], ["leanpub", "https://leanpub.com/u/markwatson"], ["GitHub", "https://github.com/mark-watson"], ["LinkedIn", "https://www.linkedin.com/in/marklwatson/"], ["Twitter", "https://twitter.com/mark_l_watson"], ["leanpub", "https://leanpub.com/lovinglisp"], ["leanpub", "https://leanpub.com/haskell-cookbook/"], ["leanpub", "https://leanpub.com/javaai"], 
 ]
 Test Suite 'All tests' passed at 2021-08-06 17:37:11.062.
 	 Executed 2 tests, with 0 failures (0 unexpected) in 0.471 (0.472) seconds
-~~~~~~~~
-
-
-{lang="swift",linenos=on}
-~~~~~~~~
-TBD
-
-
 ~~~~~~~~
 
 
