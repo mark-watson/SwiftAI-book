@@ -31,13 +31,16 @@ func create_model() {
         //print(text)
         if let dataTable = try? MLDataTable(contentsOf: fileUrl) {
             //print(dataTable)
-            let regressorColumns = ["Cl.thickness", "Cell.size", "Cell.shape", "Marg.adhesion",
-                                    "Epith.c.size", "Bare.nuclei", "Bl.cromatin", "Normal.nucleoli",
+            let regressorColumns = ["Cl.thickness", "Cell.size",
+                                    "Cell.shape", "Marg.adhesion",
+                                    "Epith.c.size", "Bare.nuclei",
+                                    "Bl.cromatin", "Normal.nucleoli",
                                     "Mitoses", "Class"]
             
             // Classifier:
             let classifierTable = dataTable[regressorColumns]
-            let (classifierEvaluationTable, classifierTrainingTable) = classifierTable.randomSplit(by: 0.20, seed: 5)
+            let (classifierEvaluationTable, classifierTrainingTable) =
+              classifierTable.randomSplit(by: 0.20, seed: 5)
             let classifier = try! MLClassifier(trainingData: classifierTrainingTable,
                                               targetColumn: "Class")
             print("++ classifier.description:", classifier)
@@ -52,7 +55,8 @@ func create_model() {
             let validationAccuracy = (1.0 - validationError) * 100
             print("validationAccuracy:", validationAccuracy)
             /// Evaluate the classifier
-            let classifierEvaluation = classifier.evaluation(on: classifierEvaluationTable)
+            let classifierEvaluation =
+              classifier.evaluation(on: classifierEvaluationTable)
             
             /// Classifier evaluation accuracy as a percentage
             let evaluationError = classifierEvaluation.classificationError
@@ -60,12 +64,15 @@ func create_model() {
             let evaluationAccuracy = (1.0 - evaluationError) * 100
             print("evaluationAccuracy:", evaluationAccuracy)
             
-            let classifierMetadata = MLModelMetadata(author: "Mark Watson",
-                                                     shortDescription: "Wisconsin Cancer Dataset",
-                                                     version: "1.0")
+            let classifierMetadata =
+              MLModelMetadata(author: "Mark Watson",
+                              shortDescription: "Wisconsin Cancer Dataset",
+                              version: "1.0")
             
             /// Save the trained classifier model to the Desktop.
-            let _ =  try? classifier.write(to: URL(fileURLWithPath: "Sources/wisconsin_data/wisconsin.mlmodel"),
+            let _ =
+              try? classifier.write(to: URL(fileURLWithPath:
+                                           "Sources/wisconsin_data/wisconsin.mlmodel"),
                                            metadata: classifierMetadata)
         }
     }

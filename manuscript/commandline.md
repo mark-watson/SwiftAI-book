@@ -9,7 +9,8 @@ The library for using shell processes is one of my GitHub projects so you can in
 {lang="swift",linenos=on}
 ~~~~~~~~
  dependencies: [
-   .package(url: "git@github.com:mark-watson/ShellProcess_swift.git", .branch("main")),
+   .package(url: "git@github.com:mark-watson/ShellProcess_swift.git",
+            .branch("main")),
  ],
 ~~~~~~~~
 
@@ -51,8 +52,8 @@ import XCTest
 final class ShellProcessTests: XCTestCase {
     func testExample() {
         // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct
-        // results.
+        // Use XCTAssert and related functions to verify your tests produce the
+        // correct results.
         print("** s1:")
         let s1 = run_in_shell(commandPath: "/bin/ps", argList: ["a"])
         print(s1)
@@ -117,9 +118,11 @@ func test_files_demo() -> Void {
     // In order to append to an existing file, you need to get a file handle
     // and seek to the end of a file. The following will not work:
     let s = "the dog chased the cat\n"
-    try! s.write(toFile: "out.txt", atomically: true, encoding: String.Encoding.ascii)
+    try! s.write(toFile: "out.txt", atomically: true,
+                 encoding: String.Encoding.ascii)
     let s2 = "a second string\n"
-    try! s2.write(toFile: "out.txt", atomically: true, encoding: String.Encoding.ascii)
+    try! s2.write(toFile: "out.txt", atomically: true,
+                  encoding: String.Encoding.ascii)
     let aString = try! String(contentsOfFile: "out.txt")
     print(aString)
 
@@ -127,7 +130,8 @@ func test_files_demo() -> Void {
     // the result atomically works fine:
     var s3 = "the dog chased the cat\n"
     s3 += "a second string\n"
-    try! s3.write(toFile: "out2.txt", atomically: true, encoding: String.Encoding.ascii)
+    try! s3.write(toFile: "out2.txt", atomically: true,
+                  encoding: String.Encoding.ascii)
     let aString2 = try! String(contentsOfFile: "out2.txt")
     print(aString2)
 
@@ -136,7 +140,8 @@ func test_files_demo() -> Void {
     print(ls)
 
     // remove two temnporary files:
-    let shellOutput = run_in_shell(commandPath: "/bin/rm", argList: ["out.txt", "out2.txt"])
+    let shellOutput = run_in_shell(commandPath: "/bin/rm",
+                                   argList: ["out.txt", "out2.txt"])
     print(shellOutput)
 }
 

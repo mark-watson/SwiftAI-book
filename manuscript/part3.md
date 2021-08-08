@@ -1,4 +1,4 @@
-# Part 4: Knowledge Representation and Data Acquisition
+# Part 3: Knowledge Representation and Data Acquisition
 
 In this part we cover:
 
