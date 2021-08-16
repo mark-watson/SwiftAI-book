@@ -28,6 +28,16 @@ clean:
 
 The file **Sources/wisconsin_data/main.swift** reads a training file in CSV format and uses the CoreML libraries to train a prediction model. You might want to uncomment the print statement in line 10 to see the contents of the CSV formatted (i.e., a spreadsheet file) training data file. In lines 11-13 we define which columns in the input training CSV file that we will use to build our model (in this case we use all the data features).
 
+In this example we use Apple's APIs for **MLClassifier** that trains the following learning algorithms and keeps the best for the saved model:
+
+- Boosted trees classifier
+- Random forest classifier
+- Decision tree classifier
+- SVM
+- Logistic regression
+
+
+
 {lang="swift",linenos=on}
 ~~~~~~~~
 import Foundation
