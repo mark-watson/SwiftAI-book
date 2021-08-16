@@ -4,8 +4,16 @@ Please note that this chapter is specific to Apple's libraries and pre-trained d
 
 I assume that you are generally familiar with [Apple's CoreML documentation](https://developer.apple.com/documentation/coreml)
 
+There are two example directories (from the github repository [https://github.com/mark-watson/SwiftAI-book-code](https://github.com/mark-watson/SwiftAI-book-code) for this chapter:
+
+- SwiftAI-book-code/wisconsin_data_create_model generates a deep learning model
+- SwiftAI-book-code/wisconsin_data_predict_with_model uses the trained model.
+
+If you have taken a class in Deep Learning, you learned how to divide a training data set into separate training, dev, and test data sets. This process is handled internally by the CoreML libraries we use here so we will only be using a single training data file.
+
 ## Training a Classification Model For the University of Wisconsin Cancer Data
 
+When building the example model (data in files **wisconsin.mlmodel***), a Swift file **wisconsin.swift** is auto-generated. In the project Makefile, notice that the make target **clean** removes these files:
 
 {lang="makefile",linenos=on}
 ~~~~~~~~
@@ -18,6 +26,8 @@ clean:
 	rm -f Sources/wisconsin_data/wisconsin.swift
 ~~~~~~~~
 
+The file **Sources/wisconsin_data/main.swift** reads a training file in CSV format and uses the CoreML libraries to train a prediction model. You might want to uncomment the print statement in line 10 to see the contents of the CSV formatted (i.e., a spreadsheet file) training data file. In lines 11-13 we define which columns in the input training CSV file that we will use to build our model (in this case we use all the data features).
+
 {lang="swift",linenos=on}
 ~~~~~~~~
 import Foundation
@@ -28,7 +38,6 @@ func create_model() {
     if #available(macOS 10.14, *) {
         let fileUrl = URL(fileURLWithPath: "labeled_cancer_data.csv")
         print(fileUrl)
-        //print(text)
         if let dataTable = try? MLDataTable(contentsOf: fileUrl) {
             //print(dataTable)
             let regressorColumns = ["Cl.thickness", "Cell.size",
@@ -90,7 +99,6 @@ swift build
 [0/0] Build complete!
 swift run
 [0/0] Build complete!
-labeled_cancer_data.csv -- file:///Users/markw_1/GITHUB/SwiftAI-book-code/wisconsin_data_create_model/
 column_type_hints = {}
 Finished parsing file /Users/markw_1/GITHUB/SwiftAI-book-code/wisconsin_data_create_model/labeled_cancer_data.csv
 Parsing completed. Parsed 100 lines in 0.01006 secs.
