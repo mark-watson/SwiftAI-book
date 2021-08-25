@@ -9,7 +9,7 @@ There are two example directories (from the github repository [https://github.co
 - SwiftAI-book-code/wisconsin_data_create_model generates a deep learning model
 - SwiftAI-book-code/wisconsin_data_predict_with_model uses the trained model.
 
-If you have taken a class in Deep Learning, you learned how to divide a training data set into separate training, dev, and test data sets. This process is handled internally by the CoreML libraries we use here so we will only be using a single training data file.
+If you have taken a class in Deep Learning, you learned how to divide a training data set into separate training, dev, and test data sets. This process is handled internally by the CoreML libraries we use here so we will only be using a single training data file. The CoreML APIs we use here perform a type of AutoML (automatic machine learning) by trying to train a model using several model types and choosing the model type with the best accuracy. This is convenient and saves engineering time. A trained model imported into XCode automatically generates Swift APIs for using the model. You can also take a trained CoreML model and use it in Python programs ([documentation for Python use cases](https://coremltools.readme.io/docs/mlmodel)).
 
 ## Training a Classification Model For the University of Wisconsin Cancer Data
 
