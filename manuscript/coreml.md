@@ -312,10 +312,16 @@ ClassProbability: Dictionary : {
 
 ## Background Material for - Boosted Trees Classifier, Random Forest Classifier, Decision Tree Classifier, SVM, and Logistic Regression Models
 
+I recommend that you read through Apple's documentation and bookmark the page for the [CoreML classification modes](https://apple.github.io/turicreate/docs/userguide/supervised-learning/classifier.html).
 
-### Boosted trees classifier
 
-### Random forest classifier
+### Boosted Trees Classifier
+
+Boosted Trees Classifiers are comprised of individual models summed together, where the simpler models are learned decision trees (a type of ensemble models).
+
+### Random Forest Classifier
+
+Random Forest Classifiers are similar to Boosted Trees Classifiers except the ensemble sub-classier comprising Random Forest Classifiers are each trained with a subset of the data.
 
 ### Decision tree classifier
 
