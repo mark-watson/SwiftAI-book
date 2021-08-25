@@ -36,7 +36,7 @@ In this example we use Apple's APIs for **MLClassifier** that trains the followi
 - SVM
 - Logistic regression
 
-
+There is optional material at the end of this chapter with background for these five types of models.
 
 {lang="swift",linenos=on}
 ~~~~~~~~
@@ -309,4 +309,17 @@ ClassProbability: Dictionary : {
 }
 ~~~~~~~~
 
+
+## Background Material for - Boosted Trees Classifier, Random Forest Classifier, Decision Tree Classifier, SVM, and Logistic Regression Models
+
+
+### Boosted trees classifier
+
+### Random forest classifier
+
+### Decision tree classifier
+
+### SVM
+
+### Logistic regression
 
