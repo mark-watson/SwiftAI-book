@@ -3,6 +3,7 @@ part1.md
 intro.md
 commandline.md
 webscrape.md
+sqlite.md
 part2.md
 deeplearning_intro.md
 coreml.md
