@@ -1,6 +1,6 @@
 # Preface
 
-Why use Swift for hacking AI? Common Lisp has been my go-to language for artificial intelligence development and research since 1982. The transition to using Swift was a slow transition for me. During this transition I prototyped a new project in parallel using both Swift and Common Lisp, weighing the advantages of both for my current requirements. The Swift version of this project is available on the Apple Store for iOS, iPadOS, and macOS. Several of the utilities developed in this book were used in this project.
+Why use Swift for hacking AI? Common Lisp has been my go-to language for artificial intelligence development and research since 1982. The transition to using Swift was a slow transition for me. During this transition I prototyped a new project in parallel using both Swift and Common Lisp, weighing the advantages of both for my current requirements. The Swift version of this project included in this book runs on macOS, iOS, and iPadOS. The macOS version is available on the Apple Store. Several of the utilities developed in this book were used in this project.
 
 I have used Common Lisp for AI research projects and for AI product development and delivery since 1982. There is something special about using a language for almost forty years. All that said, I find Swift a compelling choice now for several reasons:
 
@@ -13,15 +13,25 @@ Swift is a programmer-efficient language: code is concise and easy to read, and 
 
 ## Parts of this Book are Specific for macOS and iOS, with some support for Linux
 
-Swift is a general purpose language that is well supported in macOS, iOS, and Linux, with some support in Windows. Here, we cover the use of Swift on macOS and iOS. Some of the examples in this book rely on libraries that are specifically available on macOS and iOS like CoreML and the NLP libraries. We will also be using TensorFlow for Swift and these examples also work on Linux, as do the examples using SQLite, the Microsoft Azure search APIs, web scraping, and semantic web/linked data.
+Swift is a general purpose language that is well supported in macOS, iOS, and Linux, with some support in Windows. Here, we cover the use of Swift on macOS and iOS. Some of the examples in this book rely on libraries that are specifically available on macOS and iOS like CoreML and the NLP libraries. Several book examples also work on Linux, such as the examples using SQLite, the Microsoft Azure search APIs, web scraping, and semantic web/linked data.
 
 ## Code for this Book
 
 Because of the way the Swift Package Manager works, I organized all book examples that build libraries as separate GitHub repos so the libraries can be easily used in other book examples as well as your own software projects. The separate library GitHub repositories are:
 
-- 
+- [https://github.com/mark-watson/SparqlQuery_swift](https://github.com/mark-watson/SparqlQuery_swift) - SPARQL Swift library for my Swift AI book.
+- [https://github.com/mark-watson/QuestionAnswering_BERT_swift](https://github.com/mark-watson/QuestionAnswering_BERT_swift) - modification of Apple's question answering demo to use DBPedia.
+- [https://github.com/mark-watson/create_deep_learning_model_swift](https://github.com/mark-watson/create_deep_learning_model_swift) - create CoreML models from training data files.
+- [https://github.com/mark-watson/ShellProcess_swift](https://github.com/mark-watson/ShellProcess_swift) - library for spawning shell processes and capturing output to stdout.
+- [https://github.com/mark-watson/WebScraping_swift](https://github.com/mark-watson/WebScraping_swift) - library for scrapping web sites.
+- [https://github.com/mark-watson/OpenAI_swift](https://github.com/mark-watson/OpenAI_swift) - library for using OpenAI's GPT3 APIs.
+- [https://github.com/mark-watson/Nlp_swift](https://github.com/mark-watson/Nlp_swift) - library that uses pretrained CoreML NLP models.
+- [https://github.com/mark-watson/KnowledgeGraphNavigator_swift](https://github.com/mark-watson/KnowledgeGraphNavigator_swift) - command line Knowledge Graph Navigator tool
+- [https://github.com/mark-watson/KGN](https://github.com/mark-watson/KGN) - SwiftUI based application supporting macOS, iPasOS, and iOS. The macOS version is in Apple's app store.
 
-The github repo for this book is [https://github.com/mark-watson/SwiftAI-book-code](https://github.com/mark-watson/SwiftAI-book-code). All of the code examples are licensed using the Apache 2 license *except* the last example which is the personal edition of a [combination iOS and macOS application written using SwiftUI](http://www.knowledgegraphnavigator.com/) that I sell as a commercial product. This combination application is licensed under the AGPL version 3 license.
+I suggest cloning all of these GitHub repositories right now so you can have the example source code at-hand while reading this book.
+
+All of the code examples are licensed using the Apache 2 license. You are free to reuse the book example code in your own projects (open source, commercial), with attribution of my copyright and the Apache 2 license.
 
 Except for the last SwiftUI applications, all sample programs are written as command line utilities. I considered using Swift playgrounds for some of the examples but decided that packaging as a combination of libraries and command line utilities would tend to make the example code more useful for your own projects.
 
@@ -39,10 +49,9 @@ As an author, I hope that the material in this book entertains you and will be u
 
 ## A Request from the Author
 
-I spent time writing this book to help you, dear reader. I release this book under the Creative Commons "share and share alike, no modifications, no commercial reuse" license and set the minimum purchase price to $5.00 in order to reach the most readers. Under this license you can share a PDF version of this book with your friends and coworkers. You can also get this book free on LeanPub by setting the price to "Free." If you found this book on the web (or it was given to you) and if it provides value to you then please consider doing one of the following to support my future writing efforts and also to support future updates to this book:
+I spent time writing this book to help you, dear reader. I release this book under the Creative Commons "share and share alike, no modifications, no commercial reuse" license and set the minimum purchase price to **Free** in order to reach the most readers. Under this license you can share a PDF version of this book with your friends and coworkers. If you found this book on the web (or it was given to you) and if it provides value to you then please consider doing one of the following to support my future writing efforts and also to support future updates to this book:
 
 - Purchase a copy of [this book](https://leanpub.com/SwiftAI) or any other of my leanpub books at [https://leanpub.com/u/markwatson](https://leanpub.com/u/markwatson)
-- [Hire me as a consultant](https://markwatson.com/)
 
 I enjoy writing and your support helps me write new editions and updates for my books and to develop new book projects. Thank you!
 
@@ -77,8 +86,7 @@ While I do have one main repository for this book, all code examples that can be
 We use several 3rd party libraries:
 
 - [https://vapor.codes web services library](https://vapor.codes)
-
-TBD: add SwiftyJson, etc.....
+- [https://github.com/SwiftyJSON/SwiftyJSON](https://github.com/SwiftyJSON/SwiftyJSON)
 
 ## Acknowledgements
 
