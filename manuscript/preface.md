@@ -63,6 +63,15 @@ While I do have one main repository for this book, all code examples that can be
 - https://github.com/mark-watson/QuestionAnswering_BERT_swift
 - https://github.com/mark-watson/create_deep_learning_model_swift - create a CoreML model and use it for making predictions
 
+## CoreML Libraries Used in this Book
+
+- CoreML general overview: https://developer.apple.com/documentation/coreml
+- MLClassifier https://developer.apple.com/documentation/createml/mlclassifier
+- MLTextClassifier https://developer.apple.com/documentation/createml/mltextclassifier
+- NLModel https://developer.apple.com/documentation/naturallanguage/nlmodel
+- Natural Language Framework https://developer.apple.com/documentation/naturallanguage
+- MLCustomLayer https://developer.apple.com/documentation/coreml/mlcustomlayer
+
 ## Swift 3rd Party Libraries
 
 We use several 3rd party libraries:
