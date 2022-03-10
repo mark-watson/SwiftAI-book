@@ -1,6 +1,6 @@
-# Swift Command Line Utilities
+# Background Information for Writing Swift Command Line Utilities
 
-This chapter contains example code and utilities for writing command line programs, using external shell processes, and using the FileIO library.
+This short chapter contains example code and utilities for writing command line programs, using external shell processes, and using the FileIO library.
 
 ## Using Shell Processes
 
@@ -40,8 +40,6 @@ public func run_in_shell(commandPath: String, argList: [String] = []) -> String 
     return ""
 }
 ~~~~~~~~
-
-
 
 
 {lang="swift",linenos=on}
@@ -111,7 +109,7 @@ Test Suite 'All tests' passed at 2021-08-06 16:36:23.468.
 {lang="swift",linenos=on}
 ~~~~~~~~
 import Foundation
-import ShellProcess_swift
+import ShellProcess_swift // my library
 
 @available(OSX 10.13, *)
 func test_files_demo() -> Void {
@@ -171,10 +169,4 @@ out.txt
 out2.txt
 ~~~~~~~~
 
-
-
-{lang="swift",linenos=on}
-~~~~~~~~
-
-~~~~~~~~
 
