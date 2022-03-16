@@ -2,9 +2,20 @@
 
 It is important to respect the property rights of web site owners and abide by their terms and conditions for use. This [Wikipedia article on Fair Use](https://en.wikipedia.org/wiki/Fair_use) provides a good overview of using copyright material.
 
-The web scraping code we develop here uses the Python BeautifulSoup and URI libraries.
+The web scraping code we develop here uses the Swift library **SwiftSoup** that is loosely based on the BeautifulSoup libraries available in other programming languages.
 
 For my work and research, I have been most interested in using web scraping to collect text data for natural language processing but other common applications include writing AI news collection and summarization assistants, trying to predict stock prices based on comments in social media which is what we did at Webmind Corporation in 2000 and 2001, etc.
+
+I wrote a simple web scraping library that is available at [https://github.com/mark-watson/WebScraping_swift](https://github.com/mark-watson/WebScraping_swift) that you can use in your projects by putting the following dependency in your **Project.swift** file:
+
+{lang="swift",linenos=on}
+~~~~~~~~
+    dependencies: [
+         .package(url: "git@github.com:mark-watson/WebScraping_swift.git", .branch("main")),
+    ],
+~~~~~~~~
+
+Here is the main implementation file for the library:
 
 {lang="swift",linenos=on}
 ~~~~~~~~
@@ -42,7 +53,6 @@ func webPageHeadersHelper(uri: String, headerName: String) -> [String] {
     return ret
 }
 
-
 public func webPageH1Headers(uri: String) -> [String] {
     return webPageHeadersHelper(uri: uri, headerName: "h1")
 }
@@ -50,7 +60,6 @@ public func webPageH1Headers(uri: String) -> [String] {
 public func webPageH2Headers(uri: String) -> [String] {
     return webPageHeadersHelper(uri: uri, headerName: "h2")
 }
-
 
 public func webPageAnchors(uri: String) -> [[String]] {
     var ret: [[String]] = []
@@ -78,6 +87,7 @@ public func webPageAnchors(uri: String) -> [[String]] {
 }
 ~~~~~~~~
 
+The test program shows how to call the APIs in the library:
 
 {lang="swift",linenos=on}
 ~~~~~~~~
@@ -110,10 +120,7 @@ final class WebScrapingTests: XCTestCase {
 
 TBD:....
 
-We will use [https://vapor.codes web services library](https://vapor.codes)
-in this chapter to fetch data from web services and also in the next chapter for building a web application.
-
-The tests with much output not shown for brevity:
+Here we run the unit tests (with much of the output not shown for brevity):
 
 {lang="bash",linenos=on}
 ~~~~~~~~

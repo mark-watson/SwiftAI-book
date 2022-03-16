@@ -1,12 +1,12 @@
 # Using Apple's Core ML Machine Learning and Deep Learning Libraries
 
-Please note that this chapter is specific to Apple's libraries and pre-trained deep learning models.
+Please note that this chapter is specific to Apple's libraries using pre-trained deep learning models.
 
 I assume that you are generally familiar with [Apple's CoreML documentation](https://developer.apple.com/documentation/coreml)
 
-There are two example directories (from the github repository [https://github.com/mark-watson/SwiftAI-book-code](https://github.com/mark-watson/SwiftAI-book-code) for this chapter:
+There are two example GitHub repositories for this chapter:
 
-- SwiftAI-book-code/wisconsin_data_create_model generates a deep learning model
+- [https://github.com/mark-watson/create_deep_learning_model_swift](https://github.com/mark-watson/create_deep_learning_model_swift) generates a deep learning model and saves it for reuse.
 - SwiftAI-book-code/wisconsin_data_predict_with_model uses the trained model.
 
 If you have taken a class in Deep Learning, you learned how to divide a training data set into separate training, dev, and test data sets. This process is handled internally by the CoreML libraries we use here so we will only be using a single training data file. The CoreML APIs we use here perform a type of AutoML (automatic machine learning) by trying to train a model using several model types and choosing the model type with the best accuracy. This is convenient and saves engineering time. A trained model imported into XCode automatically generates Swift APIs for using the model. You can also take a trained CoreML model and use it in Python programs ([documentation for Python use cases](https://coremltools.readme.io/docs/mlmodel)).

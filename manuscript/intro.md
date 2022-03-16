@@ -22,7 +22,7 @@ There are great free resources for the Swift language on the web, in other comme
 
 We will use the [Swift Package Manager](https://swift.org/package-manager/). You should pause reading now and install the Swift Package Manager if you have not already done so.
 
-We will use [https://vapor.codes web framework](https://vapor.codes) as an example for building a library locally from source code. Start by cloning the git repository [https://github.com/vapor/vapor](https://github.com/vapor/vapor). Then:
+We occasionally use [https://vapor.codes web framework](https://vapor.codes) library (although not in this book). We use this 3rd party library as an example for building a library locally from source code. Start by cloning the git repository [https://github.com/vapor/vapor](https://github.com/vapor/vapor). Then:
 
 {linenos=off}
 ~~~~~~~~
