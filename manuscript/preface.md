@@ -66,7 +66,7 @@ As an author, I hope that the material in this book entertains you and will be u
 
 ## A Request from the Author
 
-I spent time writing this book to help you, dear reader. I release this book under the Creative Commons "share and share alike, no modifications, no commercial reuse" license and set the minimum purchase price to **Free** in order to reach the most readers. Under this license you can share a PDF version of this book with your friends and coworkers. If you found this book on the web (or it was given to you) and if it provides value to you then please consider doing one of the following to support my future writing efforts and also to support future updates to this book:
+I spent time writing this book to help you, dear reader. I release this book under the Creative Commons license and set the minimum purchase price to **Free** in order to reach the most readers. If you found this book on the web (or it was given to you) and if it provides value to you then please consider doing the following to support my future writing efforts and also to support future updates to this book:
 
 - Purchase a copy of [this book](https://leanpub.com/SwiftAI) or any other of my leanpub books at [https://leanpub.com/u/markwatson](https://leanpub.com/u/markwatson)
 
@@ -78,7 +78,7 @@ The cover picture was taken by [WikiMedia Commons user Keta](https://commons.wik
 
 ## GitHub Repositories for Book Examples
 
-While I do have one main repository for this book, all code examples that can be used as libraries live in their own GitHub repository. I suggest that you clone the following repositories now so you will have them while working through the examples in this book:
+All code examples can be used as libraries and live in their own GitHub repository. I suggest that you clone the following repositories now so you will have them while working through the examples in this book:
 
 - https://github.com/mark-watson/SwiftAI-book-code - main book repository
 - https://github.com/mark-watson/ShellProcess_swift
