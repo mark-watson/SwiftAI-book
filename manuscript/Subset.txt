@@ -9,7 +9,6 @@ coreml.md
 nlp.md
 openai.md
 part3.md
-knowledgerepresentation.md
 sw.md
 kgn.md
 wrapup.md
