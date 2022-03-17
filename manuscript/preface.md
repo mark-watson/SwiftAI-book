@@ -1,4 +1,6 @@
-# Preface
+# Cover Material, Copyright, and License
+
+Copyright 2011-2022 Mark Watson. All rights reserved.
 
 ## This book is licensed with Creative Commons Attribution CC BY Version 3 That Allows Reuse In Derived Works
 
@@ -11,10 +13,20 @@ for any purpose, even commercially.
 You are required to give appropriate credit in any derived works:
 
 ```text
-This work is derived from all or part of "Artificial Intelligence Using Swift" by Mark Watson. Source: https://leanpub.com/SwiftAI
+This work is derived from all or part of "Artificial Intelligence Using Swift" by Mark Watson. Source: https://leanpub.com/lovinglisp
 ```
 
-## Book Overview
+This eBook will be updated occasionally so please periodically check the [leanpub.com web page for this book](https://leanpub.com/SwiftAI) for updates.
+
+This is the first edition released spring of 2022.
+
+Please visit the [author's website](http://markwatson.com).
+
+If you found a copy of this book on the web and find it of value then please consider buying a copy at [leanpub.com/SwiftAI](https://leanpub.com/SwiftAI) to support the author and fund work for future updates.  You can also see all of my books on [my website https://markwatson.com/#books](https://markwatson.com/#books).
+
+
+# Preface
+
 Why use Swift for hacking AI? Common Lisp has been my go-to language for artificial intelligence development and research since 1982. The transition to using Swift was a slow transition for me. During this transition I prototyped a new project in parallel using both Swift and Common Lisp, weighing the advantages of both for my current requirements. The Swift version of this project included in this book runs on macOS, iOS, and iPadOS. The macOS version is available on the Apple Store. Several of the utilities developed in this book were used in this project.
 
 This book starts out slowly with simple examples showing how to access the Swift library packages (on GitHub) I wrote for this book, tips on writing Swift command line apps, and web scraping. We then proceed to using Apple's CoreML for Natural Language Processing (NLP), training and using your own CoreML models, using OpenAI's GPT-3 APIs, and finally several semantic web/linked data examples. The book ends with the example [https://www.google.com/url?sa=t&rct=j&q=&esrc=s&source=web&cd=&ved=2ahUKEwjQ57T7nLz2AhWuKUQIHQLIBV8QFnoECA4QAQ&url=https%3A%2F%2Fapps.apple.com%2Fgr%2Fapp%2Fkgn%2Fid1514197947%3Fmt%3D12&usg=AOvVaw2Ejr7EoEXdHNCC4XepDQ8x](KGN on the App Store). It is not my intention to cover in detail the use of SwiftUI for building iOS/iPadOS/macOS applications but I thought my readers might enjoy seeing several of the techniques covered in the book integrated into an example app.

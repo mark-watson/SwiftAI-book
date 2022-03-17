@@ -6,11 +6,9 @@ webscrape.md
 part2.md
 deeplearning_intro.md
 coreml.md
-summarizingtext.md
 nlp.md
 openai.md
 part3.md
-knowledgerepresentation.md
 sw.md
 kgn.md
 wrapup.md

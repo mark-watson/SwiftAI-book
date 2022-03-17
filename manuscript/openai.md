@@ -1,13 +1,8 @@
 # Using the OpenAI APIs
 
-I have been working as an artificial intelligence practitioner since 1982 and the capability of the beta OpenAI APIs is the most impressive thing that I have seen (so far!) in my career. These APIs use the GPT-3 model.
+I have been working as an artificial intelligence practitioner since 1982 and the capability of the beta OpenAI APIs is the most impressive thing that I have seen (so far!) in my career. These APIs use the GPT-3 model. You will need to apply to OpenAI for a free API access key. I use their APIs frequently enough in my projects that I am on their paid plan.
 
 I recommend reading the online documentation for the [online documentation for the APIs](https://beta.openai.com/docs/introduction/key-concepts) to see all the capabilities of the beta OpenAI APIs.  Let's start by jumping into the example code that is a GitHub repository [https://github.com/mark-watson/OpenAI_swift](https://github.com/mark-watson/OpenAI_swift) that you can use in your projects.
-
-{lang="swift",linenos=on}
-~~~~~~~~
-~~~~~~~~
-
 
 The library that I wrote for this chapter supports three functions: for completing text, summarizing text, and answering general questions. The single OpenAI model that the beta OpenAI APIs use is fairly general purpose and can generate cooking directions when given an ingredient list, grammar correction, write an advertisement from a product description, generate spreadsheet data from data descriptions in English text, etc. 
 

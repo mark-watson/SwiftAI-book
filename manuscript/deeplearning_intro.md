@@ -1,5 +1,7 @@
 # Deep Learning Introduction
 
+Apple's work in smoothly integrating deep learning into their developer tools for macOS, iOS, and iPadOS applications is in my opinion nothing short of brilliant. We will finish this book with an application that uses two deep learning models that provide almost all of the functionality of the application.
+
 Before diving into Apple's CoreML libraries in later chapters we will take a shallow dive into the principles of deep learning and take a lay-of-the-land look at the type of most commonly used models. This chapter has no example programs and is intended as background material.
 
 Most of my professional career since 2014 has involved Deep Learning, mostly with TensorFlow using the Keras APIs. In the late 1980s I was on a DARPA neural network technology advisory panel for a year, I wrote the first prototype of the SAIC ANSim neural network library commercial product, and I wrote the neural network prediction code for a bomb detector my company designed and built for the FAA for deployment in airports. More recently I have used GAN (generative adversarial networks) models for synthesizing numeric spreadsheet data and LSTM (long short term memory) models to synthesize highly structured text data like nested JSON and for NLP (natural language processing).  I have also written a product recommendation model for an online store using TensorFlow Recommenders. I have several USA and European patents using neural network and Deep Learning technology.
@@ -42,5 +44,5 @@ Except for pendantic purposes, I now never write neural network code from scratc
 
 Deep Learning models are generally understood to have many more hidden layers than simple multi-layer perceptron neural networks and often comprise multiple simple models combined together in series or in parallel.
 Complex architectures can be iteratively developed by manually adjusting the size of model components, changing the components, etc. Alternatively, model architecture search can be automated. At Capital One I used Google's 
-[AdaNet project](https://github.com/tensorflow/adanet) that efficiently searches for effective model architectures inside a single TensorFlow session.
+[AdaNet project](https://github.com/tensorflow/adanet) that efficiently searches for effective model architectures inside a single TensorFlow session. Now all major cloud compute provides support some form of AutoML. You need to make a decision for yourself how much effort you want to put into deeply understanding the technology, or simply learning how to use pre-trained models.
 

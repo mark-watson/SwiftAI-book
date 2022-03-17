@@ -49,15 +49,12 @@ We will be diving a little deeper into RDF examples in the next chapter when we 
 
 Text data on the web has some structure in the form of HTML elements like headers, page titles, anchor links, etc. but this structure is too imprecise for general use by software agents. RDF is a method for encoding structured data in a more precise way.
 
-We used the RDF data on my web site in the last chapter to introduce the "plumbing" of using the **????** Swift library to access, manipulate, and query RDF data.
+We used the RDF data on my web site in the last chapter to introduce the "plumbing" to access, manipulate, and query RDF data.
 
 
-## Resource Namespaces Provided in the **???** Library
+## Frequently Used Resource Namespaces
 
-The following standard namespaces are predefined in **???**:
-
-TBD: update the following as needed:
-
+The following standard namespaces are frequently used:
 
 - RDF       [https://www.w3.org/TR/rdf-syntax-grammar/](https://www.w3.org/TR/rdf-syntax-grammar/)
 - RDFS      [https://www.w3.org/TR/rdf-schema/](https://www.w3.org/TR/rdf-schema/)
@@ -120,33 +117,19 @@ and for the Social Web:
     thumbnail
     logo
 
-You now have seen a few common Schemas for RDF data. Another Schema that is widely used for annotating web sites, that we won't need for our examples here, is [schema.org](https://schema.org). Let's now use a Swift REPL session to explore namespaces and programatically create RDF using **rdflib**:
-
-{lang="swift",linenos=on}
-~~~~~~~~
-TBD
-
-
-~~~~~~~~
-
+You now have seen a few common Schemas for RDF data. Another Schema that is widely used for annotating web sites, that we won't need for our examples here, is [schema.org](https://schema.org).
 
 ## Understanding the SPARQL Query Language
 
-For the purposes of the material in this book, the two sample SPARQL queries here and in the last chapter are sufficient for you to get started using **???** with arbitrary RDF data sources and simple queries.
+For the purposes of the material in this book, the two sample SPARQL queries here and in the last chapter are sufficient for you to get started using my SPARQL library [https://github.com/mark-watson/SparqlQuery_swift](https://github.com/mark-watson/SparqlQuery_swift) with arbitrary RDF data sources and simple queries.
+
+![My Swift SPARQL library open in Xcode](images/xcode_sparql.png)
+
 
 The Apache Foundation has a [good introduction to SPARQL](https://jena.apache.org/tutorials/sparql.html) that I refer you to for more information.
 
-## Wrapping the Swift **????** Library
 
-TBD
+## Semantic Web and Linked Data Wrap Up
 
+In the next chapter we will use natural language processing to extract structured information from raw text and automatically generate RDF data. We will be using my Swift SPARQL library [https://github.com/mark-watson/SparqlQuery_swift](https://github.com/mark-watson/SparqlQuery_swift) as well as two pre-trained CoreML deep learning models.
 
-If I depend on a library, regardless of the programming language, I like to keep an up-to-date copy of the source code ready at hand. There is sometimes no substitute for having library code available to read.
-
-
-## Semantic Web and Linked Data Wrapup
-
-In the next chapter we will use natural language processing to extract structured information from raw text and automatically generate RDF data.
-
-
-TBD: more text

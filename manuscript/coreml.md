@@ -7,9 +7,11 @@ I assume that you are generally familiar with [Apple's CoreML documentation](htt
 There are two example GitHub repositories for this chapter:
 
 - [https://github.com/mark-watson/create_deep_learning_model_swift](https://github.com/mark-watson/create_deep_learning_model_swift) generates a deep learning model and saves it for reuse.
-- SwiftAI-book-code/wisconsin_data_predict_with_model uses the trained model.
+- [https://github.com/mark-watson/swift-coreml-wisconsin_data_predict_with_model](https://github.com/mark-watson/swift-coreml-wisconsin_data_predict_with_model) uses the trained model.
 
-If you have taken a class in Deep Learning, you learned how to divide a training data set into separate training, dev, and test data sets. This process is handled internally by the CoreML libraries we use here so we will only be using a single training data file. The CoreML APIs we use here perform a type of AutoML (automatic machine learning) by trying to train a model using several model types and choosing the model type with the best accuracy. This is convenient and saves engineering time. A trained model imported into XCode automatically generates Swift APIs for using the model. You can also take a trained CoreML model and use it in Python programs ([documentation for Python use cases](https://coremltools.readme.io/docs/mlmodel)).
+In the last chapter we will use two deep learning models in a MacOS application that is available on Apple's App Store.
+
+If you have taken a class in Machine Learning or Deep Learning, you learned how to divide a training data set into separate training, dev, and test data sets. This process is handled internally by the CoreML libraries we use here so we will only be using a single training data file. The CoreML APIs we use here perform a type of AutoML (automatic machine learning) by trying to train a model using several model types and choosing the model type with the best accuracy. This is convenient and saves engineering time. A trained model imported into XCode automatically generates Swift APIs for using the model. You can also take a trained CoreML model and use it in Python programs ([documentation for Python use cases](https://coremltools.readme.io/docs/mlmodel)).
 
 ## Training a Classification Model For the University of Wisconsin Cancer Data
 
@@ -233,7 +235,7 @@ Trained model successfully saved at /Users/markw_1/GITHUB/SwiftAI-book-code/wisc
 
 ## Using the Classification Model For the University of Wisconsin Cancer Data
 
-
+The GitHub repo [https://github.com/mark-watson/swift-coreml-wisconsin_data_predict_with_model](https://github.com/mark-watson/swift-coreml-wisconsin_data_predict_with_model) contains a **Makefile** with a target for building the prediction code:
 
 {lang="makefile",linenos=on}
 ~~~~~~~~
@@ -249,6 +251,7 @@ clean:
 	rm -rf Sources/wisconsin_data/wisconsin.swift
 ~~~~~~~~
 
+The file **swift-coreml-wisconsin_data_predict_with_model/Sources/wisconsin_data/main.swift** contains the prediction code:
 
 {lang="swift",linenos=on}
 ~~~~~~~~
@@ -276,6 +279,7 @@ func predict() {
 predict()
 ~~~~~~~~
 
+We can run the prediction example on the command line:
 
 {lang="bash",linenos=on}
 ~~~~~~~~
@@ -310,22 +314,11 @@ ClassProbability: Dictionary : {
 ~~~~~~~~
 
 
-## Background Material for - Boosted Trees Classifier, Random Forest Classifier, Decision Tree Classifier, SVM, and Logistic Regression Models
-
 I recommend that you read through Apple's documentation and bookmark the page for the [CoreML classification modes](https://apple.github.io/turicreate/docs/userguide/supervised-learning/classifier.html).
-
-
-### Boosted Trees Classifier
 
 Boosted Trees Classifiers are comprised of individual models summed together, where the simpler models are learned decision trees (a type of ensemble models).
 
-### Random Forest Classifier
-
 Random Forest Classifiers are similar to Boosted Trees Classifiers except the ensemble sub-classier comprising Random Forest Classifiers are each trained with a subset of the data.
 
-### Decision tree classifier
-
-### SVM
-
-### Logistic regression
+You might also want to review Apple's documentation for the following conventional Machine Learning algorithms: Decision tree classifier, SVM, and Logistic regression.
 

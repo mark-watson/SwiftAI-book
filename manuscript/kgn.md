@@ -1,19 +1,43 @@
 # Example Application: iOS and macOS Versions of my KnowledgeBookNavigator
 
-I used many of the techniques discussed in this book, the Swift language, and the SwiftUI user interface framework to develop both the personal edition and the enterprise edition of my commercial product for iOS and macOS. I use the code for the personal edition as the final example for this book. Please note that all other code examples in this book are licensed with Apache 2 open source license while the example in this chapter is licensed under the AGPL version 3 license.
+I used many of the techniques discussed in this book, the Swift language, and the SwiftUI user interface framework to develop Swift version of my Knowledge Graph Navigator application for macOS. I originally wrote this as an example program in Common Lisp for another book project. 
 
-## Product Use Cases and Design
+## Screen Shots of macOS Application
+
+![Entered query and KGN is asking user to disambiguate which "Steve Jobs" they want information for](images/KGN1.png)
+
+
+![Showing results](images/KGN2.png)
+
+
+![Showing SPARQL queries used to gather data](images/KGN3.png)
+
+
+
+## Application Code Listings
 
 TBD
 
-## Non-GUI 'Back-End' Code
+### SPARQL
 
 TBD
 
-## maOS Application
+### AppleBERT
 
 TBD
 
-## iOS Application
+### Relationships
+
+TBD
+
+### NLP
+
+TBD
+
+### Views
+
+TBD
+
+### Main KGN
 
 TBD
