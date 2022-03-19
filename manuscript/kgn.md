@@ -6,9 +6,13 @@ I used many of the techniques discussed in this book, the Swift language, and th
 
 ![Entered query and KGN is asking user to disambiguate which "Steve Jobs" they want information for](images/KGN1.png)
 
+In this last screenshot I had entered query text that included "Steve Jobs" and the popup list selector is used to let the user select which "Steve Jobs" entity from DBPedia that they want to use.
 
 ![Showing results](images/KGN2.png)
 
+The previous screenshot shows the results to the query displayed as English text.
+
+Notice the app prompt "Behind the scenes SPARQL queries" near the bottom of the app window. If you click on this field then the SPARQL queries used to answer the question are shown, as on the next screenshot:
 
 ![Showing SPARQL queries used to gather data](images/KGN3.png)
 
@@ -16,7 +20,7 @@ I used many of the techniques discussed in this book, the Swift language, and th
 
 ## Application Code Listings
 
-TBD
+I will list some of the code for this example application and I suggest that you, dear reader, also open this project in Xcode in order to navigate the sample code and more carefully read through it.
 
 ### SPARQL
 
@@ -26,12 +30,17 @@ The file **SparqlQuery.swift**:
 import Foundation
 
 public func sparqlDbPedia(query: String) -> Array<Dictionary<String,String>> {
-    return SparqlEndpointHelpter(query: query, endPointUri: "https://dbpedia.org/sparql?query=") }
+    return SparqlEndpointHelpter(query: query,
+        endPointUri: "https://dbpedia.org/sparql?query=") }
 
 public func sparqlWikidata(query: String) -> Array<Dictionary<String,String>> {
-    return SparqlEndpointHelpter(query: query, endPointUri: "https://query.wikidata.org/bigdata/namespace/wdq/sparql?query=") }
+    return SparqlEndpointHelpter(query: query,
+        endPointUri:
+          "https://query.wikidata.org/bigdata/namespace/wdq/sparql?query=") }
 
-public func SparqlEndpointHelpter(query: String, endPointUri: String) -> Array<Dictionary<String,String>> {
+public func SparqlEndpointHelpter(query: String,
+                                  endPointUri: String) ->
+                            Array<Dictionary<String,String>> {
     var ret = Set<Dictionary<String,String>>();
     var content = "{}"
 
@@ -40,9 +49,11 @@ public func SparqlEndpointHelpter(query: String, endPointUri: String) -> Array<D
         content = maybeString ?? ""
     } else {
         let requestUrl = URL(string: String(endPointUri + query.addingPercentEncoding(withAllowedCharacters:     .urlHostAllowed)!) + "&format=json")!
-        do { content = try String(contentsOf: requestUrl) } catch let error { print(error) }
+        do { content = try String(contentsOf: requestUrl) }
+          catch let error { print(error) }
     }
-    let json = try? JSONSerialization.jsonObject(with: Data(content.utf8), options: [])
+    let json = try? JSONSerialization.jsonObject(with: Data(content.utf8),
+                                                 options: [])
     if let json2 = json as! Optional<Dictionary<String, Any?>> {
         if let head = json2["head"] as? Dictionary<String, Any> {
             if let xvars = head["vars"] as! NSArray? {
@@ -50,7 +61,9 @@ public func SparqlEndpointHelpter(query: String, endPointUri: String) -> Array<D
                     if let bindings = results["bindings"] as! NSArray? {
                         if bindings.count > 0 {
                             for i in 0...(bindings.count-1) {
-                                if let first_binding = bindings[i] as? Dictionary<String, Dictionary<String,String>> {
+                                if let first_binding =
+                                bindings[i] as? Dictionary<String,
+                                Dictionary<String,String>> {
                                     var ret2 = Dictionary<String,String>();
                                     for key in xvars {
                                         let key2 : String = key as! String
@@ -67,7 +80,8 @@ The file **QueryCache.swift** contains code written by Khoa Pham (MIT License) t
 
 ```swift
 //  Created by khoa on 27/05/2019.
-//  Copyright © 2019 Khoa Pham. All rights reserved. MIT License. https://github.com/onmyway133/EasyStash
+//  Copyright © 2019 Khoa Pham. All rights reserved. MIT License.
+//  https://github.com/onmyway133/EasyStash
 //
 
 import Foundation
@@ -80,7 +94,8 @@ public func cacheStoreQuery(key: String, value: String) {
     do { try storage?.save(object: value, forKey: key) } catch {}
 }
 public func cacheLookupQuery7(key: String) -> String? {
-    //do { try storage?.removeAll() } catch { print("ERROR CLEARING CACHE") } // DEBUG: clear cache
+    // optional DEBUG code: clear cache
+    //do { try storage?.removeAll() } catch { print("ERROR CLEARING CACHE") }
     do {
         return try storage?.load(forKey: key, as: String.self)
     } catch { return "" }
@@ -89,7 +104,7 @@ public func cacheLookupQuery7(key: String) -> String? {
 // remaining code not shown for brevity.
 ```
 
-The code in file **GenerateSparql.swift** is used to generate queries for DBPedia:
+The code in file **GenerateSparql.swift** is used to generate queries for DBPedia. The line-wrapping for embedded SPARQL queries in the next code section is difficult to read so you may want to open the source file in Xcode:
 
 ```swift
 //
@@ -102,14 +117,21 @@ The code in file **GenerateSparql.swift** is used to generate queries for DBPedi
 
 import Foundation
 
-public func uri_to_display_text(uri: String) -> String {
-    return uri.replacingOccurrences(of: "http://dbpedia.org/resource/Category/", with: "").replacingOccurrences(of: "http://dbpedia.org/resource/", with: "").replacingOccurrences(of: "_", with: " ")
+public func uri_to_display_text(uri: String)
+                                     -> String {
+    return uri.replacingOccurrences(of: "http://dbpedia.org/resource/Category/",
+        with: "").
+      replacingOccurrences(of: "http://dbpedia.org/resource/",
+        with: "").
+         replacingOccurrences(of: "_", with: " ")
 }
 
 public func get_SPARQL_for_finding_URIs_for_PERSON_NAME(nameString: String) -> String {
     return
-        "# SPARQL to find all URIs for name: " + nameString + "\nSELECT DISTINCT ?person_uri ?comment {\n" +
-        "  ?person_uri <http://xmlns.com/foaf/0.1/name> \"" + nameString + "\"@en .\n" +
+        "# SPARQL to find all URIs for name: " +
+        nameString + "\nSELECT DISTINCT ?person_uri ?comment {\n" +
+        "  ?person_uri <http://xmlns.com/foaf/0.1/name> \"" +
+        nameString + "\"@en .\n" +
         "  OPTIONAL { ?person_uri <http://www.w3.org/2000/01/rdf-schema#comment>\n" +
         "     ?comment . FILTER (lang(?comment) = 'en') } .\n" +
         "} LIMIT 10\n"
@@ -231,34 +253,35 @@ let personSparql = """
 
 let personDetailSparql = """
 SELECT DISTINCT ?label ?comment
-                     (GROUP_CONCAT (DISTINCT ?birthplace; SEPARATOR=' | ') AS ?birthplace)
-                     (GROUP_CONCAT (DISTINCT ?almamater; SEPARATOR=' | ') AS ?almamater)
-                     (GROUP_CONCAT (DISTINCT ?spouse; SEPARATOR=' | ') AS ?spouse) {
-                     <name> <http://www.w3.org/2000/01/rdf-schema#comment>  ?comment .
-                           FILTER  (lang(?comment) = 'en') .
-                     OPTIONAL { <name> <http://dbpedia.org/ontology/birthPlace> ?birthplace } .
-                     OPTIONAL { <name> <http://dbpedia.org/ontology/almaMater> ?almamater } .
-                     OPTIONAL { <name> <http://dbpedia.org/ontology/spouse> ?spouse } .
-                     OPTIONAL { <name>  <http://www.w3.org/2000/01/rdf-schema#label> ?label .
-                             FILTER  (lang(?label) = 'en') }
+                     
+     (GROUP_CONCAT (DISTINCT ?birthplace; SEPARATOR=' | ') AS ?birthplace)
+     (GROUP_CONCAT (DISTINCT ?almamater; SEPARATOR=' | ') AS ?almamater)
+     (GROUP_CONCAT (DISTINCT ?spouse; SEPARATOR=' | ') AS ?spouse) {
+       <name> <http://www.w3.org/2000/01/rdf-schema#comment>  ?comment .
+       FILTER  (lang(?comment) = 'en') .
+     OPTIONAL { <name> <http://dbpedia.org/ontology/birthPlace> ?birthplace } .
+     OPTIONAL { <name> <http://dbpedia.org/ontology/almaMater> ?almamater } .
+     OPTIONAL { <name> <http://dbpedia.org/ontology/spouse> ?spouse } .
+     OPTIONAL { <name>  <http://www.w3.org/2000/01/rdf-schema#label> ?label .
+        FILTER  (lang(?label) = 'en') }
 } LIMIT 10
 """
 
 let placeSparql = """
 SELECT DISTINCT ?uri ?comment WHERE {
-       ?uri rdfs:label "<name>"@en .
-       ?uri <http://www.w3.org/2000/01/rdf-schema#comment>  ?comment .
-       FILTER (lang(?comment) = 'en') .
-       ?place <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://schema.org/Place> .
+   ?uri rdfs:label "<name>"@en .
+   ?uri <http://www.w3.org/2000/01/rdf-schema#comment>  ?comment .
+   FILTER (lang(?comment) = 'en') .
+   ?place <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://schema.org/Place> .
 } LIMIT 80
 """
 
 let organizationSparql = """
 SELECT DISTINCT ?uri ?comment WHERE {
-       ?uri rdfs:label "<name>"@en .
-       ?uri <http://www.w3.org/2000/01/rdf-schema#comment>  ?comment .
-       FILTER (lang(?comment) = 'en') .
-       ?uri <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://schema.org/Organization> .
+   ?uri rdfs:label "<name>"@en .
+   ?uri <http://www.w3.org/2000/01/rdf-schema#comment>  ?comment .
+   FILTER (lang(?comment) = 'en') .
+   ?uri <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://schema.org/Organization> .
 } LIMIT 80
 """
 
@@ -318,19 +341,22 @@ public func processEntities(inputString: String) -> [(name: String, type: String
         if entityType == "PersonalName" {
             let data = personDetail(name: entityName)
             for d in data {
-                augmentedEntities.append((name: entityName, type: entityType, uri: "<" + d["uri"]! + ">", comment: "<" + d["comment"]! + ">"))
+                augmentedEntities.append((name: entityName, type: entityType,
+                    uri: "<" + d["uri"]! + ">", comment: "<" + d["comment"]! + ">"))
             }
         }
         if entityType == "OrganizationName" {
             let data = organizationDetail(name: entityName)
             for d in data {
-                augmentedEntities.append((name: entityName, type: entityType, uri: "<" + d["uri"]! + ">", comment: "<" + d["comment"]! + ">"))
+                augmentedEntities.append((name: entityName, type: entityType,
+                    uri: "<" + d["uri"]! + ">", comment: "<" + d["comment"]! + ">"))
             }
         }
         if entityType == "PlaceName" {
             let data = placeDetail(name: entityName)
             for d in data {
-                augmentedEntities.append((name: entityName, type: entityType, uri: "<" + d["uri"]! + ">", comment: "<" + d["comment"]! + ">"))
+                augmentedEntities.append((name: entityName, type: entityType,
+                    uri: "<" + d["uri"]! + ">", comment: "<" + d["comment"]! + ">"))
             }
         }
     }
@@ -387,7 +413,9 @@ SELECT DISTINCT ?p {  <e1> ?p <e2> . FILTER (!regex(str(?p), 'wikiPage', 'i')) }
 
 public func dbpediaGetRelationships(entity1Uri: String, entity2Uri: String) -> [String] {
     var ret: [String] = []
-    let sparql1 = relSparql.replacingOccurrences(of: "<e1>", with: entity1Uri).replacingOccurrences(of: "<e2>", with: entity2Uri)
+    let sparql1 = relSparql.replacingOccurrences(of: "<e1>",
+      with: entity1Uri).replacingOccurrences(of: "<e2>",
+        with: entity2Uri)
     let r1 = sparqlDbPedia(query: sparql1)
     r1.forEach { result in
         if let relName = result["p"] {
@@ -396,7 +424,9 @@ public func dbpediaGetRelationships(entity1Uri: String, entity2Uri: String) -> [
             ret.append(rdfStatement)
         }
     }
-    let sparql2 = relSparql.replacingOccurrences(of: "<e1>", with: entity2Uri).replacingOccurrences(of: "<e2>", with: entity1Uri)
+    let sparql2 = relSparql.replacingOccurrences(of: "<e1>",
+        with: entity2Uri).replacingOccurrences(of: "<e2>",
+            with: entity1Uri)
     let r2 = sparqlDbPedia(query: sparql2)
     r2.forEach { result in
         if let relName = result["p"] {
@@ -420,9 +450,12 @@ public func uriToPrintName(_ uri: String) -> String {
 public func relationshipsoEnglish(rs: [String]) -> String {
     var lines: [String] = []
     for r in rs {
-        let triples = r.split(separator: " ", maxSplits: 3, omittingEmptySubsequences: true)
+        let triples = r.split(separator: " ", maxSplits: 3,
+            omittingEmptySubsequences: true)
         if triples.count > 2 {
-            lines.append(uriToPrintName(String(triples[0])) + " " + uriToPrintName(String(triples[1])) + " " + uriToPrintName(String(triples[2])))
+            lines.append(uriToPrintName(String(triples[0])) + " " +
+              uriToPrintName(String(triples[1])) + " " +
+                uriToPrintName(String(triples[2])))
         } else {
             lines.append(r)
         }
@@ -460,35 +493,43 @@ public struct NlpWhiteboard {
         self.people = people; self.places = places; self.organizations = organizations
     }
     
-    mutating func query_to_choices(behindTheScenesSparqlText: inout String) -> [[[String]]] { // return inner: [comment, uri]
+    mutating func query_to_choices(behindTheScenesSparqlText: inout String)
+          -> [[[String]]] { // return inner: [comment, uri]
         var ret: Set<[[String]]> = []
         if people.count > 0 {
             for i in 0...(people.count - 1) {
-                self.sparql = get_SPARQL_for_finding_URIs_for_PERSON_NAME(nameString: people[i])
+                self.sparql =
+                  get_SPARQL_for_finding_URIs_for_PERSON_NAME(nameString: people[i])
                 behindTheScenesSparqlText += self.sparql
                 let results = sparqlDbPedia(query: self.sparql)
                 if results.count > 0 {
-                    ret.insert( results.map { [($0["comment"] ?? ""), ($0["person_uri"] ?? "")] })
+                    ret.insert( results.map { [($0["comment"]
+                                                ?? ""),
+                                                ($0["person_uri"] ?? "")] })
                 }
             }
         }
         if organizations.count > 0 {
             for i in 0...(organizations.count - 1) {
-                self.sparql = get_SPARQL_for_finding_URIs_for_ORGANIZATION_NAME(orgString: organizations[i])
+                self.sparql = get_SPARQL_for_finding_URIs_for_ORGANIZATION_NAME(
+                    orgString: organizations[i])
                 behindTheScenesSparqlText += self.sparql
                 let results = sparqlDbPedia(query: self.sparql)
                 if results.count > 0 {
-                    ret.insert(results.map { [($0["comment"] ?? ""), ($0["org_uri"] ?? "")] })
+                    ret.insert(results.map { [($0["comment"] ??
+                      ""), ($0["org_uri"] ?? "")] })
                 }
             }
         }
         if places.count > 0 {
             for i in 0...(places.count - 1) {
-                self.sparql = get_SPARQL_for_finding_URIs_for_PLACE_NAME(placeString: places[i])
+                self.sparql = get_SPARQL_for_finding_URIs_for_PLACE_NAME(
+                    placeString: places[i])
                 behindTheScenesSparqlText += self.sparql
                 let results = sparqlDbPedia(query: self.sparql)
                 if results.count > 0 {
-                    ret.insert( results.map { [($0["comment"] ?? ""), ($0["place_uri"] ?? "")] })
+                    ret.insert( results.map { [($0["comment"] ??
+                      ""), ($0["place_uri"] ?? "")] })
                 }
             }
         }
@@ -513,34 +554,42 @@ import NaturalLanguage
 public func getPersonDescription(personName: String) -> [String] {
     let sparql = get_SPARQL_for_finding_URIs_for_PERSON_NAME(nameString: personName)
     let results = sparqlDbPedia(query: sparql)
-    return [sparql, results.map { ($0["comment"] ?? $0["abstract"] ?? "") }.joined(separator: " . ")]
+    return [sparql, results.map {
+      ($0["comment"] ?? $0["abstract"] ?? "") }.joined(separator: " . ")]
 }
 
 
 public func getPlaceDescription(placeName: String) -> [String] {
     let sparql = get_SPARQL_for_finding_URIs_for_PLACE_NAME(placeString: placeName)
     let results = sparqlDbPedia(query: sparql)
-    return [sparql, results.map { ($0["comment"] ?? $0["abstract"] ?? "") }.joined(separator: " . ")]
+    return [sparql, results.map { ($0["comment"] ??
+        $0["abstract"] ?? "") }.joined(separator: " . ")]
 }
 
 public func getOrganizationDescription(organizationName: String) -> [String] {
-    let sparql = get_SPARQL_for_finding_URIs_for_ORGANIZATION_NAME(orgString: organizationName)
+    let sparql = get_SPARQL_for_finding_URIs_for_ORGANIZATION_NAME(
+        orgString: organizationName)
     let results = sparqlDbPedia(query: sparql)
     print("=== getOrganizationDescription results =\n", results)
-    return [sparql, results.map { ($0["comment"] ?? $0["abstract"] ?? "") }.joined(separator: " . ")]
+    return [sparql, results.map { ($0["comment"] ?? $0["abstract"] ?? "") }
+        .joined(separator: " . ")]
 }
 
 let tokenizer = NLTokenizer(unit: .word)
-let tagger = NSLinguisticTagger(tagSchemes:[.tokenType, .language, .lexicalClass, .nameType, .lemma], options: 0)
-let options: NSLinguisticTagger.Options = [.omitPunctuation, .omitWhitespace, .joinNames]
+let tagger = NSLinguisticTagger(tagSchemes:[.tokenType, .language, .lexicalClass,
+  .nameType, .lemma], options: 0)
+let options: NSLinguisticTagger.Options =
+    [.omitPunctuation, .omitWhitespace, .joinNames]
 
-let tokenizerOptions: NSLinguisticTagger.Options = [.omitPunctuation, .omitWhitespace, .joinNames]
+let tokenizerOptions: NSLinguisticTagger.Options =
+    [.omitPunctuation, .omitWhitespace, .joinNames]
 
 public func getEntities(text: String) -> [(String, String)] {
     var words: [(String, String)] = []
     tagger.string = text
     let range = NSRange(location: 0, length: text.utf16.count)
-    tagger.enumerateTags(in: range, unit: .word, scheme: .nameType, options: options) { tag, tokenRange, stop in
+    tagger.enumerateTags(in: range, unit: .word,
+        scheme: .nameType, options: options) { tag, tokenRange, stop in
         let word = (text as NSString).substring(with: tokenRange)
         let tagType = tag?.rawValue ?? "unkown"
         if tagType != "unkown" && tagType != "OtherWord" {
@@ -570,7 +619,8 @@ public func getAllEntities(text: String) -> ([String],[String],[String]) {
     var places: [String] = []
     var organizations: [String] = []
     entityTagger.string = text
-    entityTagger.enumerateTags(in: text.startIndex..<text.endIndex, unit: .word, scheme: .nameType, options: entityOptions) { tag, tokenRange in
+    entityTagger.enumerateTags(in: text.startIndex..<text.endIndex, unit: .word,
+        scheme: .nameType, options: entityOptions) { tag, tokenRange in
         if let tag = tag, entityTagTypess.contains(tag) {
             let word = String(text[tokenRange])
             if tag.rawValue == "PersonalName" {
@@ -580,7 +630,7 @@ public func getAllEntities(text: String) -> ([String],[String],[String]) {
             } else if tag.rawValue == "OrganizationName" {
                 organizations.append(word)
             } else {
-                print("\nERROR in getEntities(): unkown entity type: |\(tag.rawValue)|")
+                print("\nERROR: unkown entity type: |\(tag.rawValue)|")
             }
             words.append((word, tag.rawValue))
         }

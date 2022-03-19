@@ -11,7 +11,8 @@ I wrote a simple web scraping library that is available at [https://github.com/m
 {lang="swift",linenos=on}
 ~~~~~~~~
     dependencies: [
-         .package(url: "git@github.com:mark-watson/WebScraping_swift.git", .branch("main")),
+         .package(url: "git@github.com:mark-watson/WebScraping_swift.git",
+         .branch("main")),
     ],
 ~~~~~~~~
 
@@ -114,7 +115,8 @@ final class WebScrapingTests: XCTestCase {
 }
 
     static var allTests = [("testGetWebPage", testGetWebPage),
-                           ("testToShowSwiftSoupExamples", testToShowSwiftSoupExamples)]
+                           ("testToShowSwiftSoupExamples",
+                            testToShowSwiftSoupExamples)]
 }
 ~~~~~~~~
 
@@ -141,3 +143,4 @@ Test Suite 'All tests' passed at 2021-08-06 17:37:11.062.
 ~~~~~~~~
 
 
+This chapter finishes a quick introduction to using Swift and Swift packages for command line utilities. The remainder of this book comprises machine learning, natural language processing, and semantic web/linked data examples.

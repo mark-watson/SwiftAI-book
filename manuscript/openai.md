@@ -12,10 +12,10 @@ We will look closely at the function **completions** and then just look at the s
 
 {linenos=off}
 ~~~~~~~~
-export OPENAI_KEY=sa-hdffds7&dhdhsdgffd
+export OPENAI_KEY=sa-hdedds7&dhdhsdffd
 ~~~~~~~~
 
-to your **.profile** or other shell resource file.
+to your **.profile** or other shell resource file that contains your key value (the above key value is made-up and invalid).
 
 While I sometimes use pure Clojure libraries to make HTTP requests, I prefer using the **curl** utility to experiment with API calls from the command line before starting to write any code.
 
@@ -63,7 +63,8 @@ func openAiHelper(body: String)  -> String {
     if let r1 = i1 {
         let i2 = c.range(of: "\"index\":")
         if let r2 = i2 {
-            ret = String(String(String(c[r1.lowerBound..<r2.lowerBound]).dropFirst(9)).dropLast(2))
+            ret = String(String(String(c[r1.lowerBound..<r2.lowerBound])
+             .dropFirst(9)).dropLast(2))
         }
     }
     return ret
@@ -77,7 +78,8 @@ The three example functions all use this **openAiHelper** function. The first ex
 {lang="swift",linenos=on}
 ~~~~~~~~
 public func completions(promptText: String, maxTokens: Int = 25) -> String {
-    let body: String = "{\"prompt\": \"" + promptText + "\", \"max_tokens\": \(maxTokens)" + "}"
+    let body: String = "{\"prompt\": \"" + promptText + "\",
+        \"max_tokens\": \(maxTokens)" + "}"
     return openAiHelper(body: body)}
 ~~~~~~~~
 
@@ -111,12 +113,14 @@ The function **summarize** is very similar to the function **completions** excep
 - top_p - also affects randomness. All examples I have seen use a value of 1.
 - frequency_penalty - penalize using the same words repeatedly (I usually set this to zero, but you should experiment with different values)
 
-When summarizing text, try varying the number of generated tokens to get shorter or longer summaries; in the following examples we ask for 24, 90, and 150 output tokens:
+When summarizing text, try varying the number of generated tokens to get shorter or longer summaries; in the following examples we ask for 24, 90, and 150 output tokens (lines are broken to fit page width):
 
 {lang="swift",linenos=on}
 ~~~~~~~~
 public func summarize(text: String, maxTokens: Int = 40) -> String {
-    let body: String = "{\"prompt\": \"" + text + "\", \"max_tokens\": \(maxTokens), \"presence_penalty\": 0.0, \"temperature\": 0.3, \"top_p\": 1.0, \"frequency_penalty\": 0.0}"
+    let body: String = "{\"prompt\": \"" + text + "\",
+       \"max_tokens\": \(maxTokens), \"presence_penalty\": 0.0, \"temperature\": 0.3,
+       \"top_p\": 1.0, \"frequency_penalty\": 0.0}"
     return openAiHelper(body: body)}
 ~~~~~~~~
 
@@ -126,14 +130,17 @@ First summarization example:
 
 {lang="bash",linenos=on}
 ~~~~~~~~
- Jupiter is a gas giant because it is predominantly composed of hydrogen and helium; it has a solid core, but it has no surface. Jupiter is a gas giant because it is predominantly composed"
+ Jupiter is a gas giant because it is predominantly composed of hydrogen and
+ helium; it has a solid core, but it has no surface. Jupiter is a gas giant
+ because it is predominantly composed"
  ~~~~~~~~
 
 Another summarization example:
 
 {lang="bash",linenos=on}
 ~~~~~~~~
-The planet is usually the fourth-brightest in the night sky, after the Sun, Venus and the Moon.
+The planet is usually the fourth-brightest in the night sky, after the Sun,
+Venus and the Moon.
 
 Jupiter is a gas giant because it is predominantly composed of hydrogen
 ~~~~~~~~

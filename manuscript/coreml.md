@@ -112,9 +112,9 @@ swift build
 swift run
 [0/0] Build complete!
 column_type_hints = {}
-Finished parsing file /Users/markw_1/GITHUB/SwiftAI-book-code/wisconsin_data_create_model/labeled_cancer_data.csv
+Finished parsing file /Users/markw_1/GITHUB/wisconsin_data_create_model/labeled_cancer_data.csv
 Parsing completed. Parsed 100 lines in 0.01006 secs.
-Finished parsing file /Users/markw_1/GITHUB/SwiftAI-book-code/wisconsin_data_create_model/labeled_cancer_data.csv
+Finished parsing file /Users/markw_1/GITHUB/wisconsin_data_create_model/labeled_cancer_data.csv
 Parsing completed. Parsed 683 lines in 0.003458 secs.
 Using 9 features to train a model to predict Class.
 
@@ -240,8 +240,10 @@ The GitHub repo [https://github.com/mark-watson/swift-coreml-wisconsin_data_pred
 {lang="makefile",linenos=on}
 ~~~~~~~~
 build_preditor: clean
-	cp ../wisconsin_data_create_model/Sources/wisconsin_data/wisconsin.mlmodel Sources/wisconsin_data/
-	cd Sources/wisconsin_data; xcrun coremlcompiler generate wisconsin.mlmodel --language Swift .
+	cp ../wisconsin_data_create_model/Sources/wisconsin_data/wisconsin.mlmodel \
+	   Sources/wisconsin_data/
+	cd Sources/wisconsin_data; \
+	   xcrun coremlcompiler generate wisconsin.mlmodel --language Swift .
 	cd Sources/wisconsin_data; xcrun coremlcompiler compile wisconsin.mlmodel .
 	swift build
 	swift run
@@ -262,17 +264,19 @@ import CreateML
 func predict() {
     if #available(macOS 10.14, *) {
         
-        //let url = wisconsin_data_create_model.url(forResource: "wisconsin", withExtension: "mlmodelc")!
-        let modelUrl = URL(fileURLWithPath: "Sources/wisconsin_data/wisconsin.mlmodelc")
-        let pretrained_model = try! wisconsin(contentsOf: modelUrl, configuration: MLModelConfiguration())
+        let modelUrl = URL(fileURLWithPath:
+            "Sources/wisconsin_data/wisconsin.mlmodelc")
+        let pretrained_model = try! wisconsin(contentsOf: modelUrl,
+             configuration: MLModelConfiguration())
         
-        //let pretrained_model = try? wisconsin(configuration: MLModelConfiguration()) {
-        let sampleInput = wisconsinInput(Cl_thickness: 3, Cell_size: 2, Cell_shape: 5, Marg_adhesion: 8, Epith_c_size: 8, Bare_nuclei: 2, Bl_cromatin: 3, Normal_nucleoli: 7, Mitoses: 4)
+        let sampleInput = wisconsinInput(Cl_thickness: 3, Cell_size: 2,
+            Cell_shape: 5, Marg_adhesion: 8, Epith_c_size: 8, Bare_nuclei: 2, Bl_cromatin: 3,
+            Normal_nucleoli: 7, Mitoses: 4)
         let a_prediction = try! pretrained_model.prediction(input: sampleInput)
         print(a_prediction.featureNames)
         print("Class:", a_prediction.featureValue(for: "Class")!)
-        print("ClassProbability:", a_prediction.featureValue(for: "ClassProbability")!)
-
+        print("ClassProbability:",
+              a_prediction.featureValue(for: "ClassProbability")!)
     }
 }
 
@@ -286,23 +290,25 @@ We can run the prediction example on the command line:
 $ make
 rm -rf Sources/wisconsin_data/wisconsin.mlmodel*
 rm -rf Sources/wisconsin_data/wisconsin.swift
-cp ../wisconsin_data_create_model/Sources/wisconsin_data/wisconsin.mlmodel Sources/wisconsin_data/
-cd Sources/wisconsin_data; xcrun coremlcompiler generate wisconsin.mlmodel --language Swift .
-/Users/markw_1/GITHUB/SwiftAI-book-code/wisconsin_data_predict_with_model/Sources/wisconsin_data/wisconsin.swift
+cp ../wisconsin_data_create_model/Sources/wisconsin_data/wisconsin.mlmodel \
+    Sources/wisconsin_data/
+cd Sources/wisconsin_data; \
+    xcrun coremlcompiler generate wisconsin.mlmodel --language Swift .
+/Users/markw_1/GITHUB/wisconsin_data_predict_with_model/Sources/wisconsin_data/wisconsin.swift
 cd Sources/wisconsin_data; xcrun coremlcompiler compile wisconsin.mlmodel .
-/Users/markw_1/GITHUB/SwiftAI-book-code/wisconsin_data_predict_with_model/Sources/wisconsin_data/wisconsin.mlmodelc/coremldata.bin
-/Users/markw_1/GITHUB/SwiftAI-book-code/wisconsin_data_predict_with_model/Sources/wisconsin_data/wisconsin.mlmodelc/analytics/coremldata.bin
-/Users/markw_1/GITHUB/SwiftAI-book-code/wisconsin_data_predict_with_model/Sources/wisconsin_data/wisconsin.mlmodelc/model0/coremldata.bin
-/Users/markw_1/GITHUB/SwiftAI-book-code/wisconsin_data_predict_with_model/Sources/wisconsin_data/wisconsin.mlmodelc/model1/coremldata.bin
-/Users/markw_1/GITHUB/SwiftAI-book-code/wisconsin_data_predict_with_model/Sources/wisconsin_data/wisconsin.mlmodelc/model1/_B0000.DAT
+/Users/markw_1/GITHUB/wisconsin_data_predict_with_model/Sources/wisconsin_data/wisconsin.mlmodelc/coremldata.bin
+/Users/markw_1/GITHUB/wisconsin_data_predict_with_model/Sources/wisconsin_data/wisconsin.mlmodelc/analytics/coremldata.bin
+/Users/markw_1/GITHUB/wisconsin_data_predict_with_model/Sources/wisconsin_data/wisconsin.mlmodelc/model0/coremldata.bin
+/Users/markw_1/GITHUB/wisconsin_data_predict_with_model/Sources/wisconsin_data/wisconsin.mlmodelc/model1/coremldata.bin
+/Users/markw_1/GITHUB/wisconsin_data_predict_with_model/Sources/wisconsin_data/wisconsin.mlmodelc/model1/_B0000.DAT
 swift build
-'wisconsin_data' /Users/markw_1/GITHUB/SwiftAI-book-code/wisconsin_data_predict_with_model: warning: found 1 file(s) which are unhandled; explicitly declare them as resources or exclude from the target
-    /Users/markw_1/GITHUB/SwiftAI-book-code/wisconsin_data_predict_with_model/Sources/wisconsin_data/wisconsin.mlmodel
+'wisconsin_data' /Users/markw_1/GITHUB/wisconsin_data_predict_with_model: warning: found 1 file(s) which are unhandled; explicitly declare them as resources or exclude from the target
+    /Users/markw_1/GITHUB/wisconsin_data_predict_with_model/Sources/wisconsin_data/wisconsin.mlmodel
 
 [4/4] Build complete!
 swift run
-'wisconsin_data' /Users/markw_1/GITHUB/SwiftAI-book-code/wisconsin_data_predict_with_model: warning: found 1 file(s) which are unhandled; explicitly declare them as resources or exclude from the target
-    /Users/markw_1/GITHUB/SwiftAI-book-code/wisconsin_data_predict_with_model/Sources/wisconsin_data/wisconsin.mlmodel
+'wisconsin_data' /Users/markw_1/GITHUB/wisconsin_data_predict_with_model: warning: found 1 file(s) which are unhandled; explicitly declare them as resources or exclude from the target
+    /Users/markw_1/GITHUB/wisconsin_data_predict_with_model/Sources/wisconsin_data/wisconsin.mlmodel
 
 [0/0] Build complete!
 ["Class", "ClassProbability"]

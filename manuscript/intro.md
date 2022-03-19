@@ -1,6 +1,6 @@
 # Setting Up Swift For Command Line Development
 
-Except for the last chapter that uses Xcode for developing a complete macOS/iOS/iPadOS example application, I assume that you will work through the book examples using the command line and your favorite editor. If you want to use Xcode for the command line examples, you can open the Swift package file on the command line and open Xcode using, for example:
+Except for the last chapter in this book that uses Xcode for developing a complete macOS/iOS/iPadOS example application, I assume that you will work through the book examples using the command line and your favorite editor. If you want to use Xcode for the command line examples, you can open the Swift package file on the command line and open Xcode using, for example:
 
 {linenos=off}
 ~~~~~~~~
@@ -22,7 +22,7 @@ There are great free resources for the Swift language on the web, in other comme
 
 We will use the [Swift Package Manager](https://swift.org/package-manager/). You should pause reading now and install the Swift Package Manager if you have not already done so.
 
-We occasionally use [https://vapor.codes web framework](https://vapor.codes) library (although not in this book). We use this 3rd party library as an example for building a library locally from source code. Start by cloning the git repository [https://github.com/vapor/vapor](https://github.com/vapor/vapor). Then:
+I occasionally use [https://vapor.codes web framework](https://vapor.codes) library (although not in this book). We use this 3rd party library as an example for building a library locally from source code. Start by cloning the git repository [https://github.com/vapor/vapor](https://github.com/vapor/vapor). Then:
 
 {linenos=off}
 ~~~~~~~~
@@ -39,7 +39,7 @@ We will cover using the Swift Package Manager to create new packages using the c
 
 You will want to use the [Swift Package Manager documentation](https://github.com/apple/swift-package-manager/blob/main/Documentation/Usage.md) for reference.
 
-We will be generating executable projects and library (with a sample main program) projects. The commands for generating an executable application project are:
+We will be generating executable projects and library (with a sample main program) projects. The commands for generating the stub for an executable application project are:
 
 {linenos=off}
 ~~~~~~~~
@@ -48,7 +48,7 @@ cd BingSearch
 swift package init --type executable
 ~~~~~~~~
 
-and build a library with a demo main program:
+and build the stub of a library with a demo main program:
 
 {linenos=off}
 ~~~~~~~~
@@ -73,7 +73,8 @@ let package = Package(
             targets: ["SparqlQuery_swift"]),
     ],
     dependencies: [
-      .package(url: "https://github.com/SwiftyJSON/SwiftyJSON.git", .branch("master")),
+      .package(url: "https://github.com/SwiftyJSON/SwiftyJSON.git",
+      .branch("master")),
    ],
     targets: [
         .target(
@@ -98,17 +99,22 @@ let package = Package(
         .macOS(.v10_15),
     ],
     dependencies: [
-        .package(url: "https://github.com/SwiftyJSON/SwiftyJSON.git", .branch("master")),
+        .package(url: "https://github.com/SwiftyJSON/SwiftyJSON.git",
+        .branch("master")),
         .package(url: "https://github.com/scinfu/SwiftSoup.git", from: "1.7.4"),
-        .package(url: "git@github.com:mark-watson/SparqlQuery_swift.git", .branch("main")),
+        .package(url: "git@github.com:mark-watson/SparqlQuery_swift.git",
+        .branch("main")),
         .package(url: "git@github.com:mark-watson/Nlp_swift.git", .branch("main")),
     ],
     targets: [
-        // Targets are the basic building blocks of a package. A target can define a module or a test suite.
-        // Targets can depend on other targets in this package, and on products in packages this package depends on.
+        // Targets are the basic building blocks of a package.
+        // A target can define a module or a test suite.
+        // Targets can depend on other targets in this package,
+        // and on products in packages this package depends on.
         .target(
             name: "KnowledgeGraphNavigator_swift",
-            dependencies: ["SparqlQuery_swift", "Nlp_swift", "SwiftyJSON", "SwiftSoup"]),
+            dependencies: ["SparqlQuery_swift", "Nlp_swift",
+            "SwiftyJSON", "SwiftSoup"]),
     ]
 )
 ~~~~~~~~

@@ -14,6 +14,11 @@ The library for using shell processes is one of my GitHub projects so you can in
  ],
 ~~~~~~~~
 
+You can clone this repository if you want to have the source code at hand:
+
+    git clone https://github.com/mark-watson/ShellProcess_swift.git
+    
+The main Swift file for this library uses a Unix style pipe to start an external process and capture the printed output as a string value:
 
 {lang="swift",linenos=on}
 ~~~~~~~~
@@ -41,6 +46,7 @@ public func run_in_shell(commandPath: String, argList: [String] = []) -> String 
 }
 ~~~~~~~~
 
+Here is the test code for the library:
 
 {lang="swift",linenos=on}
 ~~~~~~~~
@@ -103,7 +109,7 @@ Test Suite 'All tests' passed at 2021-08-06 16:36:23.468.
 
 ## FileIO Examples
 
-
+This file I/O example uses the ShellProcess_swift library we saw in the last section so if you were to create your own Swift project with the following code listing, you would have to add this dependency in the **Project.swift** file.
 
 
 {lang="swift",linenos=on}
@@ -148,6 +154,7 @@ if #available(OSX 10.13, *) {
 }
 ~~~~~~~~
 
+I created a temporary Swift project with the previous code listing and a **Project.swift** file. I built and run this example using the **swift** command line tool:
 
 {lang="swift",linenos=on}
 ~~~~~~~~
@@ -170,3 +177,4 @@ out2.txt
 ~~~~~~~~
 
 
+In the next chapter we will look at a longer example that scrapes web sites.
