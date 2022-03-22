@@ -11,7 +11,8 @@ I wrote a simple web scraping library that is available at [https://github.com/m
 {lang="swift",linenos=on}
 ~~~~~~~~
     dependencies: [
-         .package(url: "git@github.com:mark-watson/WebScraping_swift.git", .branch("main")),
+         .package(url: "git@github.com:mark-watson/WebScraping_swift.git",
+             .branch("main")),
     ],
 ~~~~~~~~
 
@@ -87,6 +88,8 @@ public func webPageAnchors(uri: String) -> [[String]] {
 }
 ~~~~~~~~
 
+Here I wrote utility functions to get the plain text from a web site, HTML header text, and anchors. You can clone this library and extend it for other types of HTML elements you may need to process.
+
 The test program shows how to call the APIs in the library:
 
 {lang="swift",linenos=on}
@@ -114,11 +117,10 @@ final class WebScrapingTests: XCTestCase {
 }
 
     static var allTests = [("testGetWebPage", testGetWebPage),
-                           ("testToShowSwiftSoupExamples", testToShowSwiftSoupExamples)]
+                           ("testToShowSwiftSoupExamples",
+                            testToShowSwiftSoupExamples)]
 }
 ~~~~~~~~
-
-TBD:....
 
 Here we run the unit tests (with much of the output not shown for brevity):
 

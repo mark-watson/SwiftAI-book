@@ -14,6 +14,7 @@ The library for using shell processes is one of my GitHub projects so you can in
  ],
 ~~~~~~~~
 
+The following listing shows the library implementation. In line 5 we use the constructor **Process** from the Apple **Foundation** library to get a new process object that we set fields **executableURL** and **argList**. In lines 8 and 9 we create a new Unix style pipe to capture the output from the shell process we are starting and attach it to the process. After we run the task, we capture the output and return it as the value of function **run_in_shell**.
 
 {lang="swift",linenos=on}
 ~~~~~~~~
@@ -22,7 +23,6 @@ import Foundation
 @available(OSX 10.13, *)
 public func run_in_shell(commandPath: String, argList: [String] = []) -> String {
     let task = Process()
-    //task.launchPath = command
     task.executableURL = URL(fileURLWithPath: commandPath)
     task.arguments = argList
     let pipe = Pipe()
@@ -41,6 +41,7 @@ public func run_in_shell(commandPath: String, argList: [String] = []) -> String 
 }
 ~~~~~~~~
 
+As in most examples in this book we use the Swift testing framework to run the example code at the command line using *swift test*. Running *swift test* does an implicit *swift build*.
 
 {lang="swift",linenos=on}
 ~~~~~~~~
@@ -103,7 +104,7 @@ Test Suite 'All tests' passed at 2021-08-06 16:36:23.468.
 
 ## FileIO Examples
 
-
+When writing command line Swift programs you will often need to do simple file IO so let's look at some examples here:
 
 
 {lang="swift",linenos=on}
@@ -148,6 +149,7 @@ if #available(OSX 10.13, *) {
 }
 ~~~~~~~~
 
+Unlike the example in the last section where we built a reusable library  with a test program, here we have a standalone program contained in a single file so we will use *swift run* to build and run this example:
 
 {lang="swift",linenos=on}
 ~~~~~~~~
@@ -169,4 +171,4 @@ out.txt
 out2.txt
 ~~~~~~~~
 
-
+In the next chapter we will look at one more simple example, building a web scraping library, before getting to the machine learning and NLP part of the book.
