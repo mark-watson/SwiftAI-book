@@ -143,4 +143,19 @@ Test Suite 'All tests' passed at 2021-08-06 17:37:11.062.
 ~~~~~~~~
 
 
+## Running in the Swift REPL
+
+{lang="swift",linenos=on}
+~~~~~~~~
+$ swift run --repl
+[1/1] Build complete!
+Launching Swift REPL with arguments: -I/Users/markw_1/GIT_swift_book/WebScraping_swift/.build/arm64-apple-macosx/debug -L/Users/markw_1/GIT_swift_book/WebScraping_swift/.build/arm64-apple-macosx/debug -lWebScraping_swift__REPL
+Welcome to Apple Swift version 5.5 (swiftlang-1300.0.29.102 clang-1300.0.28.1).
+Type :help for assistance.
+  1> import WebScraping_swift
+  2> webPageText(uri: "https://markwatson.com")
+$R0: String = "Mark Watson: AI Practitioner and Polyglot Programmer | Mark Watson    Read my Blog    Fun stuff    My Books    My Open Source Projects    Privacy Policy Mark Watson: AI Practitioner and Polyglot Programmer I am the author of 20+ books on Artificial Intelligence, Common Lisp, Deep Learning, Haskell, Clojure, Java, Ruby, Hy language, and the Semantic Web. I have 55 US Patents. My customer list includes: Google, Capital One, Babylist, Olive AI, CompassLabs, Disney, SAIC, Americast, PacBell, CastTV, Lutris Technology, Arctan Group, Sitescout.com, Embed.ly, and Webmind Corporation"...
+  3>  
+~~~~~~~~
+
 This chapter finishes a quick introduction to using Swift and Swift packages for command line utilities. The remainder of this book comprises machine learning, natural language processing, and semantic web/linked data examples.

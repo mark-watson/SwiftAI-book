@@ -176,5 +176,23 @@ out.txt
 out2.txt
 ~~~~~~~~
 
+## Swift REPL
+
+There is an example of using the Swift REPL at the end of the next chapter on web scraping. For reference, you can start a REPL with:
+
+{lang="swift",linenos=on}
+~~~~~~~~
+$ swift run --repl
+Type :help for assistance.
+1> import WebScraping_swift
+2> webPageText(uri: "https://markwatson.com")
+$R0: String = "Mark Watson: AI Practitioner and Polyglot Programmer"...
+3> public func foo(s: String) -> String { return s } 
+4> foo(s: "cat") 
+$R1: String = "cat"
+5> 
+~~~~~~~~
+
+You can import packages and interactively enter Swift expressions, including defining functions.
 
 In the next chapter we will look at a longer example that scrapes web sites.
