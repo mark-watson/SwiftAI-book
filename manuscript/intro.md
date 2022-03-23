@@ -74,7 +74,11 @@ let package = Package(
     ],
     dependencies: [
       .package(url: "https://github.com/SwiftyJSON/SwiftyJSON.git",
+<<<<<<< HEAD
       .branch("master")),
+=======
+          .branch("master")),
+>>>>>>> e7a7f7a51c298a2fdeedd1ea6fff130b2f5f304e
    ],
     targets: [
         .target(
@@ -100,10 +104,17 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/SwiftyJSON/SwiftyJSON.git",
+<<<<<<< HEAD
         .branch("master")),
         .package(url: "https://github.com/scinfu/SwiftSoup.git", from: "1.7.4"),
         .package(url: "git@github.com:mark-watson/SparqlQuery_swift.git",
         .branch("main")),
+=======
+            .branch("master")),
+        .package(url: "https://github.com/scinfu/SwiftSoup.git", from: "1.7.4"),
+        .package(url: "git@github.com:mark-watson/SparqlQuery_swift.git",
+            .branch("main")),
+>>>>>>> e7a7f7a51c298a2fdeedd1ea6fff130b2f5f304e
         .package(url: "git@github.com:mark-watson/Nlp_swift.git", .branch("main")),
     ],
     targets: [
@@ -114,7 +125,11 @@ let package = Package(
         .target(
             name: "KnowledgeGraphNavigator_swift",
             dependencies: ["SparqlQuery_swift", "Nlp_swift",
+<<<<<<< HEAD
             "SwiftyJSON", "SwiftSoup"]),
+=======
+              "SwiftyJSON", "SwiftSoup"]),
+>>>>>>> e7a7f7a51c298a2fdeedd1ea6fff130b2f5f304e
     ]
 )
 ~~~~~~~~
