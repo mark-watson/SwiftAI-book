@@ -2,6 +2,14 @@
 
 I used many of the techniques discussed in this book, the Swift language, and the SwiftUI user interface framework to develop Swift version of my Knowledge Graph Navigator application for macOS. I originally wrote this as an example program in Common Lisp for another book project. 
 
+The [GitHub repository for the KGN example is https://github.com/mark-watson/KGN](https://github.com/mark-watson/KGN). I copied the code from my stand-alone Swift libraries to this example to make it self contained. The easiest way to browse the source code is to open this project in Xcode.
+
+I submitted the KGN app that we discuss in this chapter to Apple's store and is available as a macOS app. If you load this project into Xcode, you can also build and run the iOS and iPadOS targets.
+
+You will need to have read through the last chapter on semantic web and linked data technologies to understand this example because quite a lot of the code has embedded SPARQL queries to get information from [DBPedia.org](https://dbpedia.org).
+
+The other major part of this app is a slightly modified version of Apple's question answering (QA) example using the BERT model in CoreML. Apple's code is in the subdirectory **AppleBERT**. Please read the README file for this project and follow the directions for downloading and using Apple's model and vocabulary file.
+
 ## Screen Shots of macOS Application
 
 ![Entered query and KGN is asking user to disambiguate which "Steve Jobs" they want information for](images/KGN1.png)
@@ -24,7 +32,9 @@ I will list some of the code for this example application and I suggest that you
 
 ### SPARQL
 
-The file **SparqlQuery.swift**:
+I introduced you to the use of SPARQL in the last chapter. This library can be used by adding a reference to the **Project.swift** file for this project. You can also clone [the GitHub repository https://github.com/mark-watson/Nlp_swift](https://github.com/mark-watson/Nlp_swift) to have the source code for local viewing and modification. As with other of my libraries, I copied the code into this project.
+
+The file **SparqlQuery.swift** is shown here:
 
 ```swift
 import Foundation
