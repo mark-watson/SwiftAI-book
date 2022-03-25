@@ -71,7 +71,7 @@ func openAiHelper(body: String)  -> String {
 }
 ~~~~~~~~
 
-I convert JSON data to a sequence ... TBD
+I convert JSON data to a string output by searching for constants "text:" and "index:" instead of using a JSON parser like I do in the later KGN example.
 
 The three example functions all use this **openAiHelper** function. The first example function **completions** sets the parameters to complete a text fragment. You have probably seen examples of the OpenAI GPT-3 model writing stories, given a starting sentence. We are using the same model and functionality here:
 

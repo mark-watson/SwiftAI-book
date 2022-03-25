@@ -671,7 +671,7 @@ func splitLongStrings(_ s: String, limit: Int) -> String {
 
 ### Views
 
-This is not a book about SwiftUI programming, and indeed I expect many of you dear readers know much more about UI development with SwiftUI than I do. I am not going to list or the four view files:
+This is not a book about SwiftUI programming, and indeed I expect many of you dear readers know much more about UI development with SwiftUI than I do. I am not going to list the four view files:
 
 - MainView.swift
 - QueryView.swift

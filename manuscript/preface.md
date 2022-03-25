@@ -2,7 +2,7 @@
 
 Copyright 2022 Mark Watson. All rights reserved.
 
-## This book is licensed with Creative Commons Attribution CC BY Version 3 That Allows Reuse In Derived Works
+## This Book is Licensed with Creative Commons Attribution CC BY Version 3 That Allows Reuse In Derived Works
 
 You are free to:
 
@@ -30,18 +30,18 @@ If you found a copy of this book on the web and find it of value then please con
 
 Why use Swift for hacking AI? Common Lisp has been my go-to language for artificial intelligence development and research since 1982. The transition to using Swift was a slow transition for me. During this transition I prototyped a new project in parallel using both Swift and Common Lisp, weighing the advantages of both for my current requirements. The Swift version of this project included in this book runs on macOS, iOS, and iPadOS. The macOS version is available on the Apple Store. Several of the utilities developed in this book were used in this project.
 
-This book starts out slowly with simple examples showing how to access the Swift library packages (on GitHub) I wrote for this book, tips on writing Swift command line apps, and web scraping. We then proceed to using Apple's CoreML for Natural Language Processing (NLP), training and using your own CoreML models, using OpenAI's GPT-3 APIs, and finally several semantic web/linked data examples. The book ends with the example [KGN on the App Store](https://apps.apple.com/us/app/kgn/id1514197947?mt=12). It is not my intention to cover in detail the use of SwiftUI for building iOS/iPadOS/macOS applications but I thought my readers might enjoy seeing several of the techniques covered in the book integrated into an example app.
+This book starts out slowly with simple examples which I wrote showing how to access the Swift library packages on GitHub, tips on writing Swift command line apps, and web scraping. We then proceed to using Apple's CoreML for Natural Language Processing (NLP), training and using your own CoreML models, using OpenAI's GPT-3 APIs, and finally several semantic web/linked data examples. The book ends with the example [KGN on the App Store](https://apps.apple.com/us/app/kgn/id1514197947?mt=12). It is not my intention to cover in detail the use of SwiftUI for building iOS/iPadOS/macOS applications but I thought my readers might enjoy seeing several of the techniques covered in the book integrated into an example app.
 
 I have used Common Lisp for AI research projects and for AI product development and delivery since 1982. There is something special about using a language for almost forty years. All that said, I find Swift a compelling choice now for several reasons:
 
 - Flexible language with many features I rely on like supporting closures and an interactive functional programming style.
-- Builtin support for deep learning neural network models for natural language processing, predictive models, etc.
+- Built in support for deep learning neural network models for natural language processing, predictive models, etc.
 - First class support for iOS and macOS development.
 - Good support for server side applications hosted on Linux.
 
 Swift is a programmer-efficient language: code is concise and easy to read, and high quality libraries from Apple and third parties mean that often there is less code to write. I will share with you my Swift development work flow that combines interactive development of code in playgrounds, development of higher level libraries in text only or command line applications, and my general strategy for writing iOS and macOS applications after low level and intermediate code is written and debugged.
 
-## Parts of this Book are Specific for macOS and iOS, with some support for Linux
+## Parts of this Book are Specific for macOS and iOS, with Some Support for Linux
 
 Swift is a general purpose language that is well supported in macOS, iOS, and Linux, with some support in Windows. Here, we cover the use of Swift on macOS and iOS. Some of the examples in this book rely on libraries that are specifically available on macOS and iOS like CoreML and the NLP libraries. Several book examples also work on Linux, such as the examples using SQLite, the Microsoft Azure search APIs, web scraping, and semantic web/linked data.
 
@@ -61,7 +61,7 @@ Because of the way the Swift Package Manager works, I organized all book example
 - [https://github.com/mark-watson/KnowledgeGraphNavigator_swift](https://github.com/mark-watson/KnowledgeGraphNavigator_swift) - command line Knowledge Graph Navigator tool.
 - [https://github.com/mark-watson/KGN](https://github.com/mark-watson/KGN) - SwiftUI based application supporting macOS, iPadOS, and iOS. The macOS version is in Apple's app store.
 
-I suggest cloning all of these GitHub repositories right now so you can have the example source code at-hand while reading this book.
+I suggest cloning all of these GitHub repositories right now so you can have the example source code at hand while reading this book.
 
 All of the code examples are licensed using the Apache 2 license. You are free to reuse the book example code in your own projects (open source, commercial), with attribution of my copyright and the Apache 2 license.
 
@@ -71,7 +71,7 @@ http://www.knowledgegraphnavigator.com/
 
 ## Author's Background
 
-I live in Sedona Arizona with my wife and pet parrot. Our children and grandchildren live in California, Rhode Island, and the state of Washington.
+I live in Sedona, Arizona with my wife and pet parrot. Our children and grandchildren live in California, Rhode Island, and the state of Washington.
 
 I have written 20+ books, mostly about artificial intelligence. I have over 50 US patents.
 

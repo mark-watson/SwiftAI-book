@@ -1,4 +1,4 @@
-# Setting Up Swift For Command Line Development
+# Setting Up Swift for Command Line Development
 
 Except for the last chapter in this book that uses Xcode for developing a complete macOS/iOS/iPadOS example application, I assume that you will work through the book examples using the command line and your favorite editor. If you want to use Xcode for the command line examples, you can open the Swift package file on the command line and open Xcode using, for example:
 
@@ -10,7 +10,7 @@ open Package.swift
 
 You notice that most of the examples are command line apps or libraries with command line test programs and the **README.md** files in the example directories provide instructions for building and running on the command line.
 
-You can also run Xcode and from the File Menu open an example's  **Package.swift** file. You can then use the Product / Test menu to run the test code for the example. You might need to use the View / Debug Area / Active Console menu to show the output area.
+You can also run Xcode and from the File Menu open an example  **Package.swift** file. You can then use the Product / Test menu to run the test code for the example. You might need to use the View / Debug Area / Active Console menu to show the output area.
 
 I assume that you are familiar with the Swift programming language and Xcode.
 
@@ -74,11 +74,7 @@ let package = Package(
     ],
     dependencies: [
       .package(url: "https://github.com/SwiftyJSON/SwiftyJSON.git",
-<<<<<<< HEAD
-      .branch("master")),
-=======
           .branch("master")),
->>>>>>> e7a7f7a51c298a2fdeedd1ea6fff130b2f5f304e
    ],
     targets: [
         .target(
@@ -104,17 +100,10 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/SwiftyJSON/SwiftyJSON.git",
-<<<<<<< HEAD
-        .branch("master")),
-        .package(url: "https://github.com/scinfu/SwiftSoup.git", from: "1.7.4"),
-        .package(url: "git@github.com:mark-watson/SparqlQuery_swift.git",
-        .branch("main")),
-=======
             .branch("master")),
         .package(url: "https://github.com/scinfu/SwiftSoup.git", from: "1.7.4"),
         .package(url: "git@github.com:mark-watson/SparqlQuery_swift.git",
             .branch("main")),
->>>>>>> e7a7f7a51c298a2fdeedd1ea6fff130b2f5f304e
         .package(url: "git@github.com:mark-watson/Nlp_swift.git", .branch("main")),
     ],
     targets: [
@@ -125,11 +114,7 @@ let package = Package(
         .target(
             name: "KnowledgeGraphNavigator_swift",
             dependencies: ["SparqlQuery_swift", "Nlp_swift",
-<<<<<<< HEAD
-            "SwiftyJSON", "SwiftSoup"]),
-=======
               "SwiftyJSON", "SwiftSoup"]),
->>>>>>> e7a7f7a51c298a2fdeedd1ea6fff130b2f5f304e
     ]
 )
 ~~~~~~~~

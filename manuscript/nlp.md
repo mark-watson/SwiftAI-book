@@ -13,7 +13,7 @@ You will learn how to apply both DL and NLP by using the state-of-the-art full-f
 
 We will use one of Apple's NLP libraries consisting of pre-built models in the last chapter of this book. In order to fully understand the example in the last chapter you will need to read Apple's high-level discussion of using CoreML [https://developer.apple.com/documentation/coreml](https://developer.apple.com/documentation/coreml) and their specific support for NLP [https://developer.apple.com/documentation/naturallanguage/](https://developer.apple.com/documentation/naturallanguage/).
 
-There are many pre-trained CoreML compatible models on the web, both from Apple and also third party (e.g., [https://github.com/likedan/Awesome-CoreML-Models](https://github.com/likedan/Awesome-CoreML-Models)).
+There are many pre-trained CoreML compatible models on the web, both from Apple and also from third party (e.g., [https://github.com/likedan/Awesome-CoreML-Models](https://github.com/likedan/Awesome-CoreML-Models)).
 
 Apple also provides tools for converting TensorFlow and PyTorch models to be compatible with CoreML [https://coremltools.readme.io/docs](https://coremltools.readme.io/docs).
 

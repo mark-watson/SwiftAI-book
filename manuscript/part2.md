@@ -2,7 +2,7 @@
 
 In this part we cover:
 
-- Short introduction to the ideas behind Deep learning
+- Short introduction to the ideas behind Deep Learning
 - Introduction of CoreML
 - Examples using CoreML
 - Introduction of NLP

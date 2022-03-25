@@ -157,7 +157,7 @@ if #available(OSX 10.13, *) {
 }
 ~~~~~~~~
 
-I created a temporary Swift project with the previous code listing and a **Project.swift** file. I built and run this example using the **swift** command line tool.
+I created a temporary Swift project with the previous code listing and a **Project.swift** file. I built and ran this example using the **swift** command line tool.
 
 Unlike the example in the last section where we built a reusable library with a test program, here we have a standalone program contained in a single file so we will use *swift run* to build and run this example:
 
@@ -203,4 +203,3 @@ You can import packages and interactively enter Swift expressions, including def
 In the next chapter we will look at a longer example that scrapes web sites.
 
 In the next chapter we will look at one more simple example, building a web scraping library, before getting to the machine learning and NLP part of the book.
->>>>>>> e7a7f7a51c298a2fdeedd1ea6fff130b2f5f304e
