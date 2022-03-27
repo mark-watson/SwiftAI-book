@@ -10,7 +10,7 @@ I assume that the format of the WikiPedia page is familiar so let's look at the 
 
 - subject: a URI (also referred to as a "Resource")
 - property: a URI (also referred to as a "Resource")
-- value: a URI (also referred to as a "Resource") or a literal value (like a string)
+- value: a URI (also referred to as a "Resource") or a literal value (like a string or a number with optional units)
 
 The subject for each Sedona related triple is the above URI for the DBPedia human readable page. The subject and property references in an RDF triple will almost always be a URI that can ground an entity to information on the web. The human readable page for Sedona lists several properties and the values of these properties. One of the properties is "dbo:areaCode" where "dbo" is a name space reference (in this case for a [DatatypeProperty](http://www.w3.org/2002/07/owl#DatatypeProperty)).
 
@@ -22,7 +22,7 @@ The following two figures show an abstract representation of linked data and the
 {width=75%}
 ![Concrete example using RDF seen in last chapter showing the RDF representation with 2 Resources, 2 literal values, and 3 Properties](images/rdf2.png)
 
-We saw a SPARQL Query (SPARQL for RDF data is similar to SQL for relational database queries) in the last chapter. Let's look at another example using the RDF in the last figure:
+We will use the SPARQL query language (SPARQL for RDF data is similar to SQL for relational database queries). Let's look at an example using the RDF in the last figure:
 
         "select ?v where { <http://markwatson.com/index.rdf#Sun_ONE>
                            <http://www.ontoweb.org/ontology/1#booktitle>
@@ -43,13 +43,13 @@ Note that **?s** and **?v** are arbitrary query variable names, here standing fo
               ?bookTitle }
 
 
-We will be diving a little deeper into RDF examples in the next chapter when we write a tool for generating RDF data from raw text input.  For now I want you to understand the idea of RDF statements represented as triples, that web URIs represent things, properties, and sometimes values, and that URIs can be followed manually (often called "dereferencing") to see what they reference in human readable form.
+We will be diving a little deeper into RDF examples in the next chapter when we write a tool for using RDF data from DBPedia to find information about entities (e.g., people, places, organizations) and the relationships between entities.  For now I want you to understand the idea of RDF statements represented as triples, that web URIs represent things, properties, and sometimes values, and that URIs can be followed manually (often called "dereferencing") to see what they reference in human readable form.
 
 ## Understanding the Resource Description Framework (RDF)
 
 Text data on the web has some structure in the form of HTML elements like headers, page titles, anchor links, etc. but this structure is too imprecise for general use by software agents. RDF is a method for encoding structured data in a more precise way.
 
-We used the RDF data on my web site in the last chapter to introduce the "plumbing" to access, manipulate, and query RDF data.
+RDF specifies graph structures and can be serialized for storage  or for service calls in XML, Turtle, N3, and other formats. I like the Turtle format and suggest that you pause reading this book for a few minutes and look at this World Wide Web Consortium Turtle RDF primer at [https://www.w3.org/2007/02/turtle/primer/](https://www.w3.org/2007/02/turtle/primer/).
 
 
 ## Frequently Used Resource Namespaces
@@ -91,7 +91,6 @@ Let's look into the Friend of a Friend (FOAF) namespace. Click on the above link
 
 and for the Social Web:
 
-    nick
     mbox
     homepage
     weblog
@@ -121,7 +120,7 @@ You now have seen a few common Schemas for RDF data. Another Schema that is wide
 
 ## Understanding the SPARQL Query Language
 
-For the purposes of the material in this book, the two sample SPARQL queries here and in the last chapter are sufficient for you to get started using my SPARQL library [https://github.com/mark-watson/SparqlQuery_swift](https://github.com/mark-watson/SparqlQuery_swift) with arbitrary RDF data sources and simple queries.
+For the purposes of the material in this book, the two sample SPARQL queries here are sufficient for you to get started using my SPARQL library [https://github.com/mark-watson/SparqlQuery_swift](https://github.com/mark-watson/SparqlQuery_swift) with arbitrary RDF data sources and simple queries.
 
 ![My Swift SPARQL library open in Xcode](images/xcode_sparql.png)
 
@@ -131,5 +130,5 @@ The Apache Foundation has a [good introduction to SPARQL](https://jena.apache.or
 
 ## Semantic Web and Linked Data Wrap Up
 
-In the next chapter we will use natural language processing to extract structured information from raw text and automatically generate RDF data. We will be using my Swift SPARQL library [https://github.com/mark-watson/SparqlQuery_swift](https://github.com/mark-watson/SparqlQuery_swift) as well as two pre-trained CoreML deep learning models.
+In the next chapter we will use natural language processing to extract structured information from raw text from SPARQL queries. We will be using my Swift SPARQL library [https://github.com/mark-watson/SparqlQuery_swift](https://github.com/mark-watson/SparqlQuery_swift) as well as two pre-trained CoreML deep learning models.
 
