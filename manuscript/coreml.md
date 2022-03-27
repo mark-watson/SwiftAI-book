@@ -6,7 +6,7 @@ I assume that you are generally familiar with [Apple's CoreML documentation](htt
 
 There are two example GitHub repositories for this chapter:
 
-- [https://github.com/mark-watson/create_deep_learning_model_swift](https://github.com/mark-watson/create_deep_learning_model_swift) generates a deep learning model and saves it for reuse.
+- [https://github.com/mark-watson/swift-coreml-wisconsin_data_create_model](https://github.com/mark-watson/swift-coreml-wisconsin_data_create_model) generates a deep learning model and saves it for reuse.
 - [https://github.com/mark-watson/swift-coreml-wisconsin_data_predict_with_model](https://github.com/mark-watson/swift-coreml-wisconsin_data_predict_with_model) uses the trained model.
 
 In the last chapter we will use two deep learning models in a MacOS application that is available on Apple's App Store.
