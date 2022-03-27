@@ -51,14 +51,12 @@ Because of the way the Swift Package Manager works, I organized all book example
 
 - [https://github.com/mark-watson/SparqlQuery_swift](https://github.com/mark-watson/SparqlQuery_swift) - SPARQL Swift library for my Swift AI book.
 - [https://github.com/mark-watson/QuestionAnswering_BERT_swift](https://github.com/mark-watson/QuestionAnswering_BERT_swift) - modification of Apple's question answering demo to use DBPedia.
-- [https://github.com/mark-watson/create_deep_learning_model_swift](https://github.com/mark-watson/create_deep_learning_model_swift) - create CoreML models from training data files.
+- [https://github.com/mark-watson/swift-coreml-wisconsin_data_create_model](https://github.com/mark-watson/swift-coreml-wisconsin_data_create_model) - create CoreML models from training data files of Wisconsin Caner data.
+- [https://github.com/mark-watson/swift-coreml-wisconsin_data_predict_with_model](https://github.com/mark-watson/swift-coreml-wisconsin_data_predict_with_model) - use the pretrained Wisconsin Cancer data model.
 - [https://github.com/mark-watson/ShellProcess_swift](https://github.com/mark-watson/ShellProcess_swift) - library for spawning shell processes and capturing output to stdout.
 - [https://github.com/mark-watson/WebScraping_swift](https://github.com/mark-watson/WebScraping_swift) - library for scrapping web sites.
 - [https://github.com/mark-watson/OpenAI_swift](https://github.com/mark-watson/OpenAI_swift) - library for using OpenAI's GPT3 APIs.
 - [https://github.com/mark-watson/Nlp_swift](https://github.com/mark-watson/Nlp_swift) - library that uses pretrained CoreML NLP models.
-- [https://github.com/mark-watson/swift-coreml-wisconsin_data_create_model](https://github.com/mark-watson/swift-coreml-wisconsin_data_create_model) - Build a model using Wisconsin cancer data.
-- [https://github.com/mark-watson/swift-coreml-wisconsin_data_predict_with_model](https://github.com/mark-watson/swift-coreml-wisconsin_data_predict_with_model) - make predictions using model trained on Wisconsin cancer data.
-- [https://github.com/mark-watson/KnowledgeGraphNavigator_swift](https://github.com/mark-watson/KnowledgeGraphNavigator_swift) - command line Knowledge Graph Navigator tool.
 - [https://github.com/mark-watson/KGN](https://github.com/mark-watson/KGN) - SwiftUI based application supporting macOS, iPadOS, and iOS. The macOS version is in Apple's app store.
 
 I suggest cloning all of these GitHub repositories right now so you can have the example source code at hand while reading this book.

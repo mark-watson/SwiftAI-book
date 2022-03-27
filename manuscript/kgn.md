@@ -12,9 +12,10 @@ The other major part of this app is a slightly modified version of Apple's quest
 
 ## Screen Shots of macOS Application
 
-![Entered query and KGN is asking user to disambiguate which "Steve Jobs" they want information for](images/KGN1.png)
 
-In this last screenshot I had entered query text that included "Steve Jobs" and the popup list selector is used to let the user select which "Steve Jobs" entity from DBPedia that they want to use.
+In the first screenshot seen below, I had entered query text that included "Steve Jobs" and the popup list selector is used to let the user select which "Steve Jobs" entity from DBPedia that they want to use.
+
+![Entered query and KGN is asking user to disambiguate which "Steve Jobs" they want information for](images/KGN1.png)
 
 ![Showing results](images/KGN2.png)
 
@@ -32,7 +33,7 @@ I will list some of the code for this example application and I suggest that you
 
 ### SPARQL
 
-I introduced you to the use of SPARQL in the last chapter. This library can be used by adding a reference to the **Project.swift** file for this project. You can also clone [the GitHub repository https://github.com/mark-watson/Nlp_swift](https://github.com/mark-watson/Nlp_swift) to have the source code for local viewing and modification. As with other of my libraries, I copied the code into this project.
+I introduced you to the use of SPARQL in the last chapter. This library can be used by adding a reference to the **Project.swift** file for this project. You can also clone [the GitHub repository https://github.com/mark-watson/Nlp_swift](https://github.com/mark-watson/Nlp_swift) to have the source code for local viewing and modification and I have copied the code into the KGN project.
 
 The file **SparqlQuery.swift** is shown here:
 
@@ -58,7 +59,8 @@ public func SparqlEndpointHelpter(query: String,
     if maybeString?.count ?? 0 > 0 {
         content = maybeString ?? ""
     } else {
-        let requestUrl = URL(string: String(endPointUri + query.addingPercentEncoding(withAllowedCharacters:     .urlHostAllowed)!) + "&format=json")!
+        let requestUrl = URL(string: String(endPointUri + query.addingPercentEncoding(withAllowedCharacters:
+          .urlHostAllowed)!) + "&format=json")!
         do { content = try String(contentsOf: requestUrl) }
           catch let error { print(error) }
     }
@@ -86,7 +88,7 @@ public func SparqlEndpointHelpter(query: String,
     return Array(ret) }
 ```
 
-The file **QueryCache.swift** contains code written by Khoa Pham (MIT License) that can be found in the GitHub repository [https://github.com/onmyway133/EasyStash](https://github.com/onmyway133/EasyStash). This file is used to cache SPARQL queries and the results. In testing this application I noticed that there were many repeated queries to DBPedia so I decided to cache results. Here is the simple API I added on top of Khoa Pham 's code: 
+The file **QueryCache.swift** contains code written by Khoa Pham (MIT License) that can be found in the GitHub repository [https://github.com/onmyway133/EasyStash](https://github.com/onmyway133/EasyStash). This file is used to cache SPARQL queries and the results. In testing this application I noticed that there were many repeated queries to DBPedia so I decided to cache results. Here is the simple API I added on top of Khoa Pham's code: 
 
 ```swift
 //  Created by khoa on 27/05/2019.
@@ -114,7 +116,7 @@ public func cacheLookupQuery7(key: String) -> String? {
 // remaining code not shown for brevity.
 ```
 
-The code in file **GenerateSparql.swift** is used to generate queries for DBPedia. The line-wrapping for embedded SPARQL queries in the next code section is difficult to read so you may want to open the source file in Xcode:
+The code in file **GenerateSparql.swift** is used to generate queries for DBPedia. The line-wrapping for embedded SPARQL queries in the next code section is difficult to read so you may want to open the source file in Xcode. Please note that the KGN application prints out the SPARQL queries used to fetch information from DBPedia. The embedded SPARQL query templates used here have variable slots that filled in at runtime to customize the queries.
 
 ```swift
 //
@@ -136,7 +138,8 @@ public func uri_to_display_text(uri: String)
          replacingOccurrences(of: "_", with: " ")
 }
 
-public func get_SPARQL_for_finding_URIs_for_PERSON_NAME(nameString: String) -> String {
+public func get_SPARQL_for_finding_URIs_for_PERSON_NAME(nameString: String)
+                                              -> String {
     return
         "# SPARQL to find all URIs for name: " +
         nameString + "\nSELECT DISTINCT ?person_uri ?comment {\n" +
@@ -187,7 +190,8 @@ public func get_display_text_for_PERSON_URI(personURI: String) -> [String] {
 
 //     "  ?place_uri <http://xmlns.com/foaf/0.1/name> \"" + placeString + "\"@en .\n" +
 
-public func get_SPARQL_for_finding_URIs_for_PLACE_NAME(placeString: String) -> String {
+public func get_SPARQL_for_finding_URIs_for_PLACE_NAME(placeString: String)
+                                               -> String {
     return
         "# " + placeString + "\nSELECT DISTINCT ?place_uri ?comment {\n" +
         "  ?place_uri rdfs:label \"" + placeString + "\"@en .\n" +
@@ -412,16 +416,17 @@ The files in the directory AppleBERT were copied from Apple's example [https://d
 
 ### Relationships
 
-The file **Relationships.swift** fetches relationship data for pairs of DBPedia entities:
+The file **Relationships.swift** fetches relationship data for pairs of DBPedia entities. Note that the first SPARQL template has variable slots **<e1>** and **<e2>** that are replaced at runtime with URIs representing the entities that we are searching for relationships between these two entities:
 
 ```swift
 // relationships between DBPedia entities
 
 let relSparql =  """
-SELECT DISTINCT ?p {  <e1> ?p <e2> . FILTER (!regex(str(?p), 'wikiPage', 'i')) } LIMIT 5
+SELECT DISTINCT ?p {<e1> ?p <e2> .FILTER (!regex(str(?p), 'wikiPage', 'i'))} LIMIT 5
 """
 
-public func dbpediaGetRelationships(entity1Uri: String, entity2Uri: String) -> [String] {
+public func dbpediaGetRelationships(entity1Uri: String, entity2Uri: String)
+                                      -> [String] {
     var ret: [String] = []
     let sparql1 = relSparql.replacingOccurrences(of: "<e1>",
       with: entity1Uri).replacingOccurrences(of: "<e2>",
@@ -680,7 +685,7 @@ This is not a book about SwiftUI programming, and indeed I expect many of you de
 
 ### Main KGN
 
-The top level app code in the file **KGNApp.swift** is fairly simple. I hardcoded the window size for macOS and the window sizes for running this example on iOS or iPadOS are commented out:
+The top level app code in the file **KGNApp.swift** is fairly simple. I hardcoded the window size for macOS and the window sizes for running this example on iPadOS or iOS are commented out:
 
 ```swift
 import SwiftUI
