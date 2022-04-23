@@ -1,5 +1,7 @@
 # Using Apple's Core ML Machine Learning and Deep Learning Libraries
 
+NOTE: as of April 2022, this example does not work - problem with latest CreateML library.
+
 Please note that this chapter is specific to Apple's libraries using pre-trained deep learning models.
 
 I assume that you are generally familiar with [Apple's CoreML documentation](https://developer.apple.com/documentation/coreml)
