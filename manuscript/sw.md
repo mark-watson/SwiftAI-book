@@ -122,6 +122,7 @@ You now have seen a few common Schemas for RDF data. Another Schema that is wide
 
 For the purposes of the material in this book, the two sample SPARQL queries here are sufficient for you to get started using my SPARQL library [https://github.com/mark-watson/SparqlQuery_swift](https://github.com/mark-watson/SparqlQuery_swift) with arbitrary RDF data sources and simple queries.
 
+{width: "90%"}
 ![My Swift SPARQL library open in Xcode](images/xcode_sparql.png)
 
 

@@ -15,14 +15,17 @@ The other major part of this app is a slightly modified version of Apple's quest
 
 In the first screenshot seen below, I had entered query text that included "Steve Jobs" and the popup list selector is used to let the user select which "Steve Jobs" entity from DBPedia that they want to use.
 
+{width: "90%"}
 ![Entered query and KGN is asking user to disambiguate which "Steve Jobs" they want information for](images/KGN1.png)
 
+{width: "90%"}
 ![Showing results](images/KGN2.png)
 
 The previous screenshot shows the results to the query displayed as English text.
 
 Notice the app prompt "Behind the scenes SPARQL queries" near the bottom of the app window. If you click on this field then the SPARQL queries used to answer the question are shown, as on the next screenshot:
 
+{width: "90%"}
 ![Showing SPARQL queries used to gather data](images/KGN3.png)
 
 
