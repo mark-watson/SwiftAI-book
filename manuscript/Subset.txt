@@ -8,6 +8,7 @@ deeplearning_intro.md
 coreml.md
 nlp.md
 openai.md
+docs_qa.md
 part3.md
 sw.md
 kgn.md
