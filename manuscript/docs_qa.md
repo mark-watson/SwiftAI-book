@@ -32,7 +32,9 @@ extension String {
         return removeCharacters(from: CharacterSet(charactersIn: from))
     }
     func plainText() -> String {
-        return self.removeCharacters(from: "\"`()%$#@[]{}<>").replacingOccurrences(of: "\n", with: " ")
+        return self.removeCharacters(from:
+                                     "\"`()%$#@[]{}<>").replacingOccurrences(of: "\n",
+                                     with: " ")
     }
 }
 ```
@@ -144,8 +146,9 @@ func addChunk(_ chunk: String) {
 
 ```swift
 func readList(_ input: String) -> [Float] {
-    //print("* input:", input)
-    return input.split(separator: ",\n").compactMap { Float($0.trimmingCharacters(in: .whitespaces)) }
+    return input.split(separator: ",\n").compactMap {
+        Float($0.trimmingCharacters(in: .whitespaces))
+    }
 }
 
 let fileManager = FileManager.default
@@ -159,9 +162,8 @@ do {
     let txtFiles = directoryContents.filter { $0.pathExtension == "txt" }
     for txtFile in txtFiles {
         let content = try String(contentsOf: txtFile)
-        //print(content)
-        let chnks = segmentTextIntoChunks(text: content.plainText(), max_chunk_size: 100)
-        //print("\n\nchunks:\n", chnks)
+        let chnks = segmentTextIntoChunks(text: content.plainText(),
+                                          max_chunk_size: 100)
         for chunk in chnks {
             let embedding = embeddings(someText: chunk)
             if embedding.count > 0 {
@@ -176,8 +178,9 @@ do {
 func segmentTextIntoSentences(text: String) -> [String] {
     let tokenizer = NLTokenizer(unit: .sentence)
     tokenizer.string = text
-    let sentences = tokenizer.tokens(for: text.startIndex..<text.endIndex).map { token -> String in
-        return String(text[token.lowerBound..<token.upperBound])
+    let sentences = tokenizer.tokens(for: text.startIndex..<text.endIndex).map {
+       token -> String in
+         return String(text[token.lowerBound..<token.upperBound])
     }
     return sentences
 }
@@ -205,7 +208,7 @@ func segmentTextIntoChunks(text: String, max_chunk_size: Int) -> [String] {
 
 ## Using Local Embeddings Vector Database With OpenAI GPT APIs
 
-We use the OpenAI QA API using gpt-3.5turbo model:
+We use the OpenAI QA API using gpt-3.5turbo model (reformatted to fit the page width):
 
 ```swift
 let openAiQaHost = "https://api.openai.com/v1/chat/completions"
@@ -233,11 +236,16 @@ func openAiQaHelper(body: String)  -> String {
     CFRunLoopRun()
     let c = String(content)
     //print("DEBUG response c:", c)
+    // pull returned content for string instead of using a
+    // JSON parser:
     let i1 = c.range(of: "\"content\":")
     if let r1 = i1 {
         let i2 = c.range(of: "\"}")
         if let r2 = i2 {
-            ret = String(String(String(c[r1.lowerBound..<r2.lowerBound]).dropFirst(11)))
+            ret = String(
+                    String(
+                      String(c[r1.lowerBound..<r2.lowerBound])
+                        .dropFirst(11)))
         }
     }
     return ret
