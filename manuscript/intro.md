@@ -87,6 +87,14 @@ let package = Package(
 )
 ~~~~~~~~
 
+This Swift package file is used to declare a Swift package named "SparqlQuery_swift". The package contains one library target named "SparqlQuery_swift" and one test target named "SparqlQuery_swiftTests". The library target depends on the "SwiftyJSON" package, which is specified as a dependency in the "dependencies" section of the package.
+
+The "products" section defines the products that this package provides. In this case, the package provides a library product named "SparqlQuery_swift". The library is built from the source code in the "SparqlQuery_swift" target.
+
+The "dependencies" section lists the packages that this package depends on. In this case, it depends on the "SwiftyJSON" package, which is specified as a Git repository URL.
+
+The "targets" section lists the targets that are part of the package. In this case, there are two targets: "SparqlQuery_swift" and "SparqlQuery_swiftTests". The "SparqlQuery_swift" target depends on "SwiftyJSON". The "SparqlQuery_swiftTests" target depends on both "SparqlQuery_swift" and "SwiftyJSON".
+
 The **Swift.package** file for text version **KnowledgeGraphNavigator_swift** is shown here:
 
 {lang=swift, linenos=on}
@@ -119,6 +127,18 @@ let package = Package(
 )
 ~~~~~~~~
 
+This Swift package file is used to declare a Swift package named "KnowledgeGraphNavigator_swift". The package contains one target named "KnowledgeGraphNavigator_swift". The target depends on the "SparqlQuery_swift", "Nlp_swift", "SwiftyJSON", and "SwiftSoup" packages, which are specified as dependencies in the "dependencies" section of the package.
+
+The "platforms" section specifies the minimum platform version that the package supports. In this case, the package supports macOS version 10.15 and later.
+
+The "dependencies" section lists the packages that this package depends on. In this case, it depends on four packages:
+
+- SwiftyJSON: a Swift library for working with JSON data.
+- SwiftSoup: a Swift library for parsing HTML and XML documents.
+- SparqlQuery_swift: a Swift library for querying RDF data using the SPARQL query language.
+- Nlp_swift: a Swift library for natural language processing.
+
+The "targets" section lists the targets that are part of the package. In this case, there is one target named **KnowledgeGraphNavigator_swift**. The target depends on "**parqlQuery_swift**, **Nlp_swift**, **SwiftyJSON**, and **SwiftSoup**.
 
 Hopefully you have cloned the git repositories for each book example and understand how I have configured the examples for your use.
 

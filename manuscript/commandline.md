@@ -47,6 +47,16 @@ public func run_in_shell(commandPath: String, argList: [String] = []) -> String 
 }
 ~~~~~~~~
 
+The function named **run_in_shell** takes two parameters: **commandPath** (a string representing the path to the executable command to be run) and **argList** (an array of strings representing the arguments to be passed to the command). The function returns a string that represents the output of the command.
+
+Function **run_in_shell** first creates an instance of the **Process** class, which is used to run the command. It sets the **executableURL** property of the task instance to the **commandPath** value and sets the arguments property to the argList value. This function then creates a Pipe instance, which is used to capture the output of the command. It sets the standardOutput property of the task instance to the Pipe instance.
+
+The function then runs the command using the **run()** method of the task instance. If the command runs successfully, the function reads the output of the command from the **Pipe** instance using the **readDataToEndOfFile()** method of the **fileHandleForReading** property. It then converts the output data to a string using the **String(data:encoding:)** initializer.
+
+If the output string is not empty, this function trims leading and trailing whitespace and returns the resulting string. Otherwise, the function returns an empty string.
+
+Overall, this function provides a simple way to run a shell command and capture its output in a Swift program.
+
 As in most examples in this book we use the Swift testing framework to run the example code at the command line using *swift test*. Running *swift test* does an implicit *swift build*.
 
 {lang="swift",linenos=on}
@@ -77,6 +87,13 @@ final class ShellProcessTests: XCTestCase {
 }
 ~~~~~~~~
 
+This Swift unit test function is part of a test suite for the **ShellProcess_swift** package. The function is named **testExample** and is decorated with the **@testable** import statement to indicate that it tests an internal implementation detail of the **ShellProcess_swift** package.
+
+The function uses the **run_in_shell** function to run three shell commands: **ps a**, **ls .**, and **sleep 2**. It prints the output of each command to the console.
+
+This test function is an example of a functional test case. It doesn't actually verify that the functions being tested produce the correct results. Instead, it's a simple way to visually inspect the output of the commands and ensure that they are working as expected.
+
+The **allTests** variable is an array of tuples that map the test function names to the corresponding function references. This variable is used by the XCTest framework to discover and run the test functions.
 
 The test output (with some text removed for brevity) is:
 
@@ -110,7 +127,7 @@ Test Suite 'All tests' passed at 2021-08-06 16:36:23.468.
 
 ## FileIO Examples
 
-This file I/O example uses the ShellProcess_swift library we saw in the last section so if you were to create your own Swift project with the following code listing, you would have to add this dependency in the **Project.swift** file.
+This file I/O example uses the **ShellProcess_swift** library we saw in the last section so if you were to create your own Swift project with the following code listing, you would have to add this dependency in the **Project.swift** file.
 
 When writing command line Swift programs you will often need to do simple file IO so let's look at some examples here:
 
@@ -156,6 +173,16 @@ if #available(OSX 10.13, *) {
     test_files_demo()
 }
 ~~~~~~~~
+
+The OS version checks in this Swift code use the **#available** conditional compilation block.
+
+The **#available block** is used to conditionally compile code based on the availability of APIs or features in the operating system version. In this case, the code inside the **#available(OSX 10.13, *)** block will only be executed if the running operating system is macOS 10.13 or later.
+
+If the running operating system version is earlier than 10.13, the code inside the **#available block** will be skipped and the program will exit without running the **test_files_demo()** function.
+
+These operating system version checks are done to ensure that the program is only executed on operating systems that support the APIs and features used by the code. This helps to prevent runtime errors and crashes on older operating system versions that may not support the required features.
+
+This function demonstrates how to write to and read from files using the **write(toFile:atomically:encoding:)** and **String(contentsOfFile:)** methods, how to list files in the current directory using the ls shell command, and how to remove files using the rm shell command.
 
 I created a temporary Swift project with the previous code listing and a **Project.swift** file. I built and ran this example using the **swift** command line tool.
 

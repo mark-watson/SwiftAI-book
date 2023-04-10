@@ -5,7 +5,6 @@ commandline.md
 webscrape.md
 part2.md
 deeplearning_intro.md
-coreml.md
 nlp.md
 openai.md
 docs_qa.md

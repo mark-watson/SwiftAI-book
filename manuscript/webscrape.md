@@ -88,7 +88,17 @@ public func webPageAnchors(uri: String) -> [[String]] {
 }
 ~~~~~~~~
 
-Here I wrote utility functions to get the plain text from a web site, HTML header text, and anchors. You can clone this library and extend it for other types of HTML elements you may need to process.
+This Swift code defines several functions that can be used to scrape information from a web page located at a given URI.
+
+The **webPageText** function takes a URI as input and returns the plain text content of the web page located at that URI. It first checks if the URI is valid and then reads the content of the web page using the contentsOf method of the String class. It then uses the parse method of the SwiftSoup library to parse the HTML content of the page and extract the plain text.
+
+The **webPageH1Headers** and **webPageH2Headers** functions use the **webPageHeadersHelper** function to extract the **H1** and **H2** header texts respectively from the web page located at a given URI. The **webPageHeadersHelper** function uses the same technique as the **webPageText** function to read and parse the HTML content of the page. It then selects the headers using the specified **headerName** parameter and extracts the text of the headers.
+
+The **webPageAnchors** function extracts all the anchor tags **<a>** from the web page located at a given URI, along with their corresponding text and URI. It also uses the **webPageHeadersHelper** function to read and parse the HTML content of the page, selects the anchor tags using the **"a"** selector, and extracts their **text** and **href** attributes.
+
+Overall, these functions provide a simple way to scrape information from a web page and extract specific information such as plain text, header texts, and anchor tags.
+
+I wrote these utility functions to get the plain text from a web site, HTML header text, and anchors. You can clone this library and extend it for other types of HTML elements you may need to process.
 
 The test program shows how to call the APIs in the library:
 
@@ -121,6 +131,16 @@ final class WebScrapingTests: XCTestCase {
                             testToShowSwiftSoupExamples)]
 }
 ~~~~~~~~
+
+This Swift test program tests the functionality of the **WebScraping_swift** library. It defines two test functions: **testGetWebPage** and **testToShowSwiftSoupExamples**.
+
+The **testGetWebPage** function uses the **webPageText** function to retrieve the plain text content of my website located at "https://markwatson.com". It then prints the retrieved text to the console.
+
+The **testToShowSwiftSoupExamples** function demonstrates the use of **webPageH1Headers**, **webPageH2Headers**, and **webPageAnchors** functions on the same website. It extracts and prints the H1 and H2 header texts and anchor tags of the same website.
+
+The **allTests** variable is an array of tuples that map the test function names to the corresponding function references. This variable is used by the XCTest framework to discover and run the test functions.
+
+Overall, this Swift test program demonstrates how to use the functions defined in the WebScraping_swift library to extract specific information from a web page.
 
 Here we run the unit tests (with much of the output not shown for brevity):
 
