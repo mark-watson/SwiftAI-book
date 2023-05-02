@@ -21,7 +21,7 @@ Apple also provides tools for converting TensorFlow and PyTorch models to be com
 
 I will not go into too much detail here but I created a small wrapper library for Apple's NLP models that will make it easier for you to jump in and have fun experimenting with them: [https://github.com/mark-watson/Nlp_swift](https://github.com/mark-watson/Nlp_swift).
 
-The main library implementation file is:
+The main library implementation file uses the **@available(OSX 10.13, *)** attribute to indicate that the following function is available on macOS 10.13 and later versions.
 
 ```swift
 import Foundation
@@ -59,6 +59,29 @@ public func getLemmas(for text: String) -> [(String, String)] {
 }
 ```
 
+The public function **getEntities** takes a String parameter called **text** and returns an array of tuples containing **(String, String)**. Here's a breakdown of what this function does:
+
+- The function initializes an empty array called words to store the extracted entities.
+- The line **tagger.string = text** sets the input text for a tagger object. The tagger is an instance of **NSLinguisticTagger**, which is a natural language processing class provided by Apple's Foundation framework.
+- The next line creates an **NSRange** object called **range** that represents the entire length of the input text.
+- The **tagger.enumerateTags(in:range, unit:.word, scheme:.nameType, options:options)** method is called to iterate over the words in the input text and extract their associated tags. The **in:** parameter specifies the range of the text to process. The **unit:** parameter specifies that the enumeration should be done on a word-by-word basis. The **scheme:** parameter specifies the linguistic scheme to use, in this case, the **.nameType** scheme, which is used to identify named entities. The **options:** parameter specifies additional options or settings for the tagger.
+- Inside the enumeration block, the code retrieves the current word and its associated tag using the **tokenRange** and **tag** parameters.
+- The line **let word = (text as NSString).substring(with: tokenRange)** extracts the substring corresponding to the current word using **tokenRange**.
+- The line **words.append((word, tag?.rawValue ?? "unknown"))** appends a tuple containing the extracted word and its associated tag to the words array. If the tag is nil, it uses the default value of "unknown".
+- Finally, the words array is returned, which contains all the extracted entities (words and their associated tags) from the input text.
+
+The public function called **getLemmas** that takes a String parameter called **text** and returns an array of tuples containing **(String, String)**. Here's a breakdown of what the function **getLemmas** is very similar to the last function **getEntities**. The function **getLemmas** does the following:
+
+- The function initializes an empty array called words to store the extracted lemmas.
+- The line tagger.string = text sets the input text for a tagger object.
+- The next line creates an **NSRange** object called **range** that represents the entire length of the input text.
+- The **tagger.enumerateTags(in:range, unit:.word, scheme:.lemma, options: options)** method is called to iterate over the words in the input text and extract their corresponding lemmas.
+- Inside the enumeration block, the code retrieves the current word and its associated lemma using the tokenRange and tag parameters.
+- The line **let word = (text as NSString).substring(with: tokenRange)** extracts the substring corresponding to the current word using **tokenRange**.
+- Finally, the words array is returned, which contains all the extracted lemmas (words and their associated base forms) from the input text.
+
+In summary, function **getLemmas** uses the **NSLinguisticTagger** to perform linguistic analysis on a given text and extract the base forms (lemmas) of words. The lemmas are then stored in an array of tuples and returned as the result of the function.
+
 Here is some test code:
 
 ```swift
@@ -69,4 +92,18 @@ if #available(OSX 10.13, *) {
             print("\nLemmas:\n")
             print(getLemmas(for: quote))
 }
+```
+
+Here is an edited listing of the output with most of the output removed for brevity:
+
+```
+Entities:
+
+[("President", "OtherWord"), ("George Bush", "PersonalName"), ("went", "OtherWord"), ("to", "OtherWord"), ("Mexico", "PlaceName"), ("with", "OtherWord"), ("IBM", "OrganizationName"), 
+  ...]
+
+Lemmas:
+
+[("President", "President"), ("George Bush", "George"), ("went", "go"), ("to", "to"), ("Mexico", "Mexico"),
+  ...]
 ```
