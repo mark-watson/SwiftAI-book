@@ -138,7 +138,7 @@ The "dependencies" section lists the packages that this package depends on. In t
 - SparqlQuery_swift: a Swift library for querying RDF data using the SPARQL query language.
 - Nlp_swift: a Swift library for natural language processing.
 
-The "targets" section lists the targets that are part of the package. In this case, there is one target named **KnowledgeGraphNavigator_swift**. The target depends on "**parqlQuery_swift**, **Nlp_swift**, **SwiftyJSON**, and **SwiftSoup**.
+The "targets" section lists the targets that are part of the package. In this case, there is one target named **KnowledgeGraphNavigator_swift**. The target depends on "**SparqlQuery_swift**, **Nlp_swift**, **SwiftyJSON**, and **SwiftSoup**.
 
 Hopefully you have cloned the git repositories for each book example and understand how I have configured the examples for your use.
 
