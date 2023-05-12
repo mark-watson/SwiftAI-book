@@ -101,7 +101,7 @@ func dotProduct(_ list1: [Float], _ list2: [Float]) -> Float {
 }
 ```
 
-The source file conatins example code for creating embeddings and using dot product work to find semantic similarity:
+The source file contains example code for creating embeddings and using dot product work to find semantic similarity:
 
 ```swift
 let emb1 = embeddings(someText: "John bought a new car")
