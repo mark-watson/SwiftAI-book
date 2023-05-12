@@ -121,7 +121,7 @@ The output is:
 ```
 
 For this example, we use an in-memory store of embedding vectors and chunk text.
-A text document is broken into smaller chuncks of text. Each chunk is embedded
+A text document is broken into smaller chunks of text. Each chunk is embedded
 and stored in the embeddingsStore. The chunk text is stored in the chunks array.
 The embeddingsStore and chunks array are used to find the most similar chunk
 to a prompt. The most similar chunk is used to generate a response to the prompt.
