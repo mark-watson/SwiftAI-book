@@ -12,5 +12,5 @@ The framework supports [a variety of applications, demonstrating its versatility
 
 Despite its recent introduction, MLX has already shown promising results in terms of performance. Early benchmarks indicate that MLX can achieve up to 30% better performance over PyTorch for some workloads on Apple silicon. As the framework continues to mature and more models are ported over, these gains are expected to become even more significant. This performance advantage, combined with the ease of use and flexibility offered by MLX, positions it as a compelling option for developers looking to leverage the AI capabilities of Apple silicon.
 
-## Good MLW Starting Projects
+## Good MLX Starting Projects
 
