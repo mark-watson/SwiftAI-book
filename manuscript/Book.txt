@@ -8,6 +8,7 @@ deeplearning_intro.md
 nlp.md
 openai.md
 docs_qa.md
+mlx.md
 part3.md
 sw.md
 kgn.md

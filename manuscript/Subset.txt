@@ -1,15 +1,1 @@
-preface.md
-part1.md
-intro.md
-commandline.md
-webscrape.md
-part2.md
-deeplearning_intro.md
-coreml.md
-nlp.md
-openai.md
-docs_qa.md
-part3.md
-sw.md
-kgn.md
-wrapup.md
+mlx.md
