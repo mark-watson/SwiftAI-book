@@ -77,9 +77,8 @@ The three example functions all use this **openAiHelper** function. The first ex
 
 {lang="swift",linenos=on}
 ~~~~~~~~
-public func completions(promptText: String, maxTokens: Int = 25) -> String {
-    let body: String = "{\"prompt\": \"" + promptText + "\",
-        \"max_tokens\": \(maxTokens)" + "}"
+public func completions(promptText: String) -> String {
+    let body: String = "{\"messages\": [ {\"role\": \"user\"," + " \"content\": \"Continue the following text: " + promptText + "\"}], \"model\": \"gpt-3.5-turbo\"}"
     return openAiHelper(body: body)}
 ~~~~~~~~
 
@@ -117,10 +116,8 @@ When summarizing text, try varying the number of generated tokens to get shorter
 
 {lang="swift",linenos=on}
 ~~~~~~~~
-public func summarize(text: String, maxTokens: Int = 40) -> String {
-    let body: String = "{\"prompt\": \"" + text + "\",
-       \"max_tokens\": \(maxTokens), \"presence_penalty\": 0.0, \"temperature\": 0.3,
-       \"top_p\": 1.0, \"frequency_penalty\": 0.0}"
+public func summarize(text: String) -> String {
+    let body: String = "{\"messages\": [ {\"role\": \"user\"," + " \"content\": \"Summarize the following text: " + text + "\"}], \"model\": \"gpt-3.5-turbo\"}"
     return openAiHelper(body: body)}
 ~~~~~~~~
 
@@ -155,8 +152,8 @@ Additionally, the model returns a series of answers with the string "nQ:" acting
 
 {lang="swift",linenos=on}
 ~~~~~~~~
-public func questionAnsweering(question: String) -> String {
-    let body: String = "{\"prompt\": \"nQ: " + question + " nA:\", \"max_tokens\": 25, \"presence_penalty\": 0.0, \"temperature\": 0.3, \"top_p\": 1.0, \"frequency_penalty\": 0.0 , \"stop\": [\"\\n\"]}"
+public func questionAnswering(question: String) -> String {
+    let body: String = "{\"messages\": [ {\"role\": \"user\"," + " \"content\": \"Answer the question: " + question + "\"}], \"model\": \"gpt-3.5-turbo\"}"
     let answer = openAiHelper(body: body)
     if let i1 = answer.range(of: "nQ:") {
         return String(answer[answer.startIndex..<i1.lowerBound])
