@@ -1,4 +1,6 @@
-# Using the OpenAI APIs
+# Using Commercial APIs to Access OpenAI LLMs
+
+##### TBD: this is 2 year old material - update!
 
 I have been working as an artificial intelligence practitioner since 1982 and the capability of the beta OpenAI APIs is the most impressive thing that I have seen (so far!) in my career. These APIs use the GPT-3 model. You will need to apply to OpenAI for a free API access key. I use their APIs frequently enough in my projects that I am on their paid plan.
 
@@ -179,3 +181,4 @@ In Italy.
 ~~~~~~~~
 
 In addition to reading the beta OpenAI API documentation you might want to read general material on the use of OpenAI's GPT-3 model. Since the APIs we are using are beta they may change. I will update this chapter and the source code on GitHub if the APIs change.
+

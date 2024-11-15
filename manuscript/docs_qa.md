@@ -1,4 +1,4 @@
-# Documents Question Answering Using OpenAI GPT3 APIs and a Local Embeddings Vector Database
+# Documents Question Answering Using OpenAI GPT4 APIs and a Local Embeddings Vector Database
 
 The examples in this chapter are inspired by the Python LangChain and LlamaIndex projects, with just the parts I need for my projects written from scratch in Common Lisp. I wrote a Python book “LangChain and LlamaIndex Projects Lab Book: Hooking Large Language Models Up to the Real World Using GPT-3, ChatGPT, and Hugging Face Models in Applications” in March 2023: https://leanpub.com/langchain that you might also be interested in.
 
@@ -7,9 +7,9 @@ The GitHub repository for this example can be found here: [https://github.com/ma
 The entire example is in one Swift source file **main.swift**. All of the program listings in this chapter can be found in this single source file.
 
 We use two models in this example: a vector embedding model
-and a chatgpt-3.5turbo conversation model (see bottom of this file).
+and a gpt-4o-mini conversation model (see bottom of this file).
 The vector embedding model is used to generate a vector embedding.
-The chatgpt-3.5turbo model is used to generate a response to a prompt.
+The gpt-4o-mini model is used to generate a response to a prompt.
 The vector embedding model is used to compare the similarity of two
 prompts.
 
@@ -208,7 +208,7 @@ func segmentTextIntoChunks(text: String, max_chunk_size: Int) -> [String] {
 
 ## Using Local Embeddings Vector Database With OpenAI GPT APIs
 
-We use the OpenAI QA API using gpt-3.5turbo model (reformatted to fit the page width):
+We use the OpenAI QA API using gpt-4o-mini model (reformatted to fit the page width):
 
 ```swift
 let openAiQaHost = "https://api.openai.com/v1/chat/completions"

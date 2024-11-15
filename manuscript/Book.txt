@@ -4,12 +4,21 @@ intro.md
 commandline.md
 webscrape.md
 part2.md
+llm_openai.md
+llm_anthropic.md		
+llm_groq.md
+llm_ollama.md
+llm_mlx.md
+part3.md
 deeplearning_intro.md
 nlp.md
-openai.md
 docs_qa.md
+<<<<<<< HEAD
 mlx.md
 part3.md
+=======
+part4.md
+>>>>>>> 762d089 (-)
 sw.md
 kgn.md
 wrapup.md

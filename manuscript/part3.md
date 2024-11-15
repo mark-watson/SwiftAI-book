@@ -1,8 +1,11 @@
-# Part 3: Knowledge Representation and Data Acquisition
+# Part 3: Apple's CoreML and NLP Libraries
 
 In this part we cover:
 
-- Introduction to the semantic web and linked data
-- A general discussion of Knowledge Representation
-- Create Knowledge Graphs from text input
-- Knowledge Graph Explorer application
+- Short introduction to the ideas behind Deep Learning
+- Introduction of CoreML
+- Examples using CoreML
+- Introduction of NLP
+- Examples using NLP libraries 
+
+This section used to contain Apple CoreML examples to train a back-propagation model from the University of Wisconsin cancer data set. As of April 2022, these example do not work because of a problem with latest CreateML library so this material has been removed from this book.
