@@ -19,7 +19,8 @@ Why use Swift for hacking AI? Common Lisp has been my go-to language for artific
 The second edition of this book drops some of the old material and adds two new themes:
 
 - A new Part II of the book that covers Large Language Models (LLMS). We will use both commercial LLM APIs and running local LLMs using Ollama and Apple's MLX framework.
-- Several examples from the first edition are augemented using LLMs.
+- Several examples from the first edition are augmented using LLMs.
+- As much as possible, I support some of the book examples as Swift Playgrounds, usable on iPads and Macs.
 
 ## Book Structure
 
