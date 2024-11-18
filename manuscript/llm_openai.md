@@ -1,4 +1,4 @@
-# Using APIs to Access OpenAI LLMs
+# Using the OpenAI LLM APIs
 
 I have been working as an artificial intelligence practitioner since 1982 and the capability of Large Language Models (LLMs) is unlike anything I have seen before. I managed a deep learning team at Capital One in 2017-2019 and we used precursors of TransFormer models like OpenAI’s ChatGPT, and Anthropic’s Claude.
 
@@ -21,7 +21,7 @@ You need to request an API key (I had to wait a few weeks to receive my key) and
 
 {linenos=off}
 ~~~~~~~~
-export OPENAI_KEY=sa-hdedds7&dhdhsdffd
+export OPENAI_KEY=sa-hdedds7&dhdhsdffd...
 ~~~~~~~~
 
 to your **.profile** or other shell resource file that contains your key value (the above key value is made-up and invalid).

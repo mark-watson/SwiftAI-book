@@ -1,6 +1,6 @@
 # Using APIs for Anthropic Claude LLMs
 
-Here, I decided to not write a new client library for the Anthropic APIs since there are several existing high quality libraries.
+Here, I decided to not write a new client library for the Anthropic APIs since there are several existing high quality libraries for accessing the Anthropic Claude APIs.
 
 This is not a strong recommendation of one Anthropic client library over another, but I very much enjoy using the following project because of the simplicity of it’s API:
 
