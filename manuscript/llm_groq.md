@@ -4,12 +4,12 @@ Groq develops custom silicon for fast LLM inference.
 
 Groq’s API service supports a variety of openly available models, including:
 
-- Llama 3.1 Series: Models like llama-3.1-70b-versatile, llama-3.1-8b-instant, and others, offering up to 128K context windows. ￼
-- Llama 3.2 Vision Series: Multimodal models such as llama-3.2-90b-vision-preview and llama-3.2-11b-vision-preview, capable of processing both text and image inputs. ￼
-- Llama 3 Groq Tool Use Models: Specialized for function calling, including llama3-Groq-70b-8192-tool-use-preview and llama3-Groq-8b-8192-tool-use-preview. ￼
+- Llama 3.1 Series: Models like llama-3.1-70b-versatile, llama-3.1-8b-instant, and others, offering up to 128K context windows.
+- Llama 3.2 Vision Series: Multimodal models such as llama-3.2-90b-vision-preview and llama-3.2-11b-vision-preview, capable of processing both text and image inputs.
+- Llama 3 Groq Tool Use Models: Specialized for function calling, including llama3-Groq-70b-8192-tool-use-preview and llama3-Groq-8b-8192-tool-use-preview.
 - Mixtral 8x7b: A model with a 32,768-token context window, suitable for extensive context applications. ￼
-- Gemma Series: Models like gemma2-9b-it and gemma-7b-it, each with an 8,192-token context window. ￼
-- Whisper Series: Models such as whisper-large-v3 and whisper-large-v3-turbo, designed for audio transcription and translation tasks. ￼
+- Gemma Series: Models like gemma2-9b-it and gemma-7b-it, each with an 8,192-token context window.
+- Whisper Series: Models such as whisper-large-v3 and whisper-large-v3-turbo, designed for audio transcription and translation tasks.
 
 To obtain an API key, visit Groq’s API keys management page:
 
@@ -47,7 +47,8 @@ struct Groq {
         let temperature: Double
     }
     
-    private static func makeRequest<T: Encodable>(endpoint: String, body: T) -> String {
+    private static func makeRequest<T: Encodable>(endpoint: String, body: T)
+                        -> String {
         var responseString = ""
         let url = URL(string: baseURL + endpoint)!
         var request = URLRequest(url: url)
@@ -71,7 +72,10 @@ struct Groq {
         return responseString
     }
     
-    static func chat(messages: [[String: String]], maxTokens: Int = 25, temperature: Double = 0.3) -> String {
+    static func chat(messages: [[String: String]],
+                                maxTokens: Int = 25,
+                                temperature: Double = 0.3)
+                                                 -> String {
         let chatRequest = ChatRequest(
             model: MODEL,
             messages: messages,
@@ -84,7 +88,8 @@ struct Groq {
               let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
               let choices = json["choices"] as? [[String: Any]],
               let firstChoice = choices.first,
-              let message = firstChoice["message"] as? [String: Any],
+              let message = firstChoice["message"]
+                                     as? [String: Any],
               let content = message["content"] as? String else {
             return ""
         }
@@ -96,15 +101,19 @@ struct Groq {
 // Usage functions:
 func summarize(text: String, maxTokens: Int = 40) -> String {
     Groq.chat(messages: [
-        ["role": "system", "content": "You are a helpful assistant that summarizes text concisely."],
-        ["role": "user", "content": text]
+      ["role": "system",
+       "content":
+       "You are a helpful assistant that summarizes text concisely"],
+      ["role": "user", "content": text]
     ], maxTokens: maxTokens)
 }
 
 func questionAnswering(question: String) -> String {
     Groq.chat(messages: [
-        ["role": "system", "content": "You are a helpful assistant that answers questions directly and concisely."],
-        ["role": "user", "content": question]
+      ["role": "system",
+       "content":
+       "You are a helpful assistant that answers questions directly and concisely."],
+      ["role": "user", "content": question]
     ], maxTokens: 25)
 }
 
@@ -155,16 +164,19 @@ func completions(promptText: String, maxTokens: Int = 25) -> String {
 ---
 
 #### 5. Usage Functions
-##### `summarize`
+**summarize**
 - Summarizes a text.
 - Sends a conversation history where the system is described as "a helpful assistant that summarizes text concisely."
+
 ```swift
 summarize(text: String, maxTokens: Int = 40)
 ```
-##### `questionAnswering`
+
+**questionAnswering**
 - Answers a user-provided question directly.
 - Sends a conversation history where the system is described as "a helpful assistant that answers questions directly and concisely."
-##### `completions`
+
+**completions**
 - Generates continuations for a given user prompt.
 
 Here is the test/example code for this library:
