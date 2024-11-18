@@ -1,12 +1,17 @@
 # Using APIs to Access OpenAI LLMs
 
-##### TBD: this is 2 year old material - update!
+I have been working as an artificial intelligence practitioner since 1982 and the capability of Large Language Models (LLMs) is unlike anything I have seen before. I managed a deep learning team at Capital One in 2017-2019 and we used precursors of TransFormer models like OpenAI’s ChatGPT, and Anthropic’s Claude.
 
-I have been working as an artificial intelligence practitioner since 1982 and the capability of the beta OpenAI APIs is the most impressive thing that I have seen (so far!) in my career. Here we will use the get-4o-mini model. You will need to apply to OpenAI for an access key.
+You will need to apply to OpenAI for an access key at:
+
+    [https://platform.openai.com/signup](https://platform.openai.com/signup)
 
 The GitHub repository for this example is:
 
-    [https://github.com/mark-watson/OpenAI_swift](https://github.com/mark-watson/OpenAI_swift)
+{linenos=off}
+~~~~~~~~
+[https://github.com/mark-watson/OpenAI_swift](https://github.com/mark-watson/OpenAI_swift)
+~~~~~~~~
 
 I recommend reading the online documentation for the [online documentation for the APIs](https://openai.com/docs/) to see all the capabilities of the beta OpenAI APIs.  Let's start by jumping into the example code that is a GitHub repository [https://github.com/mark-watson/OpenAI_swift](https://github.com/mark-watson/OpenAI_swift) that you can use in your projects.
 
@@ -43,7 +48,8 @@ struct OpenAI {
         let input: String
     }
     
-    private static func makeRequest<T: Encodable>(endpoint: String, body: T) -> String {
+    private static func makeRequest<T: Encodable>(endpoint: String, body: T)
+                            -> String {
         var responseString = ""
         let url = URL(string: baseURL + endpoint)!
         var request = URLRequest(url: url)
@@ -67,7 +73,8 @@ struct OpenAI {
         return responseString
     }
     
-    static func chat(messages: [[String: String]], maxTokens: Int = 25, temperature: Double = 0.3) -> String {
+    static func chat(messages: [[String: String]], maxTokens: Int = 25,
+                                temperature: Double = 0.3) -> String {
         let chatRequest = ChatRequest(
             model: "gpt-4o-mini",
             messages: messages,
@@ -77,7 +84,8 @@ struct OpenAI {
         
         let response = makeRequest(endpoint: "/chat/completions", body: chatRequest)
         guard let data = response.data(using: .utf8),
-              let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let json = try? JSONSerialization.jsonObject(with: data)
+                         as? [String: Any],
               let choices = json["choices"] as? [[String: Any]],
               let firstChoice = choices.first,
               let message = firstChoice["message"] as? [String: Any],
@@ -95,7 +103,8 @@ struct OpenAI {
         
         let response = makeRequest(endpoint: "/embeddings", body: embeddingRequest)
         guard let data = response.data(using: .utf8),
-              let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let json = try? JSONSerialization.jsonObject(with: data)
+                         as? [String: Any],
               let dataArray = json["data"] as? [[String: Any]],
               let embedding = dataArray.first?["embedding"] as? [NSNumber] else {
             return [1.23]
@@ -107,20 +116,25 @@ struct OpenAI {
 // Usage functions:
 func summarize(text: String, maxTokens: Int = 40) -> String {
     OpenAI.chat(messages: [
-        ["role": "system", "content": "You are a helpful assistant that summarizes text concisely."],
+        ["role": "system",
+         "content":
+           "You are a helpful assistant that summarizes text concisely."],
         ["role": "user", "content": text]
     ], maxTokens: maxTokens)
 }
 
 func questionAnswering(question: String) -> String {
     OpenAI.chat(messages: [
-        ["role": "system", "content": "You are a helpful assistant that answers questions directly and concisely."],
+        ["role": "system",
+         "content":
+           "You are a helpful assistant that answers questions directly and concisely."],
         ["role": "user", "content": question]
     ], maxTokens: 25)
 }
 
 func completions(promptText: String, maxTokens: Int = 25) -> String {
-    OpenAI.chat(messages: [["role": "user", "content": promptText]], maxTokens: maxTokens)
+    OpenAI.chat(messages: [["role": "user", "content": promptText]],
+                           maxTokens: maxTokens)
 }
 ~~~~~~~~
 
@@ -128,13 +142,13 @@ func completions(promptText: String, maxTokens: Int = 25) -> String {
 
 This Swift implementation provides a streamlined interface to OpenAI's API services, focusing primarily on chat completions and text embeddings functionality. The code is structured around a central OpenAI struct that encapsulates all API interactions and provides a clean, type-safe interface for making requests.
 
-Core Architecture
+## Core Architecture
 
 The implementation follows a modular design pattern, separating concerns between network communication, request/response handling, and utility functions. It utilizes Swift's strong type system through dedicated request models and leverages environment variables for secure API key management.
 
 ## Key Features
 
-Authentication and Configuration
+### Authentication and Configuration
 
 The client automatically retrieves the OpenAI API key from environment variables, providing a secure way to handle authentication credentials. The base URL is configured as a constant, making it easy to modify for different environments or API versions.
 
@@ -225,9 +239,9 @@ Starting tests...
 ** ret from OpenAI API call: the shimmering surface of the water, where the sunlight danced in tiny sparkles. The gentle flow of the river whispered secrets as
 ** answer from OpenAI API call: Leonardo da Vinci was born in Vinci, Italy, on April 15, 1452.
 ** generated summary:  Jupiter is the fifth planet from the Sun and the largest in the Solar System, being a gas giant with a mass one-thousandth that of the Sun and two-and-a-half times that of
-◇ Test run started.
-↳ Testing Library Version: 102 (arm64e-apple-macos13.0)
-✔ Test run with 0 tests passed after 0.001 seconds.
+* Test run started.
+* Testing Library Version: 102 (arm64e-apple-macos13.0)
+* Test run with 0 tests passed after 0.001 seconds.
 ~~~~~~~~
 
 
