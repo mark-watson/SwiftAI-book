@@ -4,25 +4,40 @@ Here, I decided to not write a new client library since there are several high q
 
 This is not a strong recommendation of one Anthropic client library over another, but I very much enjoy using the following project because of the simplicity of it’s API:
 
-    https://github.com/fumito-ito/AnthropicSwiftSDK
+{linenos=off}
+~~~~~~~~
+https://github.com/fumito-ito/AnthropicSwiftSDK
+~~~~~~~~
 
 My examples using this library to access the Anthropic Claude APIs can be found here:
 
-    https://github.com/mark-watson/Anthropic_swift_examples
+{linenos=off}
+~~~~~~~~
+https://github.com/mark-watson/Anthropic_swift_examples
+~~~~~~~~
 
 You need to set the following environment variable for your person Anthropic API key: Anthropic API key:
 
-    ANTHROPIC_API_KEY
+{linenos=off}
+~~~~~~~~
+ANTHROPIC_API_KEY
+~~~~~~~~
 
 that you can get by creating an account:
 
-    https://console.anthropic.com
+{linenos=off}
+~~~~~~~~
+https://console.anthropic.com
+~~~~~~~~
 
 ## Running the examples
 
 All of the examples are packaged as Swift tests so git clone my examples repository [https://github.com/mark-watson/Anthropic_swift_examples](https://github.com/mark-watson/Anthropic_swift_examples) and run:
 
-    swift test
+{linenos=off}
+~~~~~~~~
+swift test
+~~~~~~~~
 
 The test Swift source file defines a test class (just the first few lines shown here):
 
