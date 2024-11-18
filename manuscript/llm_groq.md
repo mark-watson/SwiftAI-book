@@ -7,7 +7,7 @@ Groq’s API service supports a variety of openly available models, including:
 - Llama 3.1 Series: Models like llama-3.1-70b-versatile, llama-3.1-8b-instant, and others, offering up to 128K context windows.
 - Llama 3.2 Vision Series: Multimodal models such as llama-3.2-90b-vision-preview and llama-3.2-11b-vision-preview, capable of processing both text and image inputs.
 - Llama 3 Groq Tool Use Models: Specialized for function calling, including llama3-Groq-70b-8192-tool-use-preview and llama3-Groq-8b-8192-tool-use-preview.
-- Mixtral 8x7b: A model with a 32,768-token context window, suitable for extensive context applications. ￼
+- Mixtral 8x7b: A model with a 32,768-token context window, suitable for extensive context applications.
 - Gemma Series: Models like gemma2-9b-it and gemma-7b-it, each with an 8,192-token context window.
 - Whisper Series: Models such as whisper-large-v3 and whisper-large-v3-turbo, designed for audio transcription and translation tasks.
 
@@ -26,7 +26,7 @@ https://github.com/mark-watson/Groq_swift
 ~~~~~~~~
 
 
-## Implementation of a Cleint Library for the Groq APIs
+## Implementation of a Client Library for the Groq APIs
 
 Groq supports the OpenAI APIs so the following client library for Groq is similar to what I wrote previously for OpenAI:
 
@@ -85,7 +85,8 @@ struct Groq {
         
         let response = makeRequest(endpoint: "/chat/completions", body: chatRequest)
         guard let data = response.data(using: .utf8),
-              let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let json = try? JSONSerialization.jsonObject(with: data)
+                         as? [String: Any],
               let choices = json["choices"] as? [[String: Any]],
               let firstChoice = choices.first,
               let message = firstChoice["message"]
