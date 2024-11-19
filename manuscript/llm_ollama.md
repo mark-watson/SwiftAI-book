@@ -1,8 +1,8 @@
 # Using Ollama to Run Local LLMs
 
-Ollama is a program and framework written in Go that allows you to download, run models on the command line, and call using a REST style interface. You need ot wonload the Ollama executable for your operation system at [https://ollama.com](https://ollama.com).
+Ollama is a program and framework written in Go that allows you to download, run models on the command line, and call using a REST style interface. You need to downnload the Ollama executable for your operation system at [https://ollama.com](https://ollama.com).
 
-Similarly to our use of a third party for accessing the Anthropic Clause models, here we will not write a wrapper libary, the example code for ths chapter is in the test code for the Swift project in the GitHub repository [https://github.com/mark-watson/Ollama_swift_examples](https://github.com/mark-watson/Ollama_swift_examples).
+Similarly to our use of a third party for accessing the Anthropic Clause models, here we will not write a wrapper libary. The example code for ths chapter is in the test code for the Swift project in the GitHub repository [https://github.com/mark-watson/Ollama_swift_examples](https://github.com/mark-watson/Ollama_swift_examples).
 
 We use the library in the GitHub repository [https://github.com/mattt/ollama-swift](https://github.com/mattt/ollama-swift).
 

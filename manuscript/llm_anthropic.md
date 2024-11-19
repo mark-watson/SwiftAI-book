@@ -2,7 +2,7 @@
 
 Here, I decided to not write a new client library for the Anthropic APIs since there are several existing high quality libraries for accessing the Anthropic Claude APIs.
 
-This is not a strong recommendation of one Anthropic client library over another, but I very much enjoy using the following project because of the simplicity of it’s API:
+This is not a strong recommendation of one Anthropic client library over another, but I very much enjoy using the following project because of the simplicity of its API:
 
 {linenos=off}
 ~~~~~~~~
@@ -74,7 +74,7 @@ If you print the value of **response.content** you see:
 [AnthropicSwiftSDK.Content.text("The pairwise age differences are:\n\nMary and Bill: 15 years\nMary and Sam: 9 years\nBill and Sam: 24 years", cacheControl: nil)]
 ~~~~~~~~
 
-For normal use you just want the string contents of the model’s response to your prompt, so use:
+For normal use you want just the string contents of the model’s response to your prompt, so use:
 
 {lang="swift",linenos=off}
 ~~~~~~~~

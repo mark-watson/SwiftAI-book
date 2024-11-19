@@ -16,7 +16,7 @@ Why use Swift for hacking AI? Common Lisp has been my go-to language for artific
 
 ## Notes on the Second Edition
 
-The second edition of this book drops some of the old material and adds two new themes:
+The second edition of this book deletes some of the old material and adds two new themes:
 
 - A new Part II of the book that covers Large Language Models (LLMS). We will use both commercial LLM APIs and running local LLMs using Ollama and Apple's MLX framework.
 - Several examples from the first edition are augmented using LLMs.
@@ -28,15 +28,15 @@ This book starts out slowly in Part I with simple examples which I wrote showing
 
 Part II will show you how to effectively integrate LLMs into your own applications.
 
-Part III starts with a simple example using web scraping and commercial web search APIs. We then work through examples integrating web search with LLMs and then show how we can modify web scrapoing applications to specifically process topics and have better control of outputing structured data.
+Part III starts with a simple example using web scraping and commercial web search APIs. We then work through examples integrating web search with LLMs and then show how we can modify web scraping applications to specifically process topics and have better control of outputing structured data.
 
 
 We then proceed to using Apple's CoreML for Natural Language Processing (NLP), training and using your own CoreML models, using OpenAI's GPT-3 APIs, and finally several semantic web/linked data examples. The book ends with the example [KGN on the App Store](https://apps.apple.com/us/app/kgn/id1514197947?mt=12). It is not my intention to cover in detail the use of SwiftUI for building iOS/iPadOS/macOS applications but I thought my readers might enjoy seeing several of the techniques covered in the book integrated into an example app.
 
-I have used Common Lisp for AI research projects and for AI product development and delivery since 1982. There is something special about using a language for almost forty years. All that said, I find Swift a compelling choice now for several reasons:
+I have used Common Lisp for AI research projects and for AI product development and delivery since 1982. There is something special about using a language for almost forty years. I now find Swift a compelling choice for several reasons:
 
 - Flexible language with many features I rely on like supporting closures and an interactive functional programming style.
-- Built in support for deep learning neural network models for natural language processing, predictive models, etc.
+- Built-in support for deep learning neural network models for natural language processing, predictive models, etc.
 - First class support for iOS and macOS development.
 - Good support for server side applications hosted on Linux.
 
@@ -70,7 +70,7 @@ http://www.knowledgegraphnavigator.com/
 
 ## Author's Background
 
-I live in Sedona, Arizona with my wife and pet parrot. Our children and grandchildren live in California, Rhode Island, and the state of Washington.
+I live in Flagstaff, Arizona with my wife and pet parrot. Our children and grandchildren live in California, RHode Island, and Arizona.
 
 I have written 20+ books, mostly about artificial intelligence. I have over 50 US patents.
 

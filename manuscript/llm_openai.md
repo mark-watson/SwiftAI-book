@@ -159,7 +159,7 @@ The chat completion functionality supports the GPT-4 model family, allowing for 
 - Maximum token output
 - Temperature settings for response randomness
 - Message context management
-- Text Embeddings
+- Text embeddings
 
 The embeddings feature implements OpenAI's text-embedding-ada-002 model, converting text inputs into high-dimensional vector representations. These embeddings can be used for:
 
