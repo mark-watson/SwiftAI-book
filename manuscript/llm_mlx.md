@@ -48,3 +48,5 @@ Running the LLMEval project:
 ![LLMEval app downloading model file](images/LLMEval1.jpg)
 
 
+![LLMEval app answering user's question](images/LLMEval2.jpg)
+
