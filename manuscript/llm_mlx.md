@@ -15,7 +15,9 @@ In this chapter we will look at an example application that is part of the Swift
 - https://github.com/ml-explore/mlx-swift: The Swift API for MLX, enabling integration with Swift-based projects.
 - https://github.com/ml-explore/mlx-swift-examples: Examples showcasing the use of MLX with Swift.
 
-You can find the documentation here: [https://swiftpackageindex.com/ml-explore/mlx-swift/0.18.0/documentation/mlx](https://swiftpackageindex.com/ml-explore/mlx-swift/0.18.0/documentation/mlx).
+You can find the documentation here:
+
+[https://swiftpackageindex.com/ml-explore/mlx-swift/0.18.0/documentation/mlx](https://swiftpackageindex.com/ml-explore/mlx-swift/0.18.0/documentation/mlx).
 
 These repositories provide a comprehensive set of tools and examples to effectively utilize MLX for machine learning tasks on Apple silicon. There are many other repositories for MLX and Python and if you need to perform tasks like fine tuning a MLX model, that task should probably be done using Python.
 
@@ -29,6 +31,7 @@ git clone https://github.com/ml-explore/mlx-swift-examples.git
 ~~~~~~~~
 
 Open the top level XCode project by:
+
 {linenos=off}
 ~~~~~~~~
 cd mlx-swift-examples
@@ -53,7 +56,7 @@ This example is part of the Swift MLX Examples project that currently has twenty
 
 Unfortunately the SwiftUI user interface code is mixed in with the code that uses MLX. Let's walk through the code:
 
-Here is a walk through a Swift-based program using Apple's frameworks for Machine Learning and Language Models. Here's the code, broken down with explanations.
+Here is a walk through a Swift-based program using Apple's frameworks for Machine Learning and Language Models with the code interspersed with explanations.
 
 ### Imports
 
@@ -90,6 +93,8 @@ struct ContentView: View {
   @Environment(DeviceStat.self) private var deviceStat
 ~~~~~~~~
 
+In this code snippet:
+
 - @State allows the view to track changes in the prompt and llm instances.
 - @Environment fetches device statistics, such as GPU memory usage.
 
@@ -104,6 +109,8 @@ struct ContentView: View {
   
   @State private var selectedDisplayStyle = displayStyle.markdown
 ~~~~~~~~
+
+In this code snippet:
 
 - **displayStyle** defines whether the output is plain text or Markdown.
 - A segmented picker toggles between the two styles.
@@ -210,7 +217,8 @@ This class handles the logic for loading and generating text with the language m
 **Core Properties**
 
 {lang="swift",linenos=off}
-~~~~~~~~\@Observable
+~~~~~~~~
+@Observable
 @MainActor
 class LLMEvaluator {
   var running = false
@@ -233,8 +241,9 @@ class LLMEvaluator {
   }
 
   var loadState = LoadState.idle
-
 ~~~~~~~~
+
+This code snippet:
 
 - Tracks the model state and output.
 - Configures the model (phi3_5_4bit).
@@ -266,6 +275,8 @@ class LLMEvaluator {
   }
 ~~~~~~~~
 
+This code snippet:
+
 - Downloads and caches the model.
 - Updates modelInfo during the download.
 
@@ -287,8 +298,10 @@ class LLMEvaluator {
 
         let result = await modelContainer.perform { model, tokenizer in
             LLM.generate(
-                promptTokens: promptTokens, parameters: generateParameters, model: model,
-                tokenizer: tokenizer, extraEOSTokens: modelConfiguration.extraEOSTokens
+                promptTokens: promptTokens,
+                parameters: generateParameters, model: model,
+                tokenizer: tokenizer,
+                extraEOSTokens: modelConfiguration.extraEOSTokens
             ) { tokens in
                 if tokens.count % displayEveryNTokens == 0 {
                     let text = tokenizer.decode(tokens: tokens)
@@ -310,6 +323,8 @@ class LLMEvaluator {
   }
 }
 ~~~~~~~~
+
+This code snippet:
 
 - Prepares the prompt for the model.
 - Generates tokens and dynamically updates the view.
