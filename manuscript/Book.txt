@@ -14,7 +14,6 @@ part3.md
 deeplearning_intro.md
 nlp.md
 docs_qa.md
-mlx.md
 part4.md
 sw.md
 kgn.md
