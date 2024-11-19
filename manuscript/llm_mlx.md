@@ -260,7 +260,8 @@ This code snippet:
     switch loadState {
     case .idle:
         MLX.GPU.set(cacheLimit: 20 * 1024 * 1024)
-        let modelContainer = try await LLM.loadModelContainer(configuration: modelConfiguration) {
+        let modelContainer =
+          try await LLM.loadModelContainer(configuration: modelConfiguration) {
             [modelConfiguration] progress in
             Task { @MainActor in
                 self.modelInfo = "Downloading \(modelConfiguration.name): \(Int(progress.fractionCompleted * 100))%"
