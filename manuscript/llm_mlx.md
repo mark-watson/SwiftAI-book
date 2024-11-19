@@ -18,6 +18,8 @@ In this chapter we will use a few simple Swift programs that use MLX. After work
 - https://github.com/ml-explore/mlx-swift: The Swift API for MLX, enabling integration with Swift-based projects.
 - https://github.com/ml-explore/mlx-swift-examples: Examples showcasing the use of MLX with Swift.
 
+You can find the documentation here: [https://swiftpackageindex.com/ml-explore/mlx-swift/0.18.0/documentation/mlx](https://swiftpackageindex.com/ml-explore/mlx-swift/0.18.0/documentation/mlx).
+
 These repositories provide a comprehensive set of tools and examples to effectively utilize MLX for machine learning tasks on Apple silicon. There are many other repositories for MLW and Python and if you need to perform tasks like fine tuning a MLX model, that task should probably be done using Python.
 
 ## Example Application for MLX Swift Examples Repository
