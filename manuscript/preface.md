@@ -31,7 +31,7 @@ Part II will show you how to effectively integrate LLMs into your own applicatio
 Part III starts with a simple example using web scraping and commercial web search APIs. We then work through examples integrating web search with LLMs and then show how we can modify web scraping applications to specifically process topics and have better control of outputing structured data.
 
 
-We then proceed to using Apple's CoreML for Natural Language Processing (NLP), training and using your own CoreML models, using OpenAI's GPT-3 APIs, and finally several semantic web/linked data examples. The book ends with the example [KGN on the App Store](https://apps.apple.com/us/app/kgn/id1514197947?mt=12). It is not my intention to cover in detail the use of SwiftUI for building iOS/iPadOS/macOS applications but I thought my readers might enjoy seeing several of the techniques covered in the book integrated into an example app.
+We then proceed to using Apple's CoreML for Natural Language Processing (NLP), training and using your own CoreML models, using OpenAI's GPT-4 APIs, and finally several semantic web/linked data examples. The book ends with the example macOS application Knowledge Graph Navigator. It is not my intention to cover in detail the use of SwiftUI for building iOS/iPadOS/macOS applications but I thought my readers might enjoy seeing several of the techniques covered in the book integrated into an example app.
 
 I have used Common Lisp for AI research projects and for AI product development and delivery since 1982. There is something special about using a language for almost forty years. I now find Swift a compelling choice for several reasons:
 

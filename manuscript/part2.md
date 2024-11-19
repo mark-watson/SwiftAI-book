@@ -2,6 +2,9 @@
 
 In this part we cover:
 
-- Commercial LLM APIs
-- Using Local LLM Models with Ollama
-- Using Local LLM Models with Apple's MLX Framework
+- Commercial OpenAI LLM APIs
+- Commercial Anthropic LLM APIs
+- Accessing open weight models using the commercial Groq service
+- Accesiing xAIs Grok model via an API
+- Accessing local LLMs using Ollama
+- Using Local LLMs with Apple's MLX Framework
