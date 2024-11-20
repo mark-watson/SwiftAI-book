@@ -100,7 +100,7 @@ func questionAnswering(question: String) -> String {
     X_GROK.chat(messages: [
       ["role": "system",
        "content":
-        "You are a helpful assistant who answers questions directly and concisely."],
+       "You are a helpful assistant who answers questions directly and concisely."],
       ["role": "user", "content": question]
     ], maxTokens: 25)
 }
