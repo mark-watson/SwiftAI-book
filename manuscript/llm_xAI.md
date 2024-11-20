@@ -71,7 +71,8 @@ struct X_GROK {
             temperature: temperature
         )
         
-        let response = makeRequest(endpoint: "/chat/completions", body: chatRequest)
+        let response = makeRequest(endpoint: "/chat/completions",
+                                   body: chatRequest)
         guard let data = response.data(using: .utf8),
               let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
               let choices = json["choices"] as? [[String: Any]],
@@ -97,10 +98,10 @@ func summarize(text: String, maxTokens: Int = 40) -> String {
 
 func questionAnswering(question: String) -> String {
     X_GROK.chat(messages: [
-        ["role": "system",
-         "content":
-         "You are a helpful assistant that answers questions directly and concisely."],
-        ["role": "user", "content": question]
+      ["role": "system",
+       "content":
+        "You are a helpful assistant who answers questions directly and concisely."],
+      ["role": "user", "content": question]
     ], maxTokens: 25)
 }
 

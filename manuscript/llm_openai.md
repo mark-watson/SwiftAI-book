@@ -4,13 +4,16 @@ I have been working as an artificial intelligence practitioner since 1982 and th
 
 You will need to apply to OpenAI for an access key at:
 
-    [https://platform.openai.com/signup](https://platform.openai.com/signup)
+{linenos=off}
+~~~~~~~~
+https://platform.openai.com/signup
+~~~~~~~~
 
 The GitHub repository for this example is:
 
 {linenos=off}
 ~~~~~~~~
-[https://github.com/mark-watson/OpenAI_swift](https://github.com/mark-watson/OpenAI_swift)
+https://github.com/mark-watson/OpenAI_swift
 ~~~~~~~~
 
 I recommend reading the online documentation for the [online documentation for the APIs](https://openai.com/docs/) to see all the capabilities of the beta OpenAI APIs.  Let's start by jumping into the example code that is a GitHub repository [https://github.com/mark-watson/OpenAI_swift](https://github.com/mark-watson/OpenAI_swift) that you can use in your projects.
@@ -190,6 +193,8 @@ The implementation includes basic error handling through Swift's optional bindin
 
 JSON parsing is handled through a combination of JSONEncoder for requests and JSONSerialization for responses, with careful optional chaining to safely handle malformed or unexpected responses.
 
+## Running Tests
+
 The file **SWIFT_BOOK/OpenAI_swift/Tests/OpenAI_swiftTests/OpenAI_swiftTests.swift** contains test code:
 
 ```swift
@@ -213,7 +218,6 @@ The file **SWIFT_BOOK/OpenAI_swift/Tests/OpenAI_swiftTests/OpenAI_swiftTests.swi
         }
     }
 ```
-
 
 Output from this test code is:
 

@@ -180,6 +180,8 @@ summarize(text: String, maxTokens: Int = 40)
 **completions**
 - Generates continuations for a given user prompt.
 
+## Running the Tests
+
 Here is the test/example code for this library:
 
 {lang="swift",linenos=off}
