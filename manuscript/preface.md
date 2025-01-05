@@ -91,8 +91,12 @@ http://www.knowledgegraphnavigator.com/
 
 ## Author's Background
 
+<<<<<<< HEAD
 
 I live in Flagstaff, Arizona with my wife and pet parrot. Our children and grandchildren live in California, RHode Island, and Arizona.
+=======
+I live in Flagstaff, Arizona with my wife and pet parrot. Our children and grandchildren live in California, Rhode Island, and the state of Washington.
+>>>>>>> 00cbf01 (-)
 
 I have written 20+ books, mostly about artificial intelligence. I have over 50 US patents.
 
