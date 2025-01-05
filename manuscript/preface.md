@@ -7,7 +7,17 @@ This eBook will be updated occasionally so please periodically check the [leanpu
 The first edition was released spring of 2022.
 The second edition was released December 2024.
 
-If you would like to support my work please consider purchasing my books on [Leanpub](https://leanpub.com/u/markwatson) and star my git repositories that you find useful on [GitHub](https://github.com/mark-watson?tab=repositories&q=&type=public). You can also interact with me on social media on [Mastodon](https://mastodon.social/@mark_watson) and [Twitter](https://twitter.com/mark_l_watson).
+## Requests from the Author
+
+This book will always be available to read free online at [https://leanpub.com/SwiftAI/read](https://leanpub.com/SwiftAI/read).
+
+That said, I appreciate it when readers purchase my books because the income enables me to spend more time writing.
+
+### Hire the Author as a Consultant
+
+I am available for short consulting projects. Please see [https://markwatson.com](https://markwatson.com).
+
+You can also interact with me on social media on [Mastodon](https://mastodon.social/@mark_watson) and [Twitter](https://twitter.com/mark_l_watson).
 
 
 # Preface
@@ -42,6 +52,17 @@ I have used Common Lisp for AI research projects and for AI product development 
 
 Swift is a programmer-efficient language: code is concise and easy to read, and high quality libraries from Apple and third parties mean that often there is less code to write. I will share with you my Swift development work flow that combines interactive development of code in playgrounds, development of higher level libraries in text only or command line applications, and my general strategy for writing iOS and macOS applications after low level and intermediate code is written and debugged.
 
+## Requests from the Author
+
+This book will always be available to read free online at [https://leanpub.com/SwiftAI/read](https://leanpub.com/SwiftAI/read).
+
+That said, I appreciate it when readers purchase my books because the income enables me to spend more time writing.
+
+### Hire the Author as a Consultant
+
+I am available for short consulting projects. Please see [https://markwatson.com](https://markwatson.com).
+
+
 ## Parts of this Book are Specific for macOS and iOS, with Some Support for Linux
 
 Swift is a general purpose language that is well supported in macOS, iOS, and Linux, with some support in Windows. Here, we cover the use of Swift on macOS and iOS. Some of the examples in this book rely on libraries that are specifically available on macOS and iOS like CoreML and the NLP libraries. Several book examples also work on Linux, such as the examples using SQLite, the Microsoft Azure search APIs, web scraping, and semantic web/linked data.
@@ -70,6 +91,7 @@ http://www.knowledgegraphnavigator.com/
 
 ## Author's Background
 
+
 I live in Flagstaff, Arizona with my wife and pet parrot. Our children and grandchildren live in California, RHode Island, and Arizona.
 
 I have written 20+ books, mostly about artificial intelligence. I have over 50 US patents.
@@ -78,13 +100,6 @@ I write about technologies that I have used throughout my career: knowledge repr
 
 As an author, I hope that the material in this book entertains you and will be useful in your work.
 
-## A Request from the Author
-
-I spent time writing this book to help you, dear reader. I release this book under the Creative Commons license and set the minimum purchase price to **Free** in order to reach the most readers. If you found this book on the web (or it was given to you) and if it provides value to you then please consider doing the following to support my future writing efforts and also to support future updates to this book:
-
-- Purchase a copy of [this book](https://leanpub.com/SwiftAI) or any other of my leanpub books at [https://leanpub.com/u/markwatson](https://leanpub.com/u/markwatson)
-
-I enjoy writing and your support helps me write new editions and updates for my books and to develop new book projects. Thank you!
 
 ## Cover Art
 
