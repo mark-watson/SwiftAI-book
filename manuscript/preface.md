@@ -7,6 +7,10 @@ This eBook will be updated occasionally so please periodically check the [leanpu
 The first edition was released spring of 2022.
 The second edition was released December 2024.
 
+# Preface
+
+Why use Swift for hacking AI? Common Lisp has been my go-to language for artificial intelligence development and research since 1982. The transition to using Swift was a slow transition for me. During this transition I prototyped a new project in parallel using both Swift and Common Lisp, weighing the advantages of both for my current requirements. The Swift version of this project included in this book runs on macOS, iOS, and iPadOS. The macOS version is available on the Apple Store. Several of the utilities developed in this book were used in this project.
+
 ## Requests from the Author
 
 This book will always be available to read free online at [https://leanpub.com/SwiftAI/read](https://leanpub.com/SwiftAI/read).
@@ -19,10 +23,6 @@ I am available for short consulting projects. Please see [https://markwatson.com
 
 You can also interact with me on social media on [Mastodon](https://mastodon.social/@mark_watson) and [Twitter](https://twitter.com/mark_l_watson).
 
-
-# Preface
-
-Why use Swift for hacking AI? Common Lisp has been my go-to language for artificial intelligence development and research since 1982. The transition to using Swift was a slow transition for me. During this transition I prototyped a new project in parallel using both Swift and Common Lisp, weighing the advantages of both for my current requirements. The Swift version of this project included in this book runs on macOS, iOS, and iPadOS. The macOS version is available on the Apple Store. Several of the utilities developed in this book were used in this project.
 
 ## Notes on the Second Edition
 
