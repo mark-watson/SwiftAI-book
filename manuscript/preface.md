@@ -7,6 +7,8 @@ This eBook will be updated occasionally so please periodically check the [leanpu
 The first edition was released spring of 2022.
 The second edition was released December 2024.
 
+If you would like to support my work please consider purchasing my books on [Leanpub](https://leanpub.com/u/markwatson) and star my git repositories that you find useful on [GitHub](https://github.com/mark-watson?tab=repositories&q=&type=public). You can also interact with me on social media on [Mastodon](https://mastodon.social/@mark_watson) and [Twitter](https://twitter.com/mark_l_watson).
+
 # Preface
 
 Why use Swift for hacking AI? Common Lisp has been my go-to language for artificial intelligence development and research since 1982. The transition to using Swift was a slow transition for me. During this transition I prototyped a new project in parallel using both Swift and Common Lisp, weighing the advantages of both for my current requirements. The Swift version of this project included in this book runs on macOS, iOS, and iPadOS. The macOS version is available on the Apple Store. Several of the utilities developed in this book were used in this project.
@@ -92,8 +94,12 @@ http://www.knowledgegraphnavigator.com/
 ## Author's Background
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 I live in Flagstaff, Arizona with my wife and pet parrot. Our children and grandchildren live in California, RHode Island, and Arizona.
+=======
+I live in Flagstaff, Arizona with my wife and pet parrot. Our children and grandchildren live in California, Rhode Island, and the state of Washington.
+>>>>>>> 00cbf01 (-)
 =======
 I live in Flagstaff, Arizona with my wife and pet parrot. Our children and grandchildren live in California, Rhode Island, and the state of Washington.
 >>>>>>> 00cbf01 (-)
