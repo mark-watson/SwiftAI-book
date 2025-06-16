@@ -17,4 +17,7 @@ docs_qa.md
 part4.md
 sw.md
 kgn.md
+part5.md
+ai_chat.md
+ai_coder.md
 wrapup.md

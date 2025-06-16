@@ -1,6 +1,6 @@
 # Cover Material, Copyright, and License
 
-Copyright 2022-2024 Mark Watson. All rights reserved. This book may be shared using the Creative Commons “share and share alike, no modifications, no commercial reuse” license.
+Copyright 2022-2025 Mark Watson. All rights reserved. This book may be shared using the Creative Commons “share and share alike, no modifications, no commercial reuse” license.
 
 This eBook will be updated occasionally so please periodically check the [leanpub.com web page for this book](https://leanpub.com/SwiftAI) for updates.
 
@@ -11,7 +11,14 @@ If you would like to support my work please consider purchasing my books on [Lea
 
 # Preface
 
-Why use Swift for hacking AI? Common Lisp has been my go-to language for artificial intelligence development and research since 1982. The transition to using Swift was a slow transition for me. During this transition I prototyped a new project in parallel using both Swift and Common Lisp, weighing the advantages of both for my current requirements. The Swift version of this project included in this book runs on macOS, iOS, and iPadOS. The macOS version is available on the Apple Store. Several of the utilities developed in this book were used in this project.
+Why use Swift for hacking AI? Common Lisp has been my go-to language for artificial intelligence development and research since 1982. The transition to using Swift was a transition motivated by practical aspects of Swift and the Swift ecosystem.
+
+## Notes on the new June 2025 Book Edition
+
+With the release of new Apple Intelligence tooling available for macOS26, iPadOS26, and iOS26 I have added a new Part 5 at the end of this book covering several practical AI use cases with new examples.
+
+TBD
+
 
 ## Requests from the Author
 
