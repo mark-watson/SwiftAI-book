@@ -100,17 +100,6 @@ http://www.knowledgegraphnavigator.com/
 
 ## Author's Background
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-
-I live in Flagstaff, Arizona with my wife and pet parrot. Our children and grandchildren live in California, RHode Island, and Arizona.
-=======
-I live in Flagstaff, Arizona with my wife and pet parrot. Our children and grandchildren live in California, Rhode Island, and the state of Washington.
->>>>>>> 00cbf01 (-)
-=======
-I live in Flagstaff, Arizona with my wife and pet parrot. Our children and grandchildren live in California, Rhode Island, and the state of Washington.
->>>>>>> 00cbf01 (-)
-
 I have written 20+ books, mostly about artificial intelligence. I have over 50 US patents.
 
 I write about technologies that I have used throughout my career: knowledge representation using semantic web and linked data, machine learning and deep learning, and natural language processing. I am grateful for the companies where I have worked (SAIC, Google, Capital One, Olive AI, Babylist, etc.) that have supported this work since 1982.
