@@ -104,7 +104,7 @@ struct RuntimeError: Error, CustomStringConvertible {
 }
 ```
 
-Here are the first few lines of output given the prompt **wDescribe the math for calculating the orbit of Jupiter, then write a very short design for a Python script*:
+Here are the first few lines of output given the prompt *Describe the math for calculating the orbit of Jupiter, then write a very short design for a Python script*:
 
 ```text
 $ swift run

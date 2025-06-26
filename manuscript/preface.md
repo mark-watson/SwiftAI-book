@@ -6,6 +6,7 @@ This eBook will be updated occasionally so please periodically check the [leanpu
 
 The first edition was released spring of 2022.
 The second edition was released December 2024.
+The third edition was released June 2025.
 
 If you would like to support my work please consider purchasing my books on [Leanpub](https://leanpub.com/u/markwatson) and star my git repositories that you find useful on [GitHub](https://github.com/mark-watson?tab=repositories&q=&type=public). You can also interact with me on social media on [Mastodon](https://mastodon.social/@mark_watson) and [Twitter](https://twitter.com/mark_l_watson).
 
@@ -16,8 +17,6 @@ Why use Swift for hacking AI? Common Lisp has been my go-to language for artific
 ## Notes on the new June 2025 Book Edition
 
 With the release of new Apple Intelligence tooling available for macOS26, iPadOS26, and iOS26 I have added a new Part 5 at the end of this book covering several practical AI use cases with new examples.
-
-TBD
 
 
 ## Requests from the Author

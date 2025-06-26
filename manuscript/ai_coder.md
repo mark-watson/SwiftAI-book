@@ -13,7 +13,7 @@ import PackageDescription
 let package = Package(
     name: "CodingCLI",
 
-    // 1️⃣ Tell SwiftPM we require at least macOS 12 so
+    // 1️ Tell SwiftPM we require at least macOS 12 so
     //    `Task.value`, async/await, and FoundationModels are available.
     platforms: [
         .macOS(.v26)
@@ -27,7 +27,7 @@ let package = Package(
         .executableTarget(
             name: "CodingCLI",
 
-            // 2️⃣ Link the system framework that ships with Xcode 17+
+            // 2️ Link the system framework that ships with Xcode 17+
             //    (no external dependency required).
             linkerSettings: [
                 .linkedFramework("FoundationModels")
@@ -53,13 +53,13 @@ struct CodingCLI {
 
         let enumerator = FileManager.default.enumerator(atPath: ".")!
 
-        while let path = enumerator.nextObject() as? String {          // avoids @noasync iterator
+        while let path = enumerator.nextObject() as? String { // avoids @noasync
             guard let ext = path.split(separator: ".").last,
                   exts.contains(ext.lowercased()) else { continue }
 
             if let data = FileManager.default.contents(atPath: path),
-               data.count < 8 * 1024 {                                // keep size filter
-                let text = String(decoding: data, as: UTF8.self)      // non-optional
+               data.count < 8 * 1024 {                           // keep size filter
+                let text = String(decoding: data, as: UTF8.self) // non-optional
                 blobs.append("### \(path) ###\n\(text)")
             }
         }
@@ -69,7 +69,8 @@ struct CodingCLI {
         print("\n=== Project Summary ===\n\(summary)\n")
 
         // ---- 2. Start interactive chat loop ----
-        let session  = LanguageModelSession(instructions: "You are a helpful assistant.")
+        let session  = LanguageModelSession(instructions:
+                                            "You are a helpful assistant.")
         let options  = GenerationOptions(temperature: 0.2)
         print("Apple-Intelligence chat (streaming, T=0.2).  Type /quit to exit.\n")
 
@@ -78,7 +79,8 @@ struct CodingCLI {
 
             var printed = ""
             let task = Task {
-                for try await part in session.streamResponse(to: prompt, options: options) {
+                for try await part in session.streamResponse(to: prompt,
+                                                             options: options) {
                     let delta = part.dropFirst(printed.count)
                     if !delta.isEmpty {
                         FileHandle.standardOutput.write(Data(delta.utf8))
@@ -104,13 +106,15 @@ struct CodingCLI {
         let session = LanguageModelSession(
             instructions: """
             Summarize the following multi-file project. \
-            For each file give one bullet explaining its role, then a two-sentence overall description.
+            For each file give one bullet explaining its role, then \
+            a two-sentence overall description.
             """
         )
         let prompt = text.prefix(24 * 1024)                 // safety window
-        let resp   = try await session.respond(to: String(prompt),
-                                               options: GenerationOptions(temperature: 0))
-        return resp.content                                 // unwrap Response<String>
+        let resp   = try await
+                     session.respond(to: String(prompt),
+                                     options: GenerationOptions(temperature: 0))
+        return resp.content                         // unwrap Response<String>
     }
 }
 ```
