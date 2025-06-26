@@ -60,11 +60,15 @@ struct ChatCLI {
         }
 
         let session = LanguageModelSession(instructions: sysPrompt)
+        print("Temperature: \(temperature)")
+        print("System Prompt: \(sysPrompt)")
         let options = GenerationOptions(temperature: temperature)
 
         print("Apple-Intelligence chat (streaming, T=0.2). Type /quit to exit.\n")
 
-        while let prompt = readLine(strippingNewline: true) {
+        while true {
+            print("Enter your message: ", terminator: "")
+            guard let prompt = readLine(strippingNewline: true) else { break }
             if prompt.isEmpty || prompt == "/quit" { break }
 
             var previous = ""       // text already printed
@@ -100,27 +104,31 @@ struct RuntimeError: Error, CustomStringConvertible {
 }
 ```
 
-Here are the first few lines of output given the prompt **write Python code to calculate the orbit of Jupiter**:
+Here are the first few lines of output given the prompt **wDescribe the math for calculating the orbit of Jupiter, then write a very short design for a Python script*:
 
 ```text
 $ swift run
 [1/1] Planning build
 Building for debugging...
 [1/1] Write swift-version-39B54973F684ADAB.txt
-Build of product 'chattool' complete! (0.17s)
+Build of product 'chattool' complete! (0.16s)
+Temperature: 0.2
+System Prompt: You are a helpful assistant.
 Apple-Intelligence chat (streaming, T=0.2). Type /quit to exit.
 
-write Python code to calculate the orbit of Jupiter
-Calculating the orbit of a planet like Jupiter involves solving Kepler's laws of planetary motion, which describe the elliptical orbits of planets around the Sun. To compute the orbit, you'll need to consider the gravitational forces between Jupiter and the Sun, as well as the conservation of angular momentum.
+Enter your message: Describe the math for calculating the orbit of Jupiter, then write a very short design for a Python script
+Calculating the orbit of Jupiter involves solving Kepler's laws of planetary motion, which describe the elliptical orbits of planets around the Sun. The key equations involve gravitational forces and conservation laws. Here's a brief overview of the math involved:
 
-Here's a simplified Python script using numerical integration to approximate Jupiter's orbit over a period of time. This example uses the numerical method of Euler's method to integrate the equations of motion. Note that this is a very basic model and does not account for all real-world complexities like gravitational perturbations from other planets or non-spherical Earth.
+ ### Key Concepts:
 
-```python
-import numpy as np
+1. **Kepler's Laws:**
+   - **First Law (Law of Ellipses):** Planets move along ellipses with the Sun at one focus.
+   - **Second Law (Law of Equal Areas):** A line segment joining a planet and the Sun sweeps out equal areas during equal intervals of time.
+   - **Third Law (Law of Harmonies):** The square of the orbital period (\(T\)) is proportional to the cube of the semi-major axis (\(a\)): \(T^2 = \frac{4\pi^2}{GM}a^3\).
 
-def gravitational_force(m1, m2, r):
-    """Calculate gravitational force between two masses."""
-    G = 6.67430e-11  # Gravitational constant, m^3 kg^-1 s^-2
-    return G * m1 * m2 / r**2
- ...
+2. **Gravitational Force:**
+   - The gravitational force between two masses (\(m_1\) and \(m_2\)) is given by Newton's law: \(F = G \frac{m_1 m_2}{r^2}\), where \(G\) is the gravitational constant and \(r\) is the distance between centers.
+
+3. **Centripetal Force:**
+   - For circular orbits, centripetal force equals gravitational force: \(F = \frac{mv^2}{r}\).
 ```

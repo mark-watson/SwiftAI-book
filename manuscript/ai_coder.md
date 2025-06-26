@@ -1,6 +1,6 @@
 # Using Apple Intelligence's Default System Model To Build a Coding Assistant Command Line Tool
 
-TBD
+This tool looks in the current directory and all subdirectories for source code files and describes them and then enters a chat loop for talking about the code.
 
 **Package.swift:**
 
@@ -99,11 +99,11 @@ struct CodingCLI {
         }
     }
 
-    // ---- 3. Helper: summarise all code ----
+    // ---- 3. Helper: summarize all code ----
     static func summarize(_ text: String) async throws -> String {
         let session = LanguageModelSession(
             instructions: """
-            Summarise the following multi-file project. \
+            Summarize the following multi-file project. \
             For each file give one bullet explaining its role, then a two-sentence overall description.
             """
         )
@@ -115,5 +115,27 @@ struct CodingCLI {
 }
 ```
 
+Here is the output for running this tool in its own source directory:
 
+```text
+$ swift run
+Building for debugging...
+[8/8] Applying CodingCLI
+Build of product 'CodingCLI' complete! (3.23s)
+
+ === Project Summary ===
+ ### test.py
+- **Role:** This script interacts with Groq to perform a chat completion task.
+- **Description:** It sets up a chat session using Groq's API, sends a specific message, and prints the response, showcasing how to utilize Groq for conversational AI tasks.
+
+ ### Package.swift
+- **Role:** Defines the Swift package configuration for the CodingCLI project.
+- **Description:** This file specifies the project's platform requirements, defines the executable product, and outlines the executable target with necessary dependencies.
+
+ ### Sources/CodingCLI/CodingCLI.swift
+- **Role:** Serves as the entry point for the CodingCLI application, handling file summarization and chat interaction.
+- **Description:** It processes source files to generate a summary, and manages an interactive chat loop using a language model, demonstrating integration of summarization and conversational AI within a Swift package.
+
+Apple-Intelligence chat (streaming, T=0.2).  Type /quit to exit.
+```
 
