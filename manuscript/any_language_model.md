@@ -132,8 +132,19 @@ struct ollama_test {
 }
 ```
 
+## MLX Eample
+
+TBD
+
+## Apple's Foundation Models Framework Example
+
+TBD
 
 
 
 ## AnyLanguageodel Package Wrap Up
+
+In this chapter we have seen the simplicity of the AnyLanguageModel package. You have learned how to configure a LanguageModelSession to work with a wide array of providers, from major remote APIs to on-device Core ML and MLX models. We have shown that by acting as a drop-in replacement for Apple's Foundation Models framework, this library allows you to build model-agnostic features using a consistent, familiar API. You are no longer required to write bespoke networking and parsing logic for each new model you want to experiment with.
+
+This abstraction is more than a simple convenience; it represents a strategic design pattern for building modern, resilient AI applications in Swift. By decoupling your application's business logic from the specific model implementation, you are now free to innovate. You can dynamically select the most cost-effective model for simple tasks and the most powerful model for complex reasoning, all within the same codebase. As the AI landscape continues to evolve, your application is now ready to adapt with minimal friction, ensuring you can always leverage the best-in-class technology for your users.
 
