@@ -10,6 +10,7 @@ llm_groq.md
 llm_xAI.md
 llm_ollama.md
 llm_mlx.md
+any_language_model.md
 part3.md
 deeplearning_intro.md
 nlp.md
