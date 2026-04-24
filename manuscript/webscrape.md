@@ -23,80 +23,93 @@ Here is the main implementation file for the library:
 import Foundation
 import SwiftSoup
 
-public func webPageText(uri: String) -> String {
-    guard let myURL = URL(string: uri) else {
-        print("Error: \(uri) doesn't seem to be a valid URL")
-        fatalError("invalid URI")
-    }
-    let html = try! String(contentsOf: myURL, encoding: .ascii)
-    let doc: Document = try! SwiftSoup.parse(html)
-    let plain_text = try! doc.text()
-    return plain_text
+public enum ScrapingError: Error {
+    case invalidURL(String)
+    case fetchFailed(Error)
+    case parseFailed(Error)
 }
 
-func webPageHeadersHelper(uri: String, headerName: String) -> [String] {
-    var ret: [String] = []
-    guard let myURL = URL(string: uri) else {
-        print("Error: \(uri) doesn't seem to be a valid URL")
-        fatalError("invalid URI")
-    }
-    do {
-        let html = try String(contentsOf: myURL, encoding: .ascii)
-        let doc: Document = try SwiftSoup.parse(html)
-        let h1_headers = try doc.select(headerName)
-        for el in h1_headers {
-            let h1 = try el.text()
-            ret.append(h1)
-        }
-    } catch {
-        print("Error")
-    }
-    return ret
+public struct Anchor: Equatable {
+    public let text: String
+    public let url: URL
 }
 
-public func webPageH1Headers(uri: String) -> [String] {
-    return webPageHeadersHelper(uri: uri, headerName: "h1")
-}
+/// Fetches the HTML document from a given URI and parses it.
+private func fetchDocument(uri: String) async throws -> Document {
+    guard let url = URL(string: uri) else {
+        throw ScrapingError.invalidURL(uri)
+    }
     
-public func webPageH2Headers(uri: String) -> [String] {
-    return webPageHeadersHelper(uri: uri, headerName: "h2")
+    let (data, _) = try await URLSession.shared.data(from: url)
+    
+    guard let html = String(data: data, encoding: .utf8) else {
+        throw ScrapingError.parseFailed(NSError(domain: "WebScraping", code: 1,
+            userInfo: [NSLocalizedDescriptionKey: "Failed to decode UTF-8 data"]))
+    }
+    
+    do {
+        return try SwiftSoup.parse(html, uri)
+    } catch {
+        throw ScrapingError.parseFailed(error)
+    }
 }
 
-public func webPageAnchors(uri: String) -> [[String]] {
-    var ret: [[String]] = []
-    guard let myURL = URL(string: uri) else {
-        print("Error: \(uri) doesn't seem to be a valid URL")
-        fatalError("invalid URI")
-    }
-    do {
-        let html = try String(contentsOf: myURL, encoding: .ascii)
-        let doc: Document = try SwiftSoup.parse(html)
-        let anchors = try doc.select("a")
-        for a in anchors {
-            let text = try a.text()
-            let a_uri = try a.attr("href")
-            if a_uri.hasPrefix("#") {
-                ret.append([text, uri + a_uri])
-            } else {
-                ret.append([text, a_uri])
-            }
+/// Returns the plain text content of a web page.
+public func webPageText(uri: String) async throws -> String {
+    let doc = try await fetchDocument(uri: uri)
+    return try doc.text()
+}
+
+/// Returns all headers of a specific type (e.g., "h1", "h2").
+private func webPageHeadersHelper(uri: String, headerName: String) async throws -> [String] {
+    let doc = try await fetchDocument(uri: uri)
+    let headers = try doc.select(headerName)
+    return try headers.map { try $0.text() }
+}
+
+/// Returns all H1 headers on the page.
+public func webPageH1Headers(uri: String) async throws -> [String] {
+    return try await webPageHeadersHelper(uri: uri, headerName: "h1")
+}
+
+/// Returns all H2 headers on the page.
+public func webPageH2Headers(uri: String) async throws -> [String] {
+    return try await webPageHeadersHelper(uri: uri, headerName: "h2")
+}
+
+/// Returns all anchors (links) found on the page as `Anchor` objects.
+public func webPageAnchors(uri: String) async throws -> [Anchor] {
+    let doc = try await fetchDocument(uri: uri)
+    let anchors = try doc.select("a")
+    let baseURL = URL(string: uri)
+    
+    return try anchors.compactMap { a -> Anchor? in
+        let text = try a.text()
+        let href = try a.attr("href")
+        
+        // Use Foundation's URL resolution for relative/fragment links.
+        guard let resolvedURL = URL(string: href, relativeTo: baseURL) else {
+            return nil
         }
-    } catch {
-        print("Error")
+        
+        return Anchor(text: text, url: resolvedURL.absoluteURL)
     }
-    return ret
 }
 ~~~~~~~~
 
 This Swift code defines several functions that can be used to scrape information from a web page located at a given URI.
 
-The **webPageText** function takes a URI as input and returns the plain text content of the web page located at that URI. It first checks if the URI is valid and then reads the content of the web page using the contentsOf method of the String class. It then uses the parse method of the SwiftSoup library to parse the HTML content of the page and extract the plain text.
+The library uses modern Swift concurrency (async/await) throughout. A `ScrapingError` enum provides typed error handling for invalid URLs, network failures, and parsing failures. The `Anchor` struct replaces the old `[[String]]` return type and holds a resolved `URL` alongside the link text.
 
-The **webPageH1Headers** and **webPageH2Headers** functions use the **webPageHeadersHelper** function to extract the **H1** and **H2** header texts respectively from the web page located at a given URI. The **webPageHeadersHelper** function uses the same technique as the **webPageText** function to read and parse the HTML content of the page. It then selects the headers using the specified **headerName** parameter and extracts the text of the headers.
+The private **fetchDocument** helper does the shared heavy lifting: it validates the URI, fetches the raw data with `URLSession.shared.data(from:)` (async), decodes it as UTF-8, and returns a parsed SwiftSoup `Document`.
 
-The **webPageAnchors** function extracts all the anchor tags **<a>** from the web page located at a given URI, along with their corresponding text and URI. It also uses the **webPageHeadersHelper** function to read and parse the HTML content of the page, selects the anchor tags using the **"a"** selector, and extracts their **text** and **href** attributes.
+The **webPageText** function takes a URI as input and returns the plain text content of the web page located at that URI. It delegates to **fetchDocument** and then calls SwiftSoup's `doc.text()` to extract all plain text.
 
-Overall, these functions provide a simple way to scrape information from a web page and extract specific information such as plain text, header texts, and anchor tags.
+The **webPageH1Headers** and **webPageH2Headers** functions use the private **webPageHeadersHelper** function to extract the **H1** and **H2** header texts respectively from the web page. The helper uses `doc.select(headerName)` on the parsed document and maps each element to its text content.
+
+The **webPageAnchors** function extracts all anchor tags **<a>** from the web page and returns them as an array of **Anchor** values. It resolves relative and fragment URLs against the page's base URL using Foundation's `URL(string:relativeTo:)`, discarding any links that cannot be resolved.
+
+Overall, these functions provide a simple, modern way to scrape information from a web page and extract specific information such as plain text, header texts, and anchors.
 
 I wrote these utility functions to get the plain text from a web site, HTML header text, and anchors. You can clone this library and extend it for other types of HTML elements you may need to process.
 

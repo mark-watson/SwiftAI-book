@@ -75,11 +75,12 @@ struct ChatCLI {
 
             let task = Task {
                 for try await part in session.streamResponse(to: prompt, options: options) {
-                    let delta = part.dropFirst(previous.count) // new characters only
+                    let current: String = String(describing: part)
+                    let delta = current.dropFirst(previous.count) // new characters only
                     if !delta.isEmpty {
                         FileHandle.standardOutput.write(Data(delta.utf8))
                         fflush(stdout)
-                        previous = part
+                        previous = current
                     }
                 }
                 print() // newline when complete

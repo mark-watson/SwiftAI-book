@@ -8,78 +8,138 @@ We use the library in the GitHub repository [https://github.com/mattt/ollama-swi
 
 ## Running the Ollama Service
 
-Assuming you have Ollama installed, download the following model that required two gigabytes of disk space:
+Assuming you have Ollama installed, download the following model:
 
 {linenos=off}
 ~~~~~~~~
-ollama pull llama3.2:latest
+ollama pull qwen3:1.7b
 ~~~~~~~~
 
 When the model is downloaded it is also cached for future use on your laptop.
 
-Here is the test/example code we will run:
+## The OllamaService Actor Library
+
+The library wraps the raw `Ollama.Client` in a Swift actor to provide safe concurrent access. It supports basic chat, streaming chat, and optional tool calling:
 
 {lang="swift",linenos=off}
 ~~~~~~~~
-import XCTest
 import Ollama
+import Foundation
 
-final class Ollama_swift_examplesTests: XCTestCase {
-    let text1 = "If Mary is 42, Bill is 27, and Sam is 51, what are their pairwise age differences."
-    let client = Ollama.Client.default // http://localhost:11434 endpoint
-    func testExample() async throws {
-      let response = try await client.chat(
-        model: "llama3.2:latest",
-        messages: [
-            .system("You are a helpful assistant who completes text and also answers questions. You are always concise."),
-            .user(text1),
-            .user("what if Sam is 52?")
-        ])
-        print(response.message.content)
+/// A service to interact with Ollama models using modern Swift concurrency.
+public actor OllamaService {
+    private let client: Ollama.Client
+    private let model: Model.ID
+
+    @MainActor
+    public init(model: Model.ID = "qwen3:1.7b", client: Ollama.Client? = nil) {
+        self.model = model
+        self.client = client ?? .default
+    }
+
+    /// Performs a chat request with optional tools.
+    public func chat(messages: [Ollama.Chat.Message], tools: [any Ollama.ToolProtocol] = []) async throws -> Ollama.Client.ChatResponse {
+        return try await client.chat(
+            model: model,
+            messages: messages,
+            tools: tools
+        )
+    }
+
+    /// Performs a streaming chat request with optional tools.
+    public func chatStream(messages: [Ollama.Chat.Message], tools: [any Ollama.ToolProtocol] = []) -> AsyncThrowingStream<Ollama.Client.ChatResponse, any Error> {
+        AsyncThrowingStream { continuation in
+            Task {
+                do {
+                    for try await chunk in try await client.chatStream(model: model, messages: messages, tools: tools) {
+                        continuation.yield(chunk)
+                    }
+                    continuation.finish()
+                } catch {
+                    continuation.finish(throwing: error)
+                }
+            }
+        }
     }
 }
 ~~~~~~~~
 
-The output looks like:
+## Example Tests
 
-{linenos=off}
-~~~~~~~~
-Pairwise age differences:
-
-- Mary - Bill: |42 - 27| = 15
-- Mary - Sam: |42 - 51| = 9
-- Bill - Sam: |27 - 51| = 24
-
-If Sam is 52:
-- Mary - Bill: |42 - 27| = 15
-- Mary - Sam: |42 - 52| = 10
-- Bill - Sam: |27 - 52| = 25
-~~~~~~~~
-
-The **ollama_swift** library also supports text generation. You can also do single shot text generation using the code in the previous example, but only using one **user** call, for example:
+The tests use Swift's modern **Testing** framework rather than XCTest. Here is the test/example code we will run:
 
 {lang="swift",linenos=off}
 ~~~~~~~~
-final class Ollama_swift_examplesTests: XCTestCase {
-    let text1 = "What is the capital of Germany?"
-    let client = Ollama.Client.default
-    func testExample() async throws {
-      let response = try await client.chat(
-        model: "llama3.2:latest",
-        messages: [
-            .system("You are a helpful assistant who completes text and also answers questions. You are always concise."),
-            .user(text1),
-        ])
-        print(response.message.content)
+import Testing
+import Ollama
+import Foundation
+@testable import Ollama_swift_examples
+
+@Suite("Ollama Service Tests")
+@MainActor
+struct OllamaServiceTests {
+    let service = OllamaService(model: "qwen3:1.7b")
+
+    @Test("Basic Chat Functionality")
+    func testBasicChat() async throws {
+        let messages: [Ollama.Chat.Message] = [
+            .system("You are a helpful assistant."),
+            .user("What is the capital of Germany?")
+        ]
+        
+        let response = try await service.chat(messages: messages)
+        #expect(!response.message.content.isEmpty)
+        print("Response: \(response.message.content)")
+    }
+
+    @Test("Weather Tool Functionality")
+    func testWeatherTool() async throws {
+        var messages: [Ollama.Chat.Message] = [
+            .system("You are a helpful assistant that can check the weather."),
+            .user("What is the weather in San Francisco?")
+        ]
+        
+        let response = try await service.chat(messages: messages, tools: [weatherTool])
+        
+        if let toolCalls = response.message.toolCalls {
+            for toolCall in toolCalls {
+                #expect(toolCall.function.name == "get_weather")
+                let result = try await weatherTool(toolCall.function.arguments)
+                let resultString = String(data: try JSONEncoder().encode(result), encoding: .utf8)!
+                messages.append(response.message)
+                messages.append(.tool(resultString))
+                
+                let finalResponse = try await service.chat(messages: messages)
+                #expect(!finalResponse.message.content.isEmpty)
+                print("Weather Final Response: \(finalResponse.message.content)")
+            }
+        } else {
+            print("Model did not call the weather tool.")
+        }
+    }
+
+    @Test("Streaming Chat Functionality")
+    func testStreamingChat() async throws {
+        let messages: [Ollama.Chat.Message] = [
+            .user("Tell me a very short joke.")
+        ]
+        
+        var fullResponse = ""
+        for try await chunk in await service.chatStream(messages: messages) {
+            fullResponse += chunk.message.content
+        }
+        
+        #expect(!fullResponse.isEmpty)
+        print("Streaming Response: \(fullResponse)")
     }
 }
 ~~~~~~~~
 
-The output looks like:
+The output for the basic chat test looks like:
 
 {linenos=off}
 ~~~~~~~~
-The capital of Germany is Berlin.
+Response: The capital of Germany is Berlin.
 ~~~~~~~~
 
 ## Ollama Wrap Up
