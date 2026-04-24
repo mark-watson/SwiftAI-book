@@ -1,6 +1,6 @@
 # Knowledge Base Navigator: Building an AI-Powered Information System
 
-Earlier we looked at the classic Knowledge Graph Navigator (KGN) project that combined symbolic Natural Language Processing (NLP) with access to public knowledge graphs like Wikidata and DBPedia. Here I take a simpler, more modern approach: a Swift command-line tool powered by Google's Gemini API.
+In two of my other books I covered the classic Knowledge Graph Navigator (KGN) project that combined symbolic Natural Language Processing (NLP) with access to public knowledge graphs like Wikidata and DBPedia. In this chapter I take a simpler, more modern approach: a Swift command-line tool powered by Google's Gemini API.
 
 The source code can be found in the directory: **source-code/knowledge-navigator/**.
 
