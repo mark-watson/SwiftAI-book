@@ -1,0 +1,43 @@
+{
+  "object": {
+    "pins": [
+      {
+        "package": "Nlp_swift",
+        "repositoryURL": "git@github.com:mark-watson/Nlp_swift.git",
+        "state": {
+          "branch": "main",
+          "revision": "d73bbf218f941cf2052e4bf5d742ab48088162f1",
+          "version": null
+        }
+      },
+      {
+        "package": "SparqlQuery_swift",
+        "repositoryURL": "git@github.com:mark-watson/SparqlQuery_swift.git",
+        "state": {
+          "branch": "main",
+          "revision": "83f39eaa264d92f157f97be7ea95aa378ad9dbd8",
+          "version": null
+        }
+      },
+      {
+        "package": "SwiftSoup",
+        "repositoryURL": "https://github.com/scinfu/SwiftSoup.git",
+        "state": {
+          "branch": null,
+          "revision": "11da8c685ddde2d519fad04a7daf8485bbbc773e",
+          "version": "1.7.5"
+        }
+      },
+      {
+        "package": "SwiftyJSON",
+        "repositoryURL": "https://github.com/SwiftyJSON/SwiftyJSON.git",
+        "state": {
+          "branch": "master",
+          "revision": "b3dcd7dbd0d488e1a7077cb33b00f2083e382f07",
+          "version": null
+        }
+      }
+    ]
+  },
+  "version": 1
+}

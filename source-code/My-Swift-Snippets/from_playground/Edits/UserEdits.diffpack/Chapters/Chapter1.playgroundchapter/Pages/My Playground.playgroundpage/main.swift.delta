@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Diff</key>
+	<array>
+		<dict>
+			<key>ModifiedContent</key>
+			<string>// test working copy sync, test 10
+var x: Set&lt;[[String]]&gt; = []
+print(x.insert([["foo1111", "bar1111"]]))
+print(x)
+print(x.insert([["foo1111", "bar1111"]]))
+print("final x:")
+print(x)
+</string>
+			<key>ModifiedRange</key>
+			<string>{0, 183}</string>
+			<key>OriginalContent</key>
+			<string></string>
+			<key>OriginalRange</key>
+			<string>{0, 0}</string>
+		</dict>
+		<dict>
+			<key>ModifiedContent</key>
+			<string>func fact(n: Int) -&gt; Int {
+    if n &gt; 1 { return n * fact(n: n - 1) }
+    else { return 1 }
+}
+print(fact(n: 5))
+</string>
+			<key>ModifiedRange</key>
+			<string>{184, 112}</string>
+			<key>OriginalContent</key>
+			<string></string>
+			<key>OriginalRange</key>
+			<string>{1, 0}</string>
+		</dict>
+	</array>
+	<key>File</key>
+	<string>Chapters/Chapter1.playgroundchapter/Pages/My Playground.playgroundpage/main.swift</string>
+</dict>
+</plist>

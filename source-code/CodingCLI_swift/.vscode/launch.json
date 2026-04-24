@@ -1,0 +1,22 @@
+{
+  "configurations": [
+    {
+      "type": "swift",
+      "request": "launch",
+      "args": [],
+      "cwd": "${workspaceFolder:CodingCLI_swift}",
+      "name": "Debug CodingCLI",
+      "program": "${workspaceFolder:CodingCLI_swift}/.build/debug/CodingCLI",
+      "preLaunchTask": "swift: Build Debug CodingCLI"
+    },
+    {
+      "type": "swift",
+      "request": "launch",
+      "args": [],
+      "cwd": "${workspaceFolder:CodingCLI_swift}",
+      "name": "Release CodingCLI",
+      "program": "${workspaceFolder:CodingCLI_swift}/.build/release/CodingCLI",
+      "preLaunchTask": "swift: Build Release CodingCLI"
+    }
+  ]
+}
