@@ -42,7 +42,7 @@ swift test
 
 This example is released using the Apache 2 license.
 
-Copyright 2022-2024 Mark Watson. All rights reserved.
+Copyright 2022-2026 Mark Watson. All rights reserved.
 
 ## This Book is Licensed with Creative Commons Attribution CC BY Version 3 That Allows Reuse In Derived Works
 
