@@ -7,6 +7,7 @@ This eBook will be updated occasionally so please periodically check the [leanpu
 The first edition was released spring of 2022.
 The second edition was released December 2024.
 The third edition was released June 2025.
+The fourth edition was releasedApril 2026.
 
 If you would like to support my work please consider purchasing my books on [Leanpub](https://leanpub.com/u/markwatson) and star my git repositories that you find useful on [GitHub](https://github.com/mark-watson?tab=repositories&q=&type=public). You can also interact with me on social media on [Mastodon](https://mastodon.social/@mark_watson) and [Twitter](https://twitter.com/mark_l_watson).
 
@@ -14,10 +15,7 @@ If you would like to support my work please consider purchasing my books on [Lea
 
 Why use Swift for hacking AI? Common Lisp has been my go-to language for artificial intelligence development and research since 1982. The transition to using Swift was a transition motivated by practical aspects of Swift and the Swift ecosystem.
 
-## Notes on the new June 2025 Book Edition
-
-With the release of new Apple Intelligence tooling available for macOS26, iPadOS26, and iOS26 I have added a new Part 5 at the end of this book covering several practical AI use cases with new examples.
-
+The Swift language has also replaced much of my Python workflow for AI work.
 
 ## Requests from the Author
 
@@ -25,50 +23,14 @@ This book will always be available to read free online at [https://leanpub.com/S
 
 That said, I appreciate it when readers purchase my books because the income enables me to spend more time writing.
 
-### Hire the Author as a Consultant
+Both the source code examples and the manuscript for this book are kept in one github repository:
 
-I am available for short consulting projects. Please see [https://markwatson.com](https://markwatson.com).
+[https://github.com/mark-watson/SwiftAI-book](https://github.com/mark-watson/SwiftAI-book)
 
-You can also interact with me on social media on [Mastodon](https://mastodon.social/@mark_watson) and [Twitter](https://twitter.com/mark_l_watson).
+### Visit My Website
 
+[https://markwatson.com](https://markwatson.com)
 
-## Notes on the Second Edition
-
-The second edition of this book deletes some of the old material and adds two new themes:
-
-- A new Part II of the book that covers Large Language Models (LLMS). We will use both commercial LLM APIs and running local LLMs using Ollama and Apple's MLX framework.
-- Several examples from the first edition are augmented using LLMs.
-- As much as possible, I support some of the book examples as Swift Playgrounds, usable on iPads and Macs.
-
-## Book Structure
-
-This book starts out slowly in Part I with simple examples which I wrote showing how to access the Swift library packages on GitHub, tips on writing Swift command line apps.
-
-Part II will show you how to effectively integrate LLMs into your own applications.
-
-Part III starts with a simple example using web scraping and commercial web search APIs. We then work through examples integrating web search with LLMs and then show how we can modify web scraping applications to specifically process topics and have better control of outputing structured data.
-
-
-We then proceed to using Apple's CoreML for Natural Language Processing (NLP), training and using your own CoreML models, using OpenAI's GPT-4 APIs, and finally several semantic web/linked data examples. The book ends with the example macOS application Knowledge Graph Navigator. It is not my intention to cover in detail the use of SwiftUI for building iOS/iPadOS/macOS applications but I thought my readers might enjoy seeing several of the techniques covered in the book integrated into an example app.
-
-I have used Common Lisp for AI research projects and for AI product development and delivery since 1982. There is something special about using a language for almost forty years. I now find Swift a compelling choice for several reasons:
-
-- Flexible language with many features I rely on like supporting closures and an interactive functional programming style.
-- Built-in support for deep learning neural network models for natural language processing, predictive models, etc.
-- First class support for iOS and macOS development.
-- Good support for server side applications hosted on Linux.
-
-Swift is a programmer-efficient language: code is concise and easy to read, and high quality libraries from Apple and third parties mean that often there is less code to write. I will share with you my Swift development work flow that combines interactive development of code in playgrounds, development of higher level libraries in text only or command line applications, and my general strategy for writing iOS and macOS applications after low level and intermediate code is written and debugged.
-
-## Requests from the Author
-
-This book will always be available to read free online at [https://leanpub.com/SwiftAI/read](https://leanpub.com/SwiftAI/read).
-
-That said, I appreciate it when readers purchase my books because the income enables me to spend more time writing.
-
-### Hire the Author as a Consultant
-
-I am available for short consulting projects. Please see [https://markwatson.com](https://markwatson.com).
 
 
 ## Parts of this Book are Specific for macOS and iOS, with Some Support for Linux
@@ -77,25 +39,10 @@ Swift is a general purpose language that is well supported in macOS, iOS, and Li
 
 ## Code for this Book
 
-Because of the way the Swift Package Manager works, I organized all book examples that build libraries as separate GitHub repos so the libraries can be easily used in other book examples as well as your own software projects. The separate library GitHub repositories are:
+Because of the way the Swift Package Manager works, I organized all book examples that build libraries as separate directories in the subdirectory **source-code** in the GitHub repository:
 
-- [https://github.com/mark-watson/SparqlQuery_swift](https://github.com/mark-watson/SparqlQuery_swift) - SPARQL Swift library for my Swift AI book.
-- [https://github.com/mark-watson/QuestionAnswering_BERT_swift](https://github.com/mark-watson/QuestionAnswering_BERT_swift) - modification of Apple's question answering demo to use DBPedia.
-- [https://github.com/mark-watson/swift-coreml-wisconsin_data_create_model](https://github.com/mark-watson/swift-coreml-wisconsin_data_create_model) - create CoreML models from training data files of Wisconsin Caner data.
-- [https://github.com/mark-watson/swift-coreml-wisconsin_data_predict_with_model](https://github.com/mark-watson/swift-coreml-wisconsin_data_predict_with_model) - use the pretrained Wisconsin Cancer data model.
-- [https://github.com/mark-watson/ShellProcess_swift](https://github.com/mark-watson/ShellProcess_swift) - library for spawning shell processes and capturing output to stdout.
-- [https://github.com/mark-watson/WebScraping_swift](https://github.com/mark-watson/WebScraping_swift) - library for scrapping web sites.
-- [https://github.com/mark-watson/OpenAI_swift](https://github.com/mark-watson/OpenAI_swift) - library for using OpenAI's GPT3 APIs.
-- [https://github.com/mark-watson/Nlp_swift](https://github.com/mark-watson/Nlp_swift) - library that uses pretrained CoreML NLP models.
-- [https://github.com/mark-watson/KGN](https://github.com/mark-watson/KGN) - SwiftUI based application supporting macOS, iPadOS, and iOS. The macOS version is in Apple's app store.
+[https://github.com/mark-watson/SwiftAI-book](https://github.com/mark-watson/SwiftAI-book)
 
-I suggest cloning all of these GitHub repositories right now so you can have the example source code at hand while reading this book.
-
-All of the code examples are licensed using the Apache 2 license. You are free to reuse the book example code in your own projects (open source, commercial), with attribution of my copyright and the Apache 2 license.
-
-Except for the last SwiftUI example application, all sample programs are written as command line utilities. I considered using Swift playgrounds for some of the examples but decided that packaging as a combination of libraries and command line utilities would tend to make the example code more useful for your own projects.
-
-http://www.knowledgegraphnavigator.com/
 
 ## Author's Background
 
@@ -111,20 +58,14 @@ As an author, I hope that the material in this book entertains you and will be u
 The cover picture was taken by [WikiMedia Commons user Keta](https://commons.wikimedia.org/wiki/User:Keta) and is available for use under the Creative Commons License CC BY-SA 2.5.
 
 
-## CoreML Libraries Used in this Book
-
-- CoreML general overview: https://developer.apple.com/documentation/coreml
-- MLClassifier https://developer.apple.com/documentation/createml/mlclassifier
-- MLTextClassifier https://developer.apple.com/documentation/createml/mltextclassifier
-- NLModel https://developer.apple.com/documentation/naturallanguage/nlmodel
-- Natural Language Framework https://developer.apple.com/documentation/naturallanguage
-- MLCustomLayer https://developer.apple.com/documentation/coreml/mlcustomlayer
-
 ## Swift 3rd Party Libraries
 
 We use the following 3rd party libraries:
 
 - [https://github.com/SwiftyJSON/SwiftyJSON](https://github.com/SwiftyJSON/SwiftyJSON)
+- [https://github.com/apple/swift-argument-parser](https://github.com/apple/swift-argument-parser)
+- [https://github.com/mattt/ollama-swift](https://github.com/mattt/ollama-swift)
+- [https://github.com/scinfu/SwiftSoup](https://github.com/scinfu/SwiftSoup)
 
 ## Acknowledgements
 
