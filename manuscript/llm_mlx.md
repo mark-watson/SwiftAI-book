@@ -1,337 +1,412 @@
-# Using Apple's MLX Framework to Run Local LLMs
+# Running Local LLMs with Apple's MLX Framework
 
-Apple's MLX framework is an efficient way to use LLMs embedded in applications written in Swift using the SwiftUI user interface library for macOS, iOS, and iPadOS.
+Apple's **MLX** framework lets you run large language models
+entirely on-device on Apple Silicon, with no network calls and no
+API keys. Because the CPU, GPU, and Neural Engine all share the same
+unified memory pool, data never has to be copied between chips.
+The result is fast, low-overhead inference that works offline and
+keeps user data private.
 
-It is difficult to create simple command line Swift apps using MLX but there are several complete MLX, Swift, and SwiftUI demo applications that you can use to start your own projects. Here we will use the **LLMEval** application from the GitHub repository [https://github.com/ml-explore/mlx-swift-examples](https://github.com/ml-explore/mlx-swift-examples).
+This chapter walks through a standalone Swift command-line tool in
+**source-code/MLX_swift/** that downloads a small quantised language
+model on the first run, caches it locally, and exposes both a
+single-prompt mode and an interactive REPL.
 
-## MLX Framework History
+## Background: MLX and Apple Silicon
 
-Apple’s MLX framework, introduced in December 2023, is a key part of Apple’s strategy to support AI on its hardware platforms by leveraging the unique capabilities of Apple Silicon, including the M1, M2, M3, and M4 series. Designed as an open-source, NumPy-like array framework, MLX optimizes machine learning workloads, particularly large language models (LLMs), by utilizing Apple Silicon’s unified architecture that integrates CPU, GPU, Neural Engine, and shared memory. This architecture eliminates data transfer bottlenecks, enabling faster and more efficient ML tasks, such as training and deploying LLMs directly on devices like MacBooks and iPhones. MLX aligns with Apple’s privacy-focused approach by supporting on-device processing, enhancing performance for applications like natural language processing, speech recognition, and content generation while offering a seamless transition for Python or Swift ML engineers familiar with frameworks like NumPy and PyTorch. MLX stands out by leveraging Apple’s unified memory architecture, allowing shared memory access between CPU and GPU, which eliminates data transfer overhead and accelerates machine learning tasks, especially with large datasets.
+Apple introduced MLX in December 2023 as an open-source,
+NumPy-like array framework tuned for Apple Silicon's unified memory
+architecture. The key insight is that the M-series chips give every
+compute unit — CPU, GPU, and Neural Engine — a single view of RAM.
+There is no host-to-device copy step before inference begins, which
+eliminates a major bottleneck that exists on discrete-GPU systems.
 
-## MLX Resources on GitHub
+MLX is available in Python and Swift. The **mlx-swift-lm**
+repository provides the higher-level Swift libraries used in this
+chapter:
 
-In this chapter we will look at an example application that is part of the Swift MLX Examples project. After working through this example, the following resources on GitHub are worth looking at:
+| Library | Purpose |
+|---|---|
+| `MLXLLM` | Load and run text-only language models |
+| `MLXVLm` | Vision-language models (image + text) |
+| `MLXLMCommon` | Shared types: `ModelContainer`, `GenerateParameters`, `generate()` |
+| `MLXHuggingFace` | Swift macros for one-step model loading from Hugging Face |
 
-- https://github.com/ml-explore/mlx-swift: The Swift API for MLX, enabling integration with Swift-based projects.
-- https://github.com/ml-explore/mlx-swift-examples: Examples showcasing the use of MLX with Swift.
+> **Note:** The `mlx-swift-lm` repository (reusable libraries)
+> is separate from `mlx-swift-examples` (demo apps). Always
+> depend on `mlx-swift-lm` for library code.
 
-You can find the documentation here:
+## Choosing a Model
 
-[https://swiftpackageindex.com/ml-explore/mlx-swift/0.18.0/documentation/mlx](https://swiftpackageindex.com/ml-explore/mlx-swift/0.18.0/documentation/mlx).
+Any 4-bit quantised model published by the
+[mlx-community](https://huggingface.co/mlx-community) organisation
+on Hugging Face can be used with this code. The model is specified
+by its Hugging Face repository ID. The example uses:
 
-These repositories provide a comprehensive set of tools and examples to effectively utilize MLX for machine learning tasks on Apple silicon. There are many other repositories for MLX and Python and if you need to perform tasks like fine tuning a MLX model, that task should probably be done using Python.
+```
+mlx-community/Qwen3-1.7B-4bit
+```
 
-## Example Application for MLX Swift Examples Repository
+**Qwen3-1.7B-4bit** is about 1 GB on disk. It runs comfortably on
+a Mac with 8 GB of unified memory and produces good-quality,
+instruction-following output. Other good choices for experimentation:
 
-You will want to download the complete MLX Swift examples repository:
+| Model ID | Disk | Notes |
+|---|---|---|
+| `mlx-community/Qwen3-1.7B-4bit` | ~1 GB | Default in this example |
+| `mlx-community/Llama-3.2-1B-Instruct-4bit` | ~0.8 GB | Meta Llama |
+| `mlx-community/Phi-4-mini-instruct-4bit` | ~2.5 GB | Microsoft Phi-4 Mini |
+| `mlx-community/Qwen3-8B-4bit` | ~5 GB | Larger Qwen3 |
 
-{linenos=off}
-~~~~~~~~
-git clone https://github.com/ml-explore/mlx-swift-examples.git
-~~~~~~~~
+Models are downloaded on the first run and cached in
+`~/.cache/huggingface/`. Subsequent runs start immediately from the
+local cache.
 
-Open the top level XCode project by:
+## Project Structure
 
-{linenos=off}
-~~~~~~~~
-cd mlx-swift-examples
-open mlx-swift-examples.xcodeproj
-~~~~~~~~
+```
+source-code/MLX_swift/
+├── build.sh              # build + compile Metal shaders + run
+├── Package.swift
+└── Sources/MLX_swift/
+    └── main.swift
+```
 
-Here is the file browser view of this project:
+The logic lives entirely in `main.swift`. `build.sh` handles the
+Metal shader compilation step that `swift build` skips (see
+"Running the Example" below).
 
-![XCode View of projects](images/XCode.jpg)
+## Package.swift
 
-Running the LLMEval project:
+```swift
+// swift-tools-version: 6.0
+import PackageDescription
 
-![LLMEval app downloading model file](images/LLMEval1.jpg)
+let package = Package(
+    name: "MLX_swift",
+    platforms: [.macOS(.v14)],
+    dependencies: [
+        .package(
+            url: "https://github.com/ml-explore/mlx-swift-lm",
+            branch: "main"
+        ),
+        .package(
+            url:
+                "https://github.com/huggingface/swift-transformers",
+            from: "1.0.0"
+        ),
+    ],
+    targets: [
+        .executableTarget(
+            name: "MLX_swift",
+            dependencies: [
+                .product(
+                    name: "MLXLLM",
+                    package: "mlx-swift-lm"),
+                .product(
+                    name: "MLXLMCommon",
+                    package: "mlx-swift-lm"),
+                .product(
+                    name: "MLXHuggingFace",
+                    package: "mlx-swift-lm"),
+                .product(
+                    name: "Transformers",
+                    package: "swift-transformers"),
+            ],
+            path: "Sources/MLX_swift"
+        )
+    ]
+)
+```
 
-Initially the model is downloaded and cached on your laptop for future use. Here is the app used to solve a simple word problem:
+**Why two repositories?** `mlx-swift-lm` provides `MLXLLM`,
+`MLXLMCommon`, and `MLXHuggingFace`. The `MLXHuggingFace` Swift
+macros expand to code that references `HuggingFace.HubClient` and
+`Tokenizers.AutoTokenizer` at the call site — types that live in
+`swift-transformers`, not `mlx-swift-lm`. Both packages must
+therefore be explicit dependencies and imported in `main.swift`.
 
-![LLMEval app answering user's question](images/LLMEval2.jpg)
-
-## Analysis of Swift and SwiftUI Code in the LLMEval Application
-
-This example is part of the Swift MLX Examples project that currently has twenty contributors and a thousand stars on GitHub [https://github.com/ml-explore/mlx-swift-examples](https://github.com/ml-explore/mlx-swift-examples).
-
-Unfortunately the SwiftUI user interface code is mixed in with the code that uses MLX. Let's walk through the code:
-
-Here is a walk through a Swift-based program using Apple's frameworks for Machine Learning and Language Models with the code interspersed with explanations.
+## main.swift — Full Walkthrough
 
 ### Imports
 
-{lang="swift",linenos=off}
-~~~~~~~~
-import LLM
-import MLX
-import MLXRandom
-import MarkdownUI
-import Metal
-import SwiftUI
+```swift
+import Foundation
+import HuggingFace
 import Tokenizers
-~~~~~~~~
+import MLXLLM
+import MLXLMCommon
+import MLXHuggingFace
+```
 
-These imports bring in essential libraries:
+`HuggingFace` and `Tokenizers` come from `swift-transformers` and
+are required so that the `#huggingFaceLoadModelContainer` macro can
+find `HubClient` and `AutoTokenizer` when it expands.
 
-- LLM and MLX for working with language models.
-- MarkdownUI for rendering Markdown content.
-- SwiftUI for creating the user interface.
-- Tokenizers for tokenizing text.
+### Configuration Constants
 
-### The ContentView Struct
+```swift
+let modelID = "mlx-community/Qwen3-1.7B-4bit"
+let temperature: Float = 0.6
+let maxTokens = 512
+```
 
-The ContentView struct defines the main interface of the app.
+All three values are at the top of the file so they are easy to
+change. Swap `modelID` to try a different model. Reduce
+`temperature` toward 0.0 for more deterministic output; increase it
+toward 1.0 for more creative responses.
 
-**State Variables**
+### Loading the Model
 
-{lang="swift",linenos=off}
-~~~~~~~~
-struct ContentView: View {
+```swift
+let config = ModelConfiguration(id: modelID)
 
-  @State var prompt = ""
-  @State var llm = LLMEvaluator()
-  @Environment(DeviceStat.self) private var deviceStat
-~~~~~~~~
-
-In this code snippet:
-
-- @State allows the view to track changes in the prompt and llm instances.
-- @Environment fetches device statistics, such as GPU memory usage.
-
-**Display Style Enum**
-
-{lang="swift",linenos=off}
-~~~~~~~~
-  enum displayStyle: String, CaseIterable, Identifiable {
-    case plain, markdown
-    var id: Self { self }
-  }
-  
-  @State private var selectedDisplayStyle = displayStyle.markdown
-~~~~~~~~
-
-In this code snippet:
-
-- **displayStyle** defines whether the output is plain text or Markdown.
-- A segmented picker toggles between the two styles.
-
-### UI Layout
-
-**Input Section**
-
-{lang="swift",linenos=off}
-~~~~~~~~
-  var body: some View {
-    VStack(alignment: .leading) {
-      VStack {
-       HStack {
-         Text(llm.modelInfo).textFieldStyle(.roundedBorder)
-         Spacer()
-         Text(llm.stat)
-       }
-       HStack {
-         Spacer()
-         if llm.running {
-            ProgressView().frame(maxHeight: 20)
-            Spacer()
-          }
-          Picker("", selection: $selectedDisplayStyle) {
-            ForEach(displayStyle.allCases, id: \.self) {
-              option in
-                Text(option.rawValue.capitalized)
-                        .tag(option)
-            }
-
-           }.pickerStyle(.segmented)
-        }
-      }
-~~~~~~~~
-
-This code displays model information and statistics.
-
-**Output Section**
-
-{lang="swift",linenos=off}
-~~~~~~~~
-      ScrollView(.vertical) {
-        ScrollViewReader { sp in
-          Group {
-            if selectedDisplayStyle == .plain {
-                Text(llm.output)
-                    .textSelection(.enabled)
-            } else {
-                Markdown(llm.output)
-                    .textSelection(.enabled)
-            }
-          }
-          .onChange(of: llm.output) { _, _ in
-            sp.scrollTo("bottom")
-          }
-        }
-      }
-
-      HStack {
-        TextField("prompt", text: $prompt)
-                    .onSubmit(generate)
-                    .disabled(llm.running)
-        Button("generate", action: generate)
-                    .disabled(llm.running)
-       }
-      }
-~~~~~~~~
-
-The ScrollView shows the model’s output, which updates dynamically as the model generates text.
-
-**Toolbar**
-
-{lang="swift",linenos=off}
-~~~~~~~~
-      .toolbar {
-         ToolbarItem {
-           Label(
-            "Memory Usage: \(deviceStat.gpuUsage.activeMemory.formatted(.byteCount(style: .memory)))",
-            systemImage: "info.circle.fill"
-           )
-          }
-          ToolbarItem(placement: .primaryAction) {
-             Button {
-               Task {
-                copyToClipboard(llm.output)
-               }
-              } label: {
-                Label("Copy Output", systemImage: "doc.on.doc.fill")
-              }
-           }
-        }
-~~~~~~~~
-
-The toolbar includes:
-
-- GPU memory usage information.
-- A “Copy Output” button to copy the generated text.
-
-### The LLMEvaluator Class
-
-This class handles the logic for loading and generating text with the language model.
-
-**Core Properties**
-
-{lang="swift",linenos=off}
-~~~~~~~~
-@Observable
-@MainActor
-class LLMEvaluator {
-  var running = false
-  var output = ""
-  var modelInfo = ""
-  var stat = ""
-  let modelConfiguration = ModelConfiguration.phi3_5_4bit
-  /// parameters controlling the output
-  let generateParameters = GenerateParameters(temperature: 0.6)
-  let maxTokens = 240
-
-  /// update the display every N tokens -- 4 looks like it updates continuously
-  /// and is low overhead.  observed ~15% reduction in tokens/s when updating
-  /// on every token
-  let displayEveryNTokens = 4
-
-  enum LoadState {
-        case idle
-        case loaded(ModelContainer)
-  }
-
-  var loadState = LoadState.idle
-~~~~~~~~
-
-This code snippet:
-
-- Tracks the model state and output.
-- Configures the model (phi3_5_4bit).
-
-**Loading the Model (if required)**
-
-{lang="swift",linenos=off}
-~~~~~~~~
-  /// load and return the model -- can be called
-  /// multiple times, subsequent calls will
-  /// just return the loaded model
- 
-  func load() async throws -> ModelContainer {
-    switch loadState {
-    case .idle:
-        MLX.GPU.set(cacheLimit: 20 * 1024 * 1024)
-        let modelContainer =
-          try await LLM.loadModelContainer(configuration: modelConfiguration) {
-            [modelConfiguration] progress in
-            Task { @MainActor in
-                self.modelInfo = "Downloading \(modelConfiguration.name): \(Int(progress.fractionCompleted * 100))%"
-            }
-        }
-        self.modelInfo = "Loaded \(modelConfiguration.id). Weights: \(numParams / (1024*1024))M"
-        loadState = .loaded(modelContainer)
-        return modelContainer
-    case .loaded(let modelContainer):
-        return modelContainer
+let container: ModelContainer
+do {
+    container = try await #huggingFaceLoadModelContainer(
+        configuration: config
+    ) { progress in
+        let pct = Int(progress.fractionCompleted * 100)
+        print("\r  Downloading \(config.name): \(pct)%  ",
+              terminator: "")
+        fflush(stdout)
     }
-  }
-~~~~~~~~
-
-This code snippet:
-
-- Downloads and caches the model.
-- Updates modelInfo during the download.
-
-**Generating Output**
-
-{lang="swift",linenos=off}
-~~~~~~~~
-  func generate(prompt: String) async {
-    guard !running else { return }
-    running = true
-    self.output = ""
-
-    do {
-        let modelContainer = try await load()
-        let messages = [["role": "user", "content": prompt]]
-        let promptTokens = try await modelContainer.perform { _, tokenizer in
-            try tokenizer.applyChatTemplate(messages: messages)
-        }
-
-        let result = await modelContainer.perform { model, tokenizer in
-            LLM.generate(
-                promptTokens: promptTokens,
-                parameters: generateParameters, model: model,
-                tokenizer: tokenizer,
-                extraEOSTokens: modelConfiguration.extraEOSTokens
-            ) { tokens in
-                if tokens.count % displayEveryNTokens == 0 {
-                    let text = tokenizer.decode(tokens: tokens)
-                    Task { @MainActor in
-                        self.output = text
-                    }
-                }
-                if tokens.count >= maxTokens {
-                    return .stop
-                } else {
-                    return .more
-                }
-            }
-        }
-    } catch {
-        output = "Failed: \(error)"
-    }
-    running = false
-  }
+} catch {
+    fputs("[Error] Failed to load model: \(error)\n", stderr)
+    exit(1)
 }
-~~~~~~~~
+```
 
-This code snippet:
+`ModelConfiguration(id:)` creates a descriptor from a Hugging Face
+repository ID. `#huggingFaceLoadModelContainer` is a Swift macro
+from the `MLXHuggingFace` library. It automatically wires up:
+- a `HubClient` downloader (pulls weights from Hugging Face)
+- an `AutoTokenizer` loader (picks the right tokenizer for the model)
 
-- Prepares the prompt for the model.
-- Generates tokens and dynamically updates the view.
+If the weights are already in `~/.cache/huggingface/` the progress
+closure is never called. If they are not, it fires repeatedly as
+each weight shard downloads. The returned `ModelContainer` owns the
+loaded weights and tokenizer for the lifetime of the process.
 
-This program demonstrates how to integrate ML and UI components for interactive LLM-based applications in Swift.
+### Preparing Input and Generating
 
-This code example uses the MIT License so you can modify the example code if you need to write a combined SwiftUI GUI app that uses LLM-based text generation.
- 
+```swift
+let result =
+    try await container.perform { context in
 
+    let messages: [[String: String]] = [
+        ["role": "system",
+         "content": "You are a helpful assistant."],
+        ["role": "user",
+         "content": userPrompt]
+    ]
+    let input = try await context.processor.prepare(
+        input: .init(messages: messages))
+
+    var output = ""
+    let stream = try generate(
+        input: input,
+        parameters: GenerateParameters(
+            maxTokens: maxTokens,
+            temperature: temperature),
+        context: context)
+
+    for await generation in stream {
+        switch generation {
+        case .chunk(let text):
+            print(text, terminator: "")
+            fflush(stdout)
+            output += text
+        case .info:
+            break   // timing summary — ignore here
+        case .toolCall:
+            break   // tool calls unused in this demo
+        }
+    }
+    return output
+}
+```
+
+**Why `context.processor.prepare`?** Different model families
+(Llama, Qwen, Phi, Gemma, …) each have their own chat template.
+Calling `processor.prepare` applies the correct template
+automatically — you never hard-code `<|im_start|>user` or
+`[INST]` by hand.
+
+**`generate(input:parameters:context:)`** returns an
+`AsyncStream<Generation>`. Each element is one of:
+- `.chunk(String)` — a decoded text fragment to stream to the user
+- `.info(GenerateCompletionInfo)` — a timing summary at the end
+- `.toolCall(ToolCall)` — a function-call request (unused here)
+
+**Note on argument order:** `GenerateParameters` requires
+`maxTokens` before `temperature` — swapping them is a compile
+error.
+
+**`container.perform`** acquires the model's internal lock before
+running, preventing concurrent callers from corrupting shared GPU
+memory. It is the correct way to interact with a `ModelContainer`
+from an async context.
+
+### Async Entry Point
+
+Because `main.swift` cannot be `async` at the top level without
+the `@main` attribute, all async work is wrapped in a `Task`:
+
+```swift
+let mainTask = Task {
+    // … all async code …
+}
+_ = await mainTask.value
+```
+
+This avoids the `@main` struct boilerplate while still letting the
+process properly await completion before exiting.
+
+### Interactive REPL
+
+```swift
+while true {
+    print("You: ", terminator: "")
+    fflush(stdout)
+
+    guard let line = readLine(strippingNewline: true),
+          !line.isEmpty else { continue }
+
+    if line.lowercased() == "quit"
+        || line.lowercased() == "q" {
+        print("Goodbye!")
+        break
+    }
+    await runPrompt(line)
+}
+```
+
+Each turn is independent: the model has no memory of previous turns.
+Adding conversation history requires accumulating the messages array
+across turns and passing the full history to `processor.prepare`.
+
+## Running the Example
+
+### Prerequisites
+
+- **macOS 14 (Sonoma)** or later
+- **Apple Silicon** (M1, M2, M3, M4, or later)
+- **Xcode 16** or the Xcode 16 command-line tools
+- **Metal Toolchain** — download once (see below)
+- Internet access for the first run (model download)
+
+### One-Time Metal Toolchain Setup
+
+MLX's GPU kernels are Metal shaders that must be compiled into a
+`mlx.metallib` file. Xcode handles this automatically for app
+targets, but `swift build` does not. The `build.sh` script
+compiles the shaders using `xcrun metal`, which requires the Metal
+Toolchain to be installed. Download it once:
+
+```bash
+xcodebuild -downloadComponent MetalToolchain
+```
+
+### Single Prompt
+
+```bash
+cd source-code/MLX_swift
+./build.sh "Explain unified memory in one sentence."
+```
+
+### Interactive REPL
+
+```bash
+cd source-code/MLX_swift
+./build.sh --repl
+```
+
+### Build Only (then run manually)
+
+```bash
+./build.sh
+.build/arm64-apple-macosx/release/MLX_swift "add 1 + 13"
+```
+
+The first `./build.sh` call compiles all Metal shaders (~39 files)
+and links `mlx.metallib`. Subsequent calls skip the shader step
+because the file already exists.
+
+### First-Run Output
+
+The first time you run the tool the weights are downloaded from
+Hugging Face. Subsequent runs are instant because the weights are
+cached:
+
+```
+╔══════════════════════════════════════════════╗
+║       MLX Swift — Local LLM on Device        ║
+╚══════════════════════════════════════════════╝
+Model : mlx-community/Qwen3-1.7B-4bit
+Tokens: up to 512 per response
+
+Loading model …
+  Downloading Qwen3-1.7B-4bit: 100%
+Model ready.
+
+User: add 1 + 13
+Assistant: 1 + 13 = 14.
+```
+
+## Swapping Models
+
+To try a different model, change the single constant at the top of
+`main.swift`:
+
+```swift
+let modelID = "mlx-community/Phi-4-mini-instruct-4bit"
+```
+
+No other code changes are needed. `ModelConfiguration(id:)` and
+`#huggingFaceLoadModelContainer` handle downloading the matching
+tokeniser configuration and model weights automatically.
+
+## Key Takeaways
+
+1. **Unified memory = no copy overhead.** Apple Silicon's shared
+   memory pool lets MLX move tensors between CPU and GPU without
+   any marshalling step.
+
+2. **`#huggingFaceLoadModelContainer`** handles the download,
+   caching, and model initialisation in a single macro call.
+   It requires `import HuggingFace` and `import Tokenizers`
+   at the call site because the macro expands to code that
+   references those types directly.
+
+3. **`context.processor.prepare`** applies the model-specific chat
+   template automatically so you never need to hard-code prompt
+   formats.
+
+4. **`generate(input:parameters:context:)`** streams decoded text
+   via an `AsyncStream<Generation>`. Switch on `.chunk`, `.info`,
+   and `.toolCall` cases to handle each event type.
+
+5. **`container.perform`** serialises concurrent callers so that
+   GPU memory is not corrupted by overlapping inference.
+
+6. **`swift build` / `swift run` alone is not enough.** Metal
+   shaders must be compiled separately. Use `build.sh`, which
+   invokes `xcrun metal` and `xcrun metallib` to produce
+   `mlx.metallib` next to the binary.
+
+7. **Changing models requires changing one string.** Any
+   `mlx-community` 4-bit model on Hugging Face slots in without
+   further code changes.
+
+## Summary
+
+The `MLX_swift` example demonstrates the full lifecycle of local
+LLM inference on Apple Silicon: declare dependencies on
+`mlx-swift-lm` and `swift-transformers`, construct a
+`ModelConfiguration` from a Hugging Face ID, load it with
+`#huggingFaceLoadModelContainer`, prepare input with the model's
+processor, and stream tokens with `generate()`. A `build.sh` script
+handles the Metal shader compilation step that SPM skips. The
+result is a fast, fully offline command-line assistant that keeps
+all data on your device.
