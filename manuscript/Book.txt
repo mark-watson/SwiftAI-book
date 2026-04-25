@@ -23,4 +23,5 @@ ai_chat.md
 ai_coder.md
 knowledge-navigator.md
 anomaly-detection.md
+autocontext.md
 wrapup.md
