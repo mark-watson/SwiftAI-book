@@ -1,9 +1,9 @@
 // AnomalyDetection.swift
 // Swift port of the Java AnomalyDetection class.
 //
-// Uses per-feature Gaussian distributions to model "normal" behaviour and
-// identifies inputs whose probability falls below a learned epsilon threshold
-// as anomalies.
+// Uses per-feature Gaussian distributions to model "normal" behaviour
+// and identifies inputs whose probability falls below a learned epsilon
+// threshold as anomalies.
 
 import Foundation
 
@@ -11,11 +11,11 @@ import Foundation
 
 /// Gaussian-based anomaly-detection model.
 ///
-/// Use this model when you have many "normal" (negative) training examples
-/// and relatively few "anomaly" (positive) examples — an unbalanced dataset.
-/// The model fits a Gaussian distribution to each feature using the training
-/// data, then finds an epsilon cutoff that minimises errors on a held-out
-/// cross-validation set.
+/// Use this model when you have many "normal" (negative) training
+/// examples and relatively few "anomaly" (positive) examples — an
+/// unbalanced dataset.  The model fits a Gaussian distribution to
+/// each feature using the training data, then finds an epsilon cutoff
+/// that minimises errors on a held-out cross-validation set.
 class AnomalyDetection {
 
     // MARK: Constants
@@ -37,13 +37,14 @@ class AnomalyDetection {
 
     // MARK: - Init
 
-    /// Partition `allExamples` into training (≈60%), cross-validation (≈28%),
-    /// and test (≈12%) sets, then compute the per-feature mean.
+    /// Partition `allExamples` into training (≈60%),
+    /// cross-validation (≈28%), and test (≈12%) sets,
+    /// then compute the per-feature mean.
     ///
     /// - Parameters:
-    ///   - numFeatures: Total number of columns including the target label.
-    ///   - allExamples: 2-D array of shape `[N][numFeatures]`. The *last*
-    ///     column is the binary target label: 0 = normal, 1 = anomaly.
+    ///   - numFeatures: Total columns including the target label.
+    ///   - allExamples: 2-D array `[N][numFeatures]`. The *last*
+    ///     column is the binary target: 0 = normal, 1 = anomaly.
     init(numFeatures: Int, allExamples: [[Double]]) {
         self.numFeatures = numFeatures
 
@@ -56,11 +57,13 @@ class AnomalyDetection {
         for example in allExamples {
             let r = Double.random(in: 0..<1)
             if r < 0.6 {
-                // ~60% → training.  Allow only normal examples (label < 0.5),
-                // but let ~10% of anomalous examples slip through — mirroring
-                // the real-world condition where a few positives contaminate
-                // the training set.
-                if example[outcomeIndex] < 0.5 || Double.random(in: 0..<1) < 0.1 {
+                // ~60% → training. Allow only normal examples
+                // (label < 0.5), but let ~10% of anomalous examples
+                // slip through — mirroring the real-world condition
+                // where a few positives contaminate the training set.
+                let isNormal = example[outcomeIndex] < 0.5
+                let slipThrough = Double.random(in: 0..<1) < 0.1
+                if isNormal || slipThrough {
                     training.append(example)
                 }
             } else if Double.random(in: 0..<1) < 0.7 {
@@ -76,7 +79,8 @@ class AnomalyDetection {
 
         // Initialise parameter arrays.
         var muArr = [Double](repeating: 0.0, count: numFeatures)
-        self.sigmaSquared = [Double](repeating: 0.0, count: numFeatures)
+        self.sigmaSquared = [Double](
+            repeating: 0.0, count: numFeatures)
 
         // Compute per-feature mean from training data.
         let n = Double(training.count)
@@ -92,13 +96,14 @@ class AnomalyDetection {
     }
 
     // MARK: - Public accessors
-    func muValues()        -> [Double] { mu }
+    func muValues()           -> [Double] { mu }
     func sigmaSquaredValues() -> [Double] { sigmaSquared }
 
     // MARK: - Training
 
-    /// Search over 40 candidate epsilon values, pick the one with the lowest
-    /// cross-validation error count, then retrain and evaluate on the test set.
+    /// Search over 40 candidate epsilon values, pick the one with
+    /// the lowest cross-validation error count, then retrain and
+    /// evaluate on the test set.
     func train() {
         var bestErrorCount = Double.greatestFiniteMagnitude
 
@@ -123,14 +128,15 @@ class AnomalyDetection {
 
     /// Returns `true` when `x` is classified as an anomaly.
     ///
-    /// - Parameter x: Feature vector (9 values; no label column required).
+    /// - Parameter x: Feature vector (9 values; no label column).
     func isAnomaly(_ x: [Double]) -> Bool {
         return probability(x) < bestEpsilon
     }
 
     // MARK: - Private helpers
 
-    /// Gaussian probability density averaged across features (skipping label).
+    /// Gaussian probability density averaged across features
+    /// (skipping the label column).
     private func probability(_ x: [Double]) -> Double {
         var sum = 0.0
         for f in 0..<(numFeatures - 1) {
@@ -142,7 +148,7 @@ class AnomalyDetection {
         return sum / Double(numFeatures)
     }
 
-    /// Update sigma-squared for `epsilon`, count cross-validation errors.
+    /// Update sigma-squared for `epsilon`, count CV errors.
     @discardableResult
     private func trainHelper(epsilon: Double) -> Double {
         // Update variance estimates from training examples.
@@ -151,7 +157,8 @@ class AnomalyDetection {
                 let diff = $1[f] - mu[f]
                 return $0 + diff * diff
             }
-            sigmaSquared[f] = (1.0 / Double(numFeatures)) * sumSq
+            sigmaSquared[f] =
+                (1.0 / Double(numFeatures)) * sumSq
         }
 
         // Count errors on cross-validation set.
@@ -160,39 +167,51 @@ class AnomalyDetection {
         for x in crossValidationExamples {
             let pValue = probability(x)
             if x[labelIdx] > 0.5 {
-                // Ground truth: ANOMALY — error if model says "normal"
+                // Ground truth: ANOMALY — error if model says normal
                 if pValue > epsilon { errorCount += 1 }
             } else {
-                // Ground truth: NORMAL — error if model says "anomaly"
+                // Ground truth: NORMAL — error if model says anomaly
                 if pValue < epsilon { errorCount += 1 }
             }
         }
-        print("   cross_validation_error_count = \(errorCount) for epsilon = \(epsilon)")
+        print("   cross_validation_error_count = " +
+              "\(errorCount) for epsilon = \(epsilon)")
         return errorCount
     }
 
     /// Compute precision, recall, and F1 on the test set.
     private func test(epsilon: Double) {
-        var falsePosCount  = 0.0
-        var falseNegCount  = 0.0
-        var truePosCount   = 0.0
-        var trueNegCount   = 0.0
+        var falsePosCount = 0.0
+        var falseNegCount = 0.0
+        var truePosCount  = 0.0
+        var trueNegCount  = 0.0
 
         let labelIdx = 9
         for x in testingExamples {
             let pValue = probability(x)
             if x[labelIdx] > 0.5 {
                 // Ground truth: ANOMALY
-                if pValue > epsilon { falseNegCount += 1 } else { truePosCount += 1 }
+                if pValue > epsilon {
+                    falseNegCount += 1
+                } else {
+                    truePosCount += 1
+                }
             } else {
                 // Ground truth: NORMAL
-                if pValue < epsilon { falsePosCount += 1 } else { trueNegCount += 1 }
+                if pValue < epsilon {
+                    falsePosCount += 1
+                } else {
+                    trueNegCount += 1
+                }
             }
         }
 
-        let precision = truePosCount == 0 ? 0.0 : truePosCount / (truePosCount + falsePosCount)
-        let recall    = truePosCount == 0 ? 0.0 : truePosCount / (truePosCount + falseNegCount)
-        let f1        = (precision + recall) == 0 ? 0.0 : 2 * precision * recall / (precision + recall)
+        let precision = truePosCount == 0 ? 0.0
+            : truePosCount / (truePosCount + falsePosCount)
+        let recall = truePosCount == 0 ? 0.0
+            : truePosCount / (truePosCount + falseNegCount)
+        let f1 = (precision + recall) == 0 ? 0.0
+            : 2 * precision * recall / (precision + recall)
 
         print("\n\n -- best epsilon       = \(bestEpsilon)")
         print(" -- test examples      = \(testingExamples.count)")

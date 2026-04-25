@@ -1,7 +1,10 @@
 import Foundation
 
 @available(OSX 10.13, *)
-public func run_in_shell(commandPath: String, argList: [String] = []) -> String {
+public func run_in_shell(
+    commandPath: String,
+    argList: [String] = []
+) -> String {
     let task = Process()
     //task.launchPath = command
     task.executableURL = URL(fileURLWithPath: commandPath)
@@ -11,10 +14,12 @@ public func run_in_shell(commandPath: String, argList: [String] = []) -> String 
     do {
         try! task.run()
         let data = pipe.fileHandleForReading.readDataToEndOfFile()
-        let output: String? = String(data: data, encoding: String.Encoding.utf8)
+        let output: String? = String(
+            data: data, encoding: String.Encoding.utf8)
         if let output = output {
           if !output.isEmpty {
-            return output.trimmingCharacters(in: .whitespacesAndNewlines)
+            return output.trimmingCharacters(
+                in: .whitespacesAndNewlines)
           }
         }
     }

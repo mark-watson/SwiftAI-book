@@ -9,7 +9,8 @@
 //  EasyStash-iOS
 //
 //  Created by khoa on 27/05/2019.
-//  Copyright © 2019 Khoa Pham. All rights reserved. MIT License. https://github.com/onmyway133/EasyStash
+//  Copyright © 2019 Khoa Pham. All rights reserved.
+//  MIT License. https://github.com/onmyway133/EasyStash
 //
 
 import Foundation
@@ -23,7 +24,8 @@ public func cacheStoreQuery(key: String, value: String) {
     do { try storage?.save(object: value, forKey: key) } catch {}
 }
 public func cacheLookupQuery7(key: String) -> String? {
-    //do { try storage?.removeAll() } catch { print("ERROR CLEARING CACHE") } // DEBUG: clear cache
+    //do { try storage?.removeAll() } catch {}
+    //    // DEBUG: clear cache
     do {
         return try storage?.load(forKey: key, as: String.self)
     } catch { return "" }
@@ -37,7 +39,8 @@ public func cacheLookupQuery7(key: String) -> String? {
 public struct ESOptions {
     /// By default, files are saved into searchPathDirectory/folder
     public var searchPathDirectory: FileManager.SearchPathDirectory
-    public var folder: String = (Bundle.main.bundleIdentifier ?? "").appending("/Default")
+    public var folder: String =
+        (Bundle.main.bundleIdentifier ?? "").appending("/Default")
 
     /// Optionally, you can set predefined directory for where to save files
     public var directoryUrl: URL? = nil
@@ -124,7 +127,9 @@ public class Storage {
 extension Storage {
     func createDirectoryIfNeeded(folderUrl: URL) throws {
         var isDirectory = ObjCBool(true)
-        guard !fileManager.fileExists(atPath: folderUrl.path, isDirectory: &isDirectory) else {
+        guard !fileManager.fileExists(
+            atPath: folderUrl.path,
+            isDirectory: &isDirectory) else {
             return
         }
 
@@ -141,7 +146,8 @@ extension Storage {
                 FileAttributeKey.protectionKey: FileProtectionType.complete
             ]
 
-            try fileManager.setAttributes(attributes, ofItemAtPath: folderUrl.path)
+            try fileManager.setAttributes(
+                attributes, ofItemAtPath: folderUrl.path)
         #endif
     }
     
@@ -155,11 +161,18 @@ extension Storage {
 }
 
 extension Storage {
-    func commonSave(object: AnyObject, forKey key: String, toData: () throws -> Data) throws {
+    func commonSave(
+        object: AnyObject,
+        forKey key: String,
+        toData: () throws -> Data
+    ) throws {
         let data = try toData()
         cache.setObject(object, forKey: key as NSString)
         try fileManager
-            .createFile(atPath: fileUrl(forKey: key).path, contents: data, attributes: nil)
+            .createFile(
+                atPath: fileUrl(forKey: key).path,
+                contents: data,
+                attributes: nil)
             .trueOrThrow(StorageError.createFile)
     }
 
@@ -207,34 +220,50 @@ public extension Storage {
         })
     }
 
-func load<T: Codable>(forKey key: String, as: T.Type, withExpiry expiry: Expiry = .never) throws -> T {
-    // Remove the generic parameter from inner function since we can use T from outer scope
-    func loadFromDisk(forKey key: String, as: T.Type) throws -> T {
-        let data = try Data(contentsOf: fileUrl(forKey: key))
-        let decoder = options.decoder
+    func load<T: Codable>(
+        forKey key: String,
+        as: T.Type,
+        withExpiry expiry: Expiry = .never
+    ) throws -> T {
+        // Inner func uses T from outer scope
+        func loadFromDisk(
+            forKey key: String,
+            as: T.Type
+        ) throws -> T {
+            let data = try Data(contentsOf: fileUrl(forKey: key))
+            let decoder = options.decoder
 
-        do {
-            let object = try decoder.decode(T.self, from: data)
-            return object
-        } catch {
-            let typeWrapper = try decoder.decode(TypeWrapper<T>.self, from: data)
-            return typeWrapper.object
+            do {
+                let object = try decoder.decode(T.self, from: data)
+                return object
+            } catch {
+                let typeWrapper = try decoder.decode(
+                    TypeWrapper<T>.self, from: data)
+                return typeWrapper.object
+            }
         }
-    }
 
-    return try commonLoad(forKey: key, withExpiry: expiry, fromData: { data in
-        return try loadFromDisk(forKey: key, as: T.self)
-    })
-  }
+        return try commonLoad(
+            forKey: key, withExpiry: expiry, fromData: { data in
+                return try loadFromDisk(forKey: key, as: T.self)
+            })
+      }
 }
 
 public extension Storage {
     func save(object: Data, forKey key: String) throws {
-        try commonSave(object: object as AnyObject, forKey: key, toData: { object })
+        try commonSave(
+            object: object as AnyObject,
+            forKey: key,
+            toData: { object })
     }
 
-    func load(forKey key: String, withExpiry expiry: Expiry = .never) throws -> Data {
-        return try commonLoad(forKey: key, withExpiry: expiry, fromData: { $0 })
+    func load(
+        forKey key: String,
+        withExpiry expiry: Expiry = .never
+    ) throws -> Data {
+        return try commonLoad(
+            forKey: key, withExpiry: expiry, fromData: { $0 })
     }
 }
 

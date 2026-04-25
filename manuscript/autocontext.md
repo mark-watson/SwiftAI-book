@@ -95,7 +95,8 @@ The per-document score combines IDF with a length-normalised term-frequency term
             let tf = Double(doc.filter { $0 == term }.count)
             let termIDF = idf(for: term)
             let numerator = tf * (k1 + 1)
-            let denominator = tf + k1 * (1 - b + b * (docLength / avgDocLength))
+            let denominator = tf + k1 *
+                (1 - b + b * (docLength / avgDocLength))
             score += termIDF * (numerator / denominator)
         }
         return score
@@ -145,8 +146,10 @@ The async function `generateEmbedding(for:apiKey:)` posts the request and decode
 ```swift
 func generateEmbedding(for text: String, apiKey: String) async -> [Double]? {
     let modelName = "models/gemini-embedding-001"
+    let base =
+        "https://generativelanguage.googleapis.com/v1beta/"
     let urlString =
-        "https://generativelanguage.googleapis.com/v1beta/\(modelName):embedContent?key=\(apiKey)"
+        "\(base)\(modelName):embedContent?key=\(apiKey)"
     guard let url = URL(string: urlString) else { return nil }
 
     let body = EmbedRequest(
@@ -156,18 +159,22 @@ func generateEmbedding(for text: String, apiKey: String) async -> [Double]? {
     )
     var request = URLRequest(url: url)
     request.httpMethod = "POST"
-    request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+    request.setValue(
+        "application/json", forHTTPHeaderField: "Content-Type")
     request.httpBody = try? JSONEncoder().encode(body)
 
     do {
-        let (data, response) = try await URLSession.shared.data(for: request)
+        let (data, response) =
+            try await URLSession.shared.data(for: request)
         if let http = response as? HTTPURLResponse,
            !(200...299).contains(http.statusCode) {
-            fputs("[Embedding Error] HTTP \(http.statusCode)\n", stderr)
+            fputs("[Embedding Error] HTTP \(http.statusCode)\n",
+                  stderr)
             return nil
         }
-        let decoded = try JSONDecoder().decode(EmbedResponse.self, from: data)
-        return normalized(decoded.embedding.values)   // L2-normalise on the way out
+        let decoded = try JSONDecoder().decode(
+            EmbedResponse.self, from: data)
+        return normalized(decoded.embedding.values)
     } catch {
         fputs("[Embedding Error] \(error)\n", stderr)
         return nil
@@ -290,20 +297,28 @@ class AutoContext {
         self.chunkEmbeddings = chunkEmbeddings
     }
 
-    static func build(directoryPath: String, apiKey: String) async -> AutoContext? {
-        print("Initializing AutoContext from directory: \(directoryPath)")
-        let chunks = loadAndChunkDocuments(directoryPath: directoryPath)
+    static func build(
+        directoryPath: String,
+        apiKey: String
+    ) async -> AutoContext? {
+        print("Initializing AutoContext from: \(directoryPath)")
+        let chunks = loadAndChunkDocuments(
+            directoryPath: directoryPath)
         guard !chunks.isEmpty else { return nil }
 
         print("Building sparse (BM25) index...")
         let tokenizedChunks = chunks.map(tokenize)
         let bm25 = BM25Index(tokenizedCorpus: tokenizedChunks)
 
-        print("Building dense (embedding) index — this may take a moment...")
-        let embeddings = await generateEmbeddings(for: chunks, apiKey: apiKey)
+        print("Building dense (embedding) index...")
+        let embeddings = await generateEmbeddings(
+            for: chunks, apiKey: apiKey)
 
         print("Initialization complete. AutoContext is ready.")
-        return AutoContext(chunks: chunks, bm25: bm25, chunkEmbeddings: embeddings)
+        return AutoContext(
+            chunks: chunks,
+            bm25: bm25,
+            chunkEmbeddings: embeddings)
     }
 ```
 
@@ -369,27 +384,31 @@ let task = Task {
     if CommandLine.arguments.count > 1 {
         dataDir = CommandLine.arguments[1]
     } else {
-        // Default: source-code/data/ — one level up from this package directory.
-        // When run with `swift run` from source-code/autocontext/,
-        // the working directory is source-code/autocontext/, so we step up
-        // to source-code/ and then into data/.
-        let packageDir = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
-        dataDir = packageDir.deletingLastPathComponent()
-                            .appendingPathComponent("data")
-                            .path
+        // Default: source-code/data/ — one level up from package.
+        let packageDir = URL(
+            fileURLWithPath:
+                FileManager.default.currentDirectoryPath)
+        dataDir = packageDir
+            .deletingLastPathComponent()
+            .appendingPathComponent("data")
+            .path
     }
 
-    guard let apiKey = ProcessInfo.processInfo.environment["GOOGLE_API_KEY"],
-          !apiKey.isEmpty else {
-        fputs("[Error] GOOGLE_API_KEY environment variable is not set.\n", stderr)
+    guard
+        let apiKey = ProcessInfo.processInfo
+            .environment["GOOGLE_API_KEY"],
+        !apiKey.isEmpty
+    else {
+        fputs("[Error] GOOGLE_API_KEY is not set.\n", stderr)
         exit(1)
     }
 
-    print("╔══════════════════════════════════════════════════════════╗")
-    print("║           AUTOCONTEXT — Hybrid RAG Prompt Builder        ║")
-    print("╚══════════════════════════════════════════════════════════╝")
+    print("╔══════════════════════════════════════════════╗")
+    print("║   AUTOCONTEXT — Hybrid RAG Prompt Builder    ║")
+    print("╚══════════════════════════════════════════════╝")
 
-    guard let ac = await AutoContext.build(directoryPath: dataDir, apiKey: apiKey) else {
+    guard let ac = await AutoContext.build(
+        directoryPath: dataDir, apiKey: apiKey) else {
         fputs("[Error] Failed to initialize AutoContext.\n", stderr)
         exit(1)
     }
@@ -397,12 +416,15 @@ let task = Task {
     while true {
         print("\nEnter a query (or 'quit' to exit):")
         print("> ", terminator: "")
-        guard let userInput = readLine(), !userInput.isEmpty else { continue }
-        if userInput.lowercased() == "quit" || userInput.lowercased() == "q" {
+        guard let userInput = readLine(),
+              !userInput.isEmpty else { continue }
+        if userInput.lowercased() == "quit"
+            || userInput.lowercased() == "q" {
             print("Goodbye!")
             break
         }
-        let prompt = await ac.getPrompt(query: userInput, numResults: 3)
+        let prompt = await ac.getPrompt(
+            query: userInput, numResults: 3)
         print("\n--- Generated Prompt for LLM ---")
         print(prompt)
     }

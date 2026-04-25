@@ -1,9 +1,9 @@
 // BM25.swift
 // A self-contained implementation of the BM25 Okapi ranking function.
 //
-// BM25 is a probabilistic retrieval model that scores documents against a
-// query by considering term frequency, inverse document frequency, and
-// document length normalization.
+// BM25 is a probabilistic retrieval model that scores documents
+// against a query by considering term frequency, inverse document
+// frequency, and document length normalization.
 
 import Foundation
 
@@ -26,8 +26,12 @@ struct BM25Index {
     /// Length normalization parameter (default 0.75).
     let b: Double
 
-    /// Builds a BM25 index from a corpus of pre-tokenized documents.
-    init(tokenizedCorpus: [[String]], k1: Double = 1.5, b: Double = 0.75) {
+    /// Builds a BM25 index from pre-tokenized documents.
+    init(
+        tokenizedCorpus: [[String]],
+        k1: Double = 1.5,
+        b: Double = 0.75
+    ) {
         self.corpus = tokenizedCorpus
         self.k1 = k1
         self.b = b
@@ -38,7 +42,8 @@ struct BM25Index {
 
         // Average document length.
         let totalLength = docLengths.reduce(0, +)
-        self.avgDocLength = corpusSize > 0 ? Double(totalLength) / Double(corpusSize) : 1.0
+        self.avgDocLength = corpusSize > 0
+            ? Double(totalLength) / Double(corpusSize) : 1.0
 
         // Document frequencies: how many docs contain each term?
         var freqs: [String: Int] = [:]
@@ -62,7 +67,7 @@ struct BM25Index {
 
     // MARK: - Scoring
 
-    /// Computes the BM25 score for document at `docIndex` given `queryTokens`.
+    /// BM25 score for document at `docIndex` given `queryTokens`.
     func score(docIndex: Int, queryTokens: [String]) -> Double {
         let doc = corpus[docIndex]
         let docLength = Double(docLengths[docIndex])
@@ -72,7 +77,8 @@ struct BM25Index {
             let tf = Double(doc.filter { $0 == term }.count)
             let termIDF = idf(for: term)
             let numerator = tf * (k1 + 1)
-            let denominator = tf + k1 * (1 - b + b * (docLength / avgDocLength))
+            let denominator = tf + k1 *
+                (1 - b + b * (docLength / avgDocLength))
             score += termIDF * (numerator / denominator)
         }
         return score
@@ -80,15 +86,19 @@ struct BM25Index {
 
     // MARK: - Top-N Retrieval
 
-    /// Returns the top `n` tokenized documents ranked by BM25 score,
+    /// Returns the top `n` tokenized documents ranked by BM25,
     /// omitting any document whose score is at or below `minScore`.
-    /// A score ≤ 0 means the query terms are too common to be useful.
-    func topN(_ n: Int, for queryTokens: [String], minScore: Double = 0.0) -> [[String]] {
+    func topN(
+        _ n: Int,
+        for queryTokens: [String],
+        minScore: Double = 0.0
+    ) -> [[String]] {
         let scored = corpus.indices.map { i in
-            (score: score(docIndex: i, queryTokens: queryTokens), index: i)
+            (score: score(docIndex: i, queryTokens: queryTokens),
+             index: i)
         }
         let sorted = scored
-            .filter { $0.score > minScore }   // drop irrelevant chunks
+            .filter { $0.score > minScore }
             .sorted { $0.score > $1.score }
         let topK = sorted.prefix(n)
         return topK.map { corpus[$0.index] }

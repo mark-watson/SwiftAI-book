@@ -74,7 +74,9 @@ class AnomalyDetection {
         for example in allExamples {
             let r = Double.random(in: 0..<1)
             if r < 0.6 {
-                if example[outcomeIndex] < 0.5 || Double.random(in: 0..<1) < 0.1 {
+                let isNormal = example[outcomeIndex] < 0.5
+                let slipThrough = Double.random(in: 0..<1) < 0.1
+                if isNormal || slipThrough {
                     training.append(example)
                 }
             } else if Double.random(in: 0..<1) < 0.7 {
@@ -89,7 +91,8 @@ class AnomalyDetection {
         self.testingExamples = testing
 
         var muArr = [Double](repeating: 0.0, count: numFeatures)
-        self.sigmaSquared = [Double](repeating: 0.0, count: numFeatures)
+        self.sigmaSquared = [Double](
+            repeating: 0.0, count: numFeatures)
         let n = Double(training.count)
         for featureIdx in 0..<numFeatures {
             let sum = training.reduce(0.0) { $0 + $1[featureIdx] }

@@ -100,14 +100,20 @@ The async function `getGeminiCompletion` wraps a `URLSession` data task and retu
 
 ```swift
 func getGeminiCompletion(userPrompt: String) async -> String? {
-    guard let apiKey = ProcessInfo.processInfo.environment["GOOGLE_API_KEY"],
-          !apiKey.isEmpty else {
-        fputs("[Error] GOOGLE_API_KEY environment variable is not set.\n", stderr)
+    guard
+        let apiKey = ProcessInfo.processInfo
+            .environment["GOOGLE_API_KEY"],
+        !apiKey.isEmpty
+    else {
+        fputs("[Error] GOOGLE_API_KEY is not set.\n", stderr)
         return nil
     }
 
     let modelName = "models/gemini-2.5-flash"
-    let urlString = "https://generativelanguage.googleapis.com/v1beta/\(modelName):generateContent?key=\(apiKey)"
+    let base =
+        "https://generativelanguage.googleapis.com/v1beta/"
+    let urlString =
+        "\(base)\(modelName):generateContent?key=\(apiKey)"
 
     guard let url = URL(string: urlString) else { return nil }
 
@@ -121,24 +127,33 @@ func getGeminiCompletion(userPrompt: String) async -> String? {
 
     var request = URLRequest(url: url)
     request.httpMethod = "POST"
-    request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+    request.setValue(
+        "application/json", forHTTPHeaderField: "Content-Type")
     request.httpBody = try? JSONEncoder().encode(requestBody)
 
     do {
-        let (data, response) = try await URLSession.shared.data(for: request)
+        let (data, response) =
+            try await URLSession.shared.data(for: request)
 
         if let httpResponse = response as? HTTPURLResponse,
            !(200...299).contains(httpResponse.statusCode) {
-            let body = String(data: data, encoding: .utf8) ?? "<no body>"
-            fputs("[Error] HTTP \(httpResponse.statusCode): \(body)\n", stderr)
+            let body =
+                String(data: data, encoding: .utf8) ?? "<no body>"
+            fputs(
+                "[Error] HTTP \(httpResponse.statusCode):" +
+                " \(body)\n", stderr)
             return nil
         }
 
-        let geminiResponse = try JSONDecoder().decode(GeminiResponse.self, from: data)
-        return geminiResponse.candidates?.first?.content.parts.first?.text
+        let geminiResponse = try JSONDecoder().decode(
+            GeminiResponse.self, from: data)
+        return geminiResponse.candidates?
+            .first?.content.parts.first?.text
 
     } catch {
-        fputs("[Error] Network or decoding error: \(error)\n", stderr)
+        fputs(
+            "[Error] Network or decoding error: \(error)\n",
+            stderr)
         return nil
     }
 }
@@ -182,17 +197,19 @@ Swift 5.9 command-line tools support top-level `await` by wrapping async work in
 
 ```swift
 let task = Task {
-    print("╔══════════════════════════════════════════════════════════╗")
-    print("║        GEMINI KNOWLEDGE BASE NAVIGATOR (Swift)           ║")
-    print("╚══════════════════════════════════════════════════════════╝")
+    print("╔══════════════════════════════════════════════╗")
+    print("║  GEMINI KNOWLEDGE BASE NAVIGATOR (Swift)     ║")
+    print("╚══════════════════════════════════════════════╝")
 
     while true {
-        print("\nEnter entity names or a descriptive sentence (or 'quit' to exit):")
+        print("\nEnter entity names or a sentence ('quit' to exit):")
         print("> ", terminator: "")
 
-        guard let userInput = readLine(), !userInput.isEmpty else { continue }
+        guard let userInput = readLine(),
+              !userInput.isEmpty else { continue }
 
-        if userInput.lowercased() == "quit" || userInput.lowercased() == "q" {
+        if userInput.lowercased() == "quit"
+            || userInput.lowercased() == "q" {
             print("Goodbye!")
             break
         }
@@ -205,8 +222,9 @@ let task = Task {
         Return ONLY a numbered list with a short 1-sentence description.
         """
 
-        guard let entityListText = await getGeminiCompletion(userPrompt: extractPrompt) else {
-            print("[Error getting entity list. Please try again.]")
+        guard let entityListText = await getGeminiCompletion(
+            userPrompt: extractPrompt) else {
+            print("[Error getting entity list. Try again.]")
             continue
         }
 
@@ -218,7 +236,8 @@ let task = Task {
         print("\nEnter entity numbers (space separated):")
         print("> ", terminator: "")
 
-        guard let selectionLine = readLine(), !selectionLine.isEmpty else { continue }
+        guard let selectionLine = readLine(),
+              !selectionLine.isEmpty else { continue }
         let indices = parseSelectionIndices(from: selectionLine)
         guard !indices.isEmpty else {
             print("[No valid selections. Returning to main prompt.]")
@@ -226,7 +245,8 @@ let task = Task {
         }
 
         print("\n[Fetching detailed facts and relationships...]")
-        let indicesString = indices.map(String.init).joined(separator: ", ")
+        let indicesString =
+            indices.map(String.init).joined(separator: ", ")
         let detailPrompt = """
         Review this numbered list of entities:
         \(entityListText)
@@ -237,7 +257,8 @@ let task = Task {
         Use clean section headers and bullet points.
         """
 
-        if let detailsText = await getGeminiCompletion(userPrompt: detailPrompt) {
+        if let detailsText = await getGeminiCompletion(
+            userPrompt: detailPrompt) {
             print("\n\(detailsText)")
         }
     }

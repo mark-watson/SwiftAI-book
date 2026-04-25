@@ -1,8 +1,9 @@
 // main.swift
 // Swift port of the Java WisconsinAnomalyDetection main class.
 //
-// Loads the University of Wisconsin Breast Cancer dataset, preprocesses it,
-// runs anomaly detection training, and evaluates on a test set.
+// Loads the University of Wisconsin Breast Cancer dataset,
+// preprocesses it, runs anomaly detection training, and evaluates
+// on a test set.
 
 import Foundation
 
@@ -14,13 +15,16 @@ let numHistogramBins = 5
 
 /// Locate the CSV file bundled with the executable.
 func csvURL() -> URL {
-    // When run via `swift run` the resource is copied beside the binary.
-    if let url = Bundle.module.url(forResource: "cleaned_wisconsin_cancer_data",
-                                   withExtension: "csv") {
+    // When run via `swift run` the resource is copied beside binary.
+    if let url = Bundle.module.url(
+        forResource: "cleaned_wisconsin_cancer_data",
+        withExtension: "csv") {
         return url
     }
-    // Fallback: look in the working directory (e.g. when running directly).
-    return URL(fileURLWithPath: "Sources/AnomalyDetection/Resources/cleaned_wisconsin_cancer_data.csv")
+    // Fallback: look in the working directory.
+    return URL(fileURLWithPath:
+        "Sources/AnomalyDetection/Resources/" +
+        "cleaned_wisconsin_cancer_data.csv")
 }
 
 let csvContent: String
@@ -42,13 +46,15 @@ for line in rawLines {
     let parts = line.components(separatedBy: ",")
     guard parts.count >= 10 else { continue }
 
-    var xs = parts.prefix(10).compactMap { Double($0.trimmingCharacters(in: .whitespaces)) }
+    var xs = parts.prefix(10).compactMap {
+        Double($0.trimmingCharacters(in: .whitespaces))
+    }
     guard xs.count == 10 else { continue }
 
     // Scale features 0–8 to [0, 1].
     for i in 0..<9 { xs[i] *= 0.1 }
 
-    // Log-transform each feature to push the distribution toward Gaussian.
+    // Log-transform each feature toward a Gaussian distribution.
     var minVal =  Double.greatestFiniteMagnitude
     var maxVal = -Double.greatestFiniteMagnitude
     for i in 0..<9 {
@@ -61,13 +67,13 @@ for line in rawLines {
         for i in 0..<9 { xs[i] = (xs[i] - minVal) / range }
     }
 
-    // Map target label: 2 → 0.0 (benign/normal), 4 → 1.0 (malignant/anomaly).
+    // Map target label: 2 → 0.0 (benign), 4 → 1.0 (malignant).
     xs[9] = (xs[9] - 2.0) * 0.5
 
     allExamples.append(xs)
 }
 
-print("Loaded \(allExamples.count) examples from the Wisconsin cancer dataset.")
+print("Loaded \(allExamples.count) examples from Wisconsin dataset.")
 
 // MARK: - Print Histograms (optional)
 
@@ -95,16 +101,19 @@ if printHistograms {
 
 // MARK: - Train Anomaly Detector
 
-let detector = AnomalyDetection(numFeatures: 10, allExamples: allExamples)
+let detector = AnomalyDetection(
+    numFeatures: 10, allExamples: allExamples)
 detector.train()
 
 // MARK: - Use the Trained Model for Inference
 
 // Sample vectors (9 features, no label column).
-let testMalignant: [Double] = [0.5, 1.0, 1.0, 0.8, 0.5, 0.5, 0.7, 1.0, 0.1]
-let testBenign:    [Double] = [0.5, 0.4, 0.5, 0.1, 0.8, 0.1, 0.3, 0.6, 0.1]
+let testMalignant: [Double] =
+    [0.5, 1.0, 1.0, 0.8, 0.5, 0.5, 0.7, 1.0, 0.1]
+let testBenign: [Double] =
+    [0.5, 0.4, 0.5, 0.1, 0.8, 0.1, 0.3, 0.6, 0.1]
 
-// Pad to 10 elements so probability() can use (numFeatures - 1) safely.
+// Pad to 10 elements so probability() can use (numFeatures-1).
 let malignantFull = testMalignant + [0.0]
 let benignFull    = testBenign    + [0.0]
 
@@ -112,4 +121,5 @@ let malignantResult = detector.isAnomaly(malignantFull)
 let benignResult    = detector.isAnomaly(benignFull)
 
 print("\n\nUsing the trained model:")
-print("malignant result = \(malignantResult), benign result = \(benignResult)")
+print("malignant result = \(malignantResult), " +
+      "benign result = \(benignResult)")

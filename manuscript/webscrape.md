@@ -6,14 +6,15 @@ The web scraping code we develop here uses the Swift library **SwiftSoup** that 
 
 For my work and research, I have been most interested in using web scraping to collect text data for natural language processing but other common applications include writing AI news collection and summarization assistants, trying to predict stock prices based on comments in social media which is what we did at Webmind Corporation in 2000 and 2001, etc.
 
-I wrote a simple web scraping library that is available at [https://github.com/mark-watson/WebScraping_swift](https://github.com/mark-watson/WebScraping_swift) that you can use in your projects by putting the following dependency in your **Project.swift** file:
+I wrote a simple web scraping library that is available at [https://github.com/mark-watson/WebScraping_swift](https://github.com/mark-watson/WebScraping_swift) that you can use in your projects by putting the following dependency in your **Package.swift** file:
 
 {lang="swift",linenos=on}
 ~~~~~~~~
-    dependencies: [
-         .package(url: "git@github.com:mark-watson/WebScraping_swift.git",
-             .branch("main")),
-    ],
+dependencies: [
+    .package(
+        url: "https://github.com/mark-watson/WebScraping_swift.git",
+        branch: "main"),
+],
 ~~~~~~~~
 
 Here is the main implementation file for the library:
@@ -39,14 +40,23 @@ private func fetchDocument(uri: String) async throws -> Document {
     guard let url = URL(string: uri) else {
         throw ScrapingError.invalidURL(uri)
     }
-    
+
     let (data, _) = try await URLSession.shared.data(from: url)
-    
+
     guard let html = String(data: data, encoding: .utf8) else {
-        throw ScrapingError.parseFailed(NSError(domain: "WebScraping", code: 1,
-            userInfo: [NSLocalizedDescriptionKey: "Failed to decode UTF-8 data"]))
+        // Fallback: UTF-8 is standard; throw if it fails.
+        throw ScrapingError.parseFailed(
+            NSError(
+                domain: "WebScraping",
+                code: 1,
+                userInfo: [
+                    NSLocalizedDescriptionKey:
+                        "Failed to decode UTF-8 data"
+                ]
+            )
+        )
     }
-    
+
     do {
         return try SwiftSoup.parse(html, uri)
     } catch {
@@ -61,37 +71,47 @@ public func webPageText(uri: String) async throws -> String {
 }
 
 /// Returns all headers of a specific type (e.g., "h1", "h2").
-private func webPageHeadersHelper(uri: String, headerName: String) async throws -> [String] {
+private func webPageHeadersHelper(
+    uri: String,
+    headerName: String
+) async throws -> [String] {
     let doc = try await fetchDocument(uri: uri)
     let headers = try doc.select(headerName)
     return try headers.map { try $0.text() }
 }
 
 /// Returns all H1 headers on the page.
-public func webPageH1Headers(uri: String) async throws -> [String] {
-    return try await webPageHeadersHelper(uri: uri, headerName: "h1")
+public func webPageH1Headers(
+    uri: String) async throws -> [String] {
+    return try await webPageHeadersHelper(
+        uri: uri, headerName: "h1")
 }
 
 /// Returns all H2 headers on the page.
-public func webPageH2Headers(uri: String) async throws -> [String] {
-    return try await webPageHeadersHelper(uri: uri, headerName: "h2")
+public func webPageH2Headers(
+    uri: String) async throws -> [String] {
+    return try await webPageHeadersHelper(
+        uri: uri, headerName: "h2")
 }
 
-/// Returns all anchors (links) found on the page as `Anchor` objects.
-public func webPageAnchors(uri: String) async throws -> [Anchor] {
+/// Returns all anchors (links) found on the page.
+public func webPageAnchors(
+    uri: String
+) async throws -> [Anchor] {
     let doc = try await fetchDocument(uri: uri)
     let anchors = try doc.select("a")
     let baseURL = URL(string: uri)
-    
+
     return try anchors.compactMap { a -> Anchor? in
         let text = try a.text()
         let href = try a.attr("href")
-        
-        // Use Foundation's URL resolution for relative/fragment links.
-        guard let resolvedURL = URL(string: href, relativeTo: baseURL) else {
+
+        // Foundation resolves relative/fragment links.
+        guard let resolvedURL = URL(
+            string: href, relativeTo: baseURL) else {
             return nil
         }
-        
+
         return Anchor(text: text, url: resolvedURL.absoluteURL)
     }
 }

@@ -12,29 +12,35 @@ struct ChatCLI {
         // Verify model
         let model = SystemLanguageModel.default
         guard model.isAvailable else {
-            throw RuntimeError("Model unavailable: \(model.availability)")
+            throw RuntimeError(
+                "Model unavailable: \(model.availability)")
         }
 
-        let session = LanguageModelSession(instructions: sysPrompt)
+        let session = LanguageModelSession(
+            instructions: sysPrompt)
         print("Temperature: \(temperature)")
         print("System Prompt: \(sysPrompt)")
         let options = GenerationOptions(temperature: temperature)
 
-        print("Apple-Intelligence chat (streaming, T=0.2). Type /quit to exit.\n")
+        print("Apple-Intelligence chat (T=0.2). /quit to exit.\n")
 
         while true {
             print("Enter your message: ", terminator: "")
-            guard let prompt = readLine(strippingNewline: true) else { break }
+            guard let prompt =
+                readLine(strippingNewline: true) else { break }
             if prompt.isEmpty || prompt == "/quit" { break }
 
-            var previous = ""       // text already printed
+            var previous = ""   // text already printed
 
             let task = Task {
-                for try await part in session.streamResponse(to: prompt, options: options) {
+                for try await part in session.streamResponse(
+                    to: prompt, options: options) {
                     let current: String = String(describing: part)
-                    let delta = current.dropFirst(previous.count) // new characters only
+                    // emit only new characters
+                    let delta = current.dropFirst(previous.count)
                     if !delta.isEmpty {
-                        FileHandle.standardOutput.write(Data(delta.utf8))
+                        FileHandle.standardOutput.write(
+                            Data(delta.utf8))
                         fflush(stdout)
                         previous = current
                     }
@@ -44,7 +50,8 @@ struct ChatCLI {
 
             // ^C cancels the streaming task
             signal(SIGINT, SIG_IGN)
-            let sigSrc = DispatchSource.makeSignalSource(signal: SIGINT, queue: .main)
+            let sigSrc = DispatchSource.makeSignalSource(
+                signal: SIGINT, queue: .main)
             sigSrc.setEventHandler { task.cancel() }
             sigSrc.resume()
             defer { sigSrc.cancel() }
