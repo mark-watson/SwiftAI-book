@@ -11,15 +11,6 @@
         }
       },
       {
-        "package": "SparqlQuery_swift",
-        "repositoryURL": "git@github.com:mark-watson/SparqlQuery_swift.git",
-        "state": {
-          "branch": "main",
-          "revision": "83f39eaa264d92f157f97be7ea95aa378ad9dbd8",
-          "version": null
-        }
-      },
-      {
         "package": "SwiftSoup",
         "repositoryURL": "https://github.com/scinfu/SwiftSoup.git",
         "state": {

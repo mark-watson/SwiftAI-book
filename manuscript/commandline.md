@@ -1,24 +1,18 @@
 # Background Information for Writing Swift Command Line Utilities
 
-This short chapter contains example code and utilities for writing command line programs, using external shell processes, and using the FileIO library.
+This short chapter contains example code and utilities for writing command line programs, using external shell processes, and using the FileIO library. At the end of this chapter we see two ways to use this example package in other projects.
 
 ## Using Shell Processes
 
-The library for using shell processes is one of my GitHub projects so you can include it in other projects using:
-
-{lang="swift",linenos=on}
-~~~~~~~~
- dependencies: [
-   .package(url: "git@github.com:mark-watson/ShellProcess_swift.git",
-            .branch("main")),
- ],
-~~~~~~~~
-
+The library for using shell processes is one of my GitHub projects.
 
 You can clone this repository if you want to have the source code at hand:
 
-    git clone https://github.com/mark-watson/ShellProcess_swift.git
-    
+    git clone https://github.com/mark-watson/SwiftAI-book
+    cd SwiftAI-book
+    cd source-code/ShellProcess_swift
+    swift test
+
 
 The following listing shows the library implementation. In line 5 we use the constructor **Process** from the Apple **Foundation** library to get a new process object that we set fields **executableURL** and **argList**. In lines 8 and 9 we create a new Unix style pipe to capture the output from the shell process we are starting and attach it to the process. After we run the task, we capture the output and return it as the value of function **run_in_shell**.
 
@@ -127,7 +121,7 @@ Test Suite 'All tests' passed at 2021-08-06 16:36:23.468.
 
 ## FileIO Examples
 
-This file I/O example uses the **ShellProcess_swift** library we saw in the last section so if you were to create your own Swift project with the following code listing, you would have to add this dependency in the **Project.swift** file.
+This file I/O example uses the **ShellProcess_swift** library we saw in the last section so if you were to create your own Swift project with the following code listing, you would have to add this dependency in the **Package.swift** file.
 
 When writing command line Swift programs you will often need to do simple file IO so let's look at some examples here:
 
@@ -184,16 +178,13 @@ These operating system version checks are done to ensure that the program is onl
 
 This function demonstrates how to write to and read from files using the **write(toFile:atomically:encoding:)** and **String(contentsOfFile:)** methods, how to list files in the current directory using the ls shell command, and how to remove files using the rm shell command.
 
-I created a temporary Swift project with the previous code listing and a **Project.swift** file. I built and ran this example using the **swift** command line tool.
+I created a temporary Swift project with the previous code listing and a **Package.swift** file. I built and ran this example using the **swift** command line tool.
 
 Unlike the example in the last section where we built a reusable library with a test program, here we have a standalone program contained in a single file so we will use *swift run* to build and run this example:
 
 {lang="swift",linenos=on}
 ~~~~~~~~
 $ swift run
-Fetching git@github.com:mark-watson/ShellProcess_swift.git from cache
-Cloning git@github.com:mark-watson/ShellProcess_swift.git
-Resolving git@github.com:mark-watson/ShellProcess_swift.git at main
 [5/5] Build complete!
 a second string
 
@@ -207,6 +198,59 @@ Sources
 out.txt
 out2.txt
 ~~~~~~~~
+
+If you are instead working inside the *SwiftAI-book* mono-repo clone and the local relative path is configured, SwiftPM resolves `ShellProcess_swift` from the neighbouring folder rather than fetching it from GitHub, and the build output simply shows `[N/N] Build complete!` with no fetch step.
+
+## Mono-Repo Umbrella Package
+
+The *SwiftAI-book* repository ships a root-level `Package.swift` that acts as an **umbrella package** for the entire mono-repo. This gives remote users a single GitHub URL they can add as a Swift Package dependency and then selectively import any example:
+
+{lang="swift",linenos=on}
+~~~~~~~~
+// In your own project's Package.swift:
+dependencies: [
+    .package(url: "https://github.com/mark-watson/SwiftAI-book.git",
+             branch: "main")
+],
+targets: [
+    .target(
+        name: "MyApp",
+        dependencies: [
+            .product(name: "ShellProcess_swift",    package: "SwiftAI-book"),
+            .product(name: "SparqlQuery_swift",     package: "SwiftAI-book"),
+            // …add other products as needed
+        ]
+    )
+]
+~~~~~~~~
+
+The umbrella manifest (at the root of the repo) explicitly re-declares the full internal dependency graph. For example, `KnowledgeGraphNavigator_swift` depends on `SparqlQuery_swift` — that relationship is listed in the umbrella's `targets` array so SwiftPM resolves it correctly even though it does not read the individual sub-package manifests:
+
+{lang="swift",linenos=on}
+~~~~~~~~
+// source-code/KnowledgeGraphNavigator_swift/Package.swift
+// (local sub-package manifest — for working inside the clone)
+dependencies: [
+    .package(name: "SparqlQuery_swift", path: "../SparqlQuery_swift"),
+    .package(url: "git@github.com:mark-watson/Nlp_swift.git", branch: "main"),
+    // …external deps
+],
+
+// /Package.swift (umbrella — for remote consumers)
+targets: [
+    .target(
+        name: "SparqlQuery_swift",
+        path: "source-code/SparqlQuery_swift/Sources/SparqlQuery_swift"
+    ),
+    .target(
+        name: "KnowledgeGraphNavigator_swift",
+        dependencies: ["SparqlQuery_swift", …],   // internal dep re-declared here
+        path: "source-code/KnowledgeGraphNavigator_swift/Sources/…"
+    ),
+]
+~~~~~~~~
+
+Local readers who clone the book can open any individual sub-directory in Xcode (or run `swift build` / `swift test` from within it) and the relative-path dependency will resolve instantly from the neighbouring folder on disk.
 
 ## Swift REPL
 

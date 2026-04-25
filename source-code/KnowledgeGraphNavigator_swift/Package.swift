@@ -11,7 +11,7 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/SwiftyJSON/SwiftyJSON.git", .branch("master")),
         .package(url: "https://github.com/scinfu/SwiftSoup.git", from: "1.7.4"),
-        .package(url: "git@github.com:mark-watson/SparqlQuery_swift.git", .branch("main")),
+        .package(name: "SparqlQuery_swift", path: "../SparqlQuery_swift"),
         .package(url: "git@github.com:mark-watson/Nlp_swift.git", .branch("main")),
     ],
     targets: [
