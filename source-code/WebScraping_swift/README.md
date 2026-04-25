@@ -8,6 +8,38 @@ This is a very simple use of the SwiftSoup library that just returns the
 plain text from a web page. Extend this as-needed to process headers,
 lists, etc. using the [documentation](https://github.com/scinfu/SwiftSoup).
 
+## Usage in Swift REPL
+
+You can use this library in the Swift REPL for quick experiments. To start the REPL with the library loaded, run:
+
+```bash
+swift run --repl
+```
+
+Once in the REPL, import the library:
+
+```swift
+import WebScraping_swift
+```
+
+### Synchronous Usage (Recommended for REPL)
+
+For convenience, synchronous versions of the functions are available:
+
+```swift
+let text = try webPageText(uri: "https://markwatson.com")
+print(text)
+```
+
+### Asynchronous Usage
+
+If you prefer to use modern Swift concurrency, use `try await`:
+
+```swift
+let text = try await webPageText(uri: "https://markwatson.com")
+print(text)
+```
+
 The second unit test function **testToShowSwiftSoupStructureExamples**
 also shows examples of accessing the structure of a web page.
 

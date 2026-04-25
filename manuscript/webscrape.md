@@ -6,16 +6,7 @@ The web scraping code we develop here uses the Swift library **SwiftSoup** that 
 
 For my work and research, I have been most interested in using web scraping to collect text data for natural language processing but other common applications include writing AI news collection and summarization assistants, trying to predict stock prices based on comments in social media which is what we did at Webmind Corporation in 2000 and 2001, etc.
 
-I wrote a simple web scraping library that is available at [https://github.com/mark-watson/WebScraping_swift](https://github.com/mark-watson/WebScraping_swift) that you can use in your projects by putting the following dependency in your **Package.swift** file:
-
-{lang="swift",linenos=on}
-~~~~~~~~
-dependencies: [
-    .package(
-        url: "https://github.com/mark-watson/WebScraping_swift.git",
-        branch: "main"),
-],
-~~~~~~~~
+I wrote a simple web scraping library that is available in **source-code/WebScraping_swift.
 
 Here is the main implementation file for the library:
 
@@ -35,16 +26,9 @@ public struct Anchor: Equatable {
     public let url: URL
 }
 
-/// Fetches the HTML document from a given URI and parses it.
-private func fetchDocument(uri: String) async throws -> Document {
-    guard let url = URL(string: uri) else {
-        throw ScrapingError.invalidURL(uri)
-    }
-
-    let (data, _) = try await URLSession.shared.data(from: url)
-
+/// Helper to parse HTML data into a SwiftSoup Document.
+private func parse(data: Data, uri: String) throws -> Document {
     guard let html = String(data: data, encoding: .utf8) else {
-        // Fallback: UTF-8 is standard; throw if it fails.
         throw ScrapingError.parseFailed(
             NSError(
                 domain: "WebScraping",
@@ -64,13 +48,51 @@ private func fetchDocument(uri: String) async throws -> Document {
     }
 }
 
-/// Returns the plain text content of a web page.
+/// Fetches the HTML document from a given URI and parses it asynchronously.
+private func fetchDocument(uri: String) async throws -> Document {
+    guard let url = URL(string: uri) else {
+        throw ScrapingError.invalidURL(uri)
+    }
+
+    let data: Data
+    do {
+        (data, _) = try await URLSession.shared.data(from: url)
+    } catch {
+        throw ScrapingError.fetchFailed(error)
+    }
+
+    return try parse(data: data, uri: uri)
+}
+
+/// Fetches the HTML document from a given URI and parses it synchronously.
+private func fetchDocument(uri: String) throws -> Document {
+    guard let url = URL(string: uri) else {
+        throw ScrapingError.invalidURL(uri)
+    }
+
+    let data: Data
+    do {
+        data = try Data(contentsOf: url)
+    } catch {
+        throw ScrapingError.fetchFailed(error)
+    }
+
+    return try parse(data: data, uri: uri)
+}
+
+/// Returns the plain text content of a web page (asynchronous).
 public func webPageText(uri: String) async throws -> String {
     let doc = try await fetchDocument(uri: uri)
     return try doc.text()
 }
 
-/// Returns all headers of a specific type (e.g., "h1", "h2").
+/// Returns the plain text content of a web page (synchronous).
+public func webPageText(uri: String) throws -> String {
+    let doc = try fetchDocument(uri: uri)
+    return try doc.text()
+}
+
+/// Helper for headers (asynchronous).
 private func webPageHeadersHelper(
     uri: String,
     headerName: String
@@ -80,25 +102,50 @@ private func webPageHeadersHelper(
     return try headers.map { try $0.text() }
 }
 
-/// Returns all H1 headers on the page.
-public func webPageH1Headers(
-    uri: String) async throws -> [String] {
-    return try await webPageHeadersHelper(
-        uri: uri, headerName: "h1")
+/// Helper for headers (synchronous).
+private func webPageHeadersHelper(
+    uri: String,
+    headerName: String
+) throws -> [String] {
+    let doc = try fetchDocument(uri: uri)
+    let headers = try doc.select(headerName)
+    return try headers.map { try $0.text() }
 }
 
-/// Returns all H2 headers on the page.
-public func webPageH2Headers(
-    uri: String) async throws -> [String] {
-    return try await webPageHeadersHelper(
-        uri: uri, headerName: "h2")
+/// Returns all H1 headers on the page (asynchronous).
+public func webPageH1Headers(uri: String) async throws -> [String] {
+    return try await webPageHeadersHelper(uri: uri, headerName: "h1")
 }
 
-/// Returns all anchors (links) found on the page.
-public func webPageAnchors(
-    uri: String
-) async throws -> [Anchor] {
+/// Returns all H1 headers on the page (synchronous).
+public func webPageH1Headers(uri: String) throws -> [String] {
+    return try webPageHeadersHelper(uri: uri, headerName: "h1")
+}
+
+/// Returns all H2 headers on the page (asynchronous).
+public func webPageH2Headers(uri: String) async throws -> [String] {
+    return try await webPageHeadersHelper(uri: uri, headerName: "h2")
+}
+
+/// Returns all H2 headers on the page (synchronous).
+public func webPageH2Headers(uri: String) throws -> [String] {
+    return try webPageHeadersHelper(uri: uri, headerName: "h2")
+}
+
+/// Returns all anchors (links) found on the page as `Anchor` objects (asynchronous).
+public func webPageAnchors(uri: String) async throws -> [Anchor] {
     let doc = try await fetchDocument(uri: uri)
+    return try parseAnchors(doc: doc, uri: uri)
+}
+
+/// Returns all anchors (links) found on the page as `Anchor` objects (synchronous).
+public func webPageAnchors(uri: String) throws -> [Anchor] {
+    let doc = try fetchDocument(uri: uri)
+    return try parseAnchors(doc: doc, uri: uri)
+}
+
+/// Shared anchor parsing logic.
+private func parseAnchors(doc: Document, uri: String) throws -> [Anchor] {
     let anchors = try doc.select("a")
     let baseURL = URL(string: uri)
 
@@ -106,9 +153,8 @@ public func webPageAnchors(
         let text = try a.text()
         let href = try a.attr("href")
 
-        // Foundation resolves relative/fragment links.
-        guard let resolvedURL = URL(
-            string: href, relativeTo: baseURL) else {
+        // Use Foundation's URL resolution for relative/fragment links.
+        guard let resolvedURL = URL(string: href, relativeTo: baseURL) else {
             return nil
         }
 
@@ -206,7 +252,7 @@ Launching Swift REPL with arguments: -I/Users/markw_1/GIT_swift_book/WebScraping
 Welcome to Apple Swift version 5.5 (swiftlang-1300.0.29.102 clang-1300.0.28.1).
 Type :help for assistance.
   1> import WebScraping_swift
-  2> webPageText(uri: "https://markwatson.com")
+  2> try webPageText(uri: "https://markwatson.com")
 $R0: String = "Mark Watson: AI Practitioner and Polyglot Programmer | Mark Watson    Read my Blog    Fun stuff    My Books    My Open Source Projects    Privacy Policy Mark Watson: AI Practitioner and Polyglot Programmer I am the author of 20+ books on Artificial Intelligence, Common Lisp, Deep Learning, Haskell, Clojure, Java, Ruby, Hy language, and the Semantic Web. I have 55 US Patents. My customer list includes: Google, Capital One, Babylist, Olive AI, CompassLabs, Disney, SAIC, Americast, PacBell, CastTV, Lutris Technology, Arctan Group, Sitescout.com, Embed.ly, and Webmind Corporation"...
   3>  
 ~~~~~~~~
