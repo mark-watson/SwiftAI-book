@@ -1,313 +1,446 @@
-# Documents Question Answering Using OpenAI GPT4 APIs and a Local Embeddings Vector Database
+# Document Question Answering Using Gemini APIs and a Local Embeddings Vector Database
 
-The examples in this chapter are inspired by the Python LangChain and LlamaIndex projects, with just the parts I need for my projects written from scratch in Common Lisp. I wrote a Python book “LangChain and LlamaIndex Projects Lab Book: Hooking Large Language Models Up to the Real World Using GPT-3, ChatGPT, and Hugging Face Models in Applications” in March 2023: https://leanpub.com/langchain that you might also be interested in.
+The example in this chapter implements Retrieval-Augmented Generation (RAG) using Google's Gemini API. We use **Gemini Embedding 2** to generate vector embeddings for document chunks and **Gemini 3 Flash** to answer questions using retrieved context. This approach lets you ground an LLM's responses in your own local documents.
 
-The GitHub repository for this example can be found here: [https://github.com/mark-watson/Docs_QA_Swift](https://github.com/mark-watson/Docs_QA_Swift).
+The source code for this example is in the **source-code/Docs_QA_Swift** directory. We split the implementation across four Swift source files for clarity:
 
-The entire example is in one Swift source file **main.swift**. All of the program listings in this chapter can be found in this single source file.
+- **GeminiAPI.swift** — REST API client for Gemini embeddings and chat
+- **TextChunker.swift** — Sentence-aware text chunking using NLTokenizer
+- **VectorStore.swift** — In-memory vector database with cosine similarity search
+- **main.swift** — Ingests documents and answers questions via RAG
 
-We use two models in this example: a vector embedding model
-and a gpt-4o-mini conversation model (see bottom of this file).
-The vector embedding model is used to generate a vector embedding.
-The gpt-4o-mini model is used to generate a response to a prompt.
-The vector embedding model is used to compare the similarity of two
-prompts.
+This example requires a **GOOGLE_API_KEY** environment variable to be set.
 
+## Gemini API Client
 
-## Extending the String Class
+The **GeminiAPI.swift** file provides two core capabilities: generating embeddings and performing question answering. Both use the Gemini REST API at **generativelanguage.googleapis.com** with **async/await** and **Codable** for clean, type-safe JSON handling.
 
-```swift
-import Foundation
-import NaturalLanguage
+### Embedding Requests
 
-// String utilities:
+We define Codable structs for the Gemini embedding API request and response:
 
-extension String {
-    func removeCharacters(from forbiddenChars: CharacterSet) -> String {
-        let passed = self.unicodeScalars.filter { !forbiddenChars.contains($0) }
-        return String(String.UnicodeScalarView(passed))
+{lang="swift",linenos=off}
+~~~~~~~~
+private struct EmbedRequest: Codable {
+    struct Content: Codable {
+        struct Part: Codable {
+            let text: String
+        }
+        let parts: [Part]
     }
-
-    func removeCharacters(from: String) -> String {
-        return removeCharacters(from: CharacterSet(charactersIn: from))
-    }
-    func plainText() -> String {
-        return self.removeCharacters(from:
-                                     "\"`()%$#@[]{}<>").replacingOccurrences(of: "\n",
-                                     with: " ")
-    }
+    let content: Content
 }
-```
 
-## Implementing a Local Vector Database for Document Embeddings
+private struct EmbedResponse: Codable {
+    struct Embedding: Codable {
+        let values: [Double]
+    }
+    let embedding: Embedding
+}
+~~~~~~~~
 
-```swift
-let openai_key = ProcessInfo.processInfo.environment["OPENAI_KEY"]!
+The **generateEmbedding** function sends text to the Gemini **embedContent** endpoint and returns a normalized vector:
 
-let openAiHost = "https://api.openai.com/v1/embeddings"
+{lang="swift",linenos=off}
+~~~~~~~~
+func generateEmbedding(for text: String,
+                       apiKey: String)
+                       async -> [Double]? {
+    let model = "models/gemini-embedding-2"
+    let urlString =
+        "\(geminiBase)\(model):embedContent?key=\(apiKey)"
+    guard let url = URL(string: urlString) else {
+        return nil
+    }
 
-func openAiHelper(body: String)  -> String {
-    var ret = ""
-    var content = "{}"
-    let requestUrl = URL(string: openAiHost)!
-    var request = URLRequest(url: requestUrl)
+    let body = EmbedRequest(
+        content: EmbedRequest.Content(
+            parts: [EmbedRequest.Content.Part(text: text)]
+        )
+    )
+
+    var request = URLRequest(url: url)
     request.httpMethod = "POST"
-    request.httpBody = body.data(using: String.Encoding.utf8);
-    request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-    request.setValue("Bearer " + openai_key, forHTTPHeaderField: "Authorization")
-    let task = URLSession.shared.dataTask(with: request) { (data, response, error) in
-        if let error = error {
-            print("-->> Error accessing OpenAI servers: \(error)")
-            return
+    request.setValue("application/json",
+                     forHTTPHeaderField: "Content-Type")
+    request.httpBody = try? JSONEncoder().encode(body)
+
+    do {
+        let (data, response) =
+            try await URLSession.shared.data(for: request)
+        if let http = response as? HTTPURLResponse,
+           !(200...299).contains(http.statusCode) {
+            let body = String(data: data, encoding: .utf8)
+                       ?? "<no body>"
+            fputs("[Embedding Error] HTTP " +
+                  "\(http.statusCode): \(body)\n", stderr)
+            return nil
         }
-        if let data = data, let s = String(data: data, encoding: .utf8) {
-            content = s
-            //print("** s=", s)
-            CFRunLoopStop(CFRunLoopGetMain())
-        }
+        let decoded = try JSONDecoder().decode(
+            EmbedResponse.self, from: data)
+        return normalized(decoded.embedding.values)
+    } catch {
+        fputs("[Embedding Error] \(error)\n", stderr)
+        return nil
     }
-    task.resume()
-    CFRunLoopRun()
-    let c = String(content)
-    let i1 = c.range(of: "\"embedding\":")
-    if let r1 = i1 {
-        let i2 = c.range(of: "]")
-        if let r2 = i2 {
-            ret = String(String(String(c[r1.lowerBound..<r2.lowerBound]).dropFirst(15)).dropLast(2))
-        }
+}
+~~~~~~~~
+
+Gemini Embedding 2 returns 3072-dimensional vectors. We L2-normalize them immediately so that dot product equals cosine similarity, simplifying later comparisons.
+
+### Chat Completion
+
+For question answering we use the Gemini **generateContent** endpoint with a system instruction that constrains the model to answer using only the provided context:
+
+{lang="swift",linenos=off}
+~~~~~~~~
+private struct GeminiRequest: Codable {
+    let systemInstruction: SystemInstruction?
+    let contents: [Content]
+
+    struct SystemInstruction: Codable {
+        let parts: [Part]
     }
-    return ret
+    struct Content: Codable {
+        let parts: [Part]
+    }
+    struct Part: Codable {
+        let text: String
+    }
 }
 
-public func embeddings(someText: String) -> [Float] {
-    let body: String = "{\"input\": \"" + someText + "\", \"model\": \"text-embedding-ada-002\" }"
-    return readList(openAiHelper(body: body))
+private struct GeminiResponse: Codable {
+    let candidates: [Candidate]?
+
+    struct Candidate: Codable {
+        let content: Content
+    }
+    struct Content: Codable {
+        let parts: [Part]
+    }
+    struct Part: Codable {
+        let text: String
+    }
+}
+~~~~~~~~
+
+The **questionAnswering** function sends the retrieved context as a system instruction and the user's question as the content:
+
+{lang="swift",linenos=off}
+~~~~~~~~
+func questionAnswering(context: String, question: String,
+                       apiKey: String) async -> String? {
+    let model = "models/gemini-3-flash-preview"
+    let urlString =
+        "\(geminiBase)\(model):generateContent?key=\(apiKey)"
+    guard let url = URL(string: urlString) else {
+        return nil
+    }
+
+    let body = GeminiRequest(
+        systemInstruction: GeminiRequest.SystemInstruction(
+            parts: [GeminiRequest.Part(
+                text: "Answer the user's question using " +
+                      "only the following context:\n\n" +
+                      "\(context)")]
+        ),
+        contents: [
+            GeminiRequest.Content(
+                parts: [GeminiRequest.Part(text: question)]
+            )
+        ]
+    )
+
+    var request = URLRequest(url: url)
+    request.httpMethod = "POST"
+    request.setValue("application/json",
+                     forHTTPHeaderField: "Content-Type")
+
+    do {
+        request.httpBody =
+            try JSONEncoder().encode(body)
+    } catch {
+        fputs("[Error] Failed to encode: \(error)\n",
+              stderr)
+        return nil
+    }
+
+    do {
+        let (data, response) =
+            try await URLSession.shared.data(for: request)
+        if let http = response as? HTTPURLResponse,
+           !(200...299).contains(http.statusCode) {
+            let body = String(data: data, encoding: .utf8)
+                       ?? "<no body>"
+            fputs("[Chat Error] HTTP " +
+                  "\(http.statusCode): \(body)\n", stderr)
+            return nil
+        }
+        let decoded = try JSONDecoder().decode(
+            GeminiResponse.self, from: data)
+        return decoded.candidates?.first?
+            .content.parts.first?.text
+    } catch {
+        fputs("[Chat Error] \(error)\n", stderr)
+        return nil
+    }
+}
+~~~~~~~~
+
+### Vector Math Utilities
+
+We include three small utility functions for vector operations:
+
+{lang="swift",linenos=off}
+~~~~~~~~
+func normalized(_ v: [Double]) -> [Double] {
+    let mag = sqrt(v.reduce(0.0) { $0 + $1 * $1 })
+    guard mag > 0 else { return v }
+    return v.map { $0 / mag }
 }
 
-func dotProduct(_ list1: [Float], _ list2: [Float]) -> Float {
-    if list1.count != list2.count {
-        //fatalError("Lists must have the same length.")
-        print("WARNING: Lists must have the same length: \(list1.count) != \(list2.count)")
+func dotProduct(_ a: [Double], _ b: [Double]) -> Double {
+    guard a.count == b.count else {
+        fputs("WARNING: vector length mismatch: " +
+              "\(a.count) != \(b.count)\n", stderr)
         return 0.0
     }
-    
-    var result: Float = 0
-    
-    for i in 0..<list1.count {
-        result += list1[i] * list2[i]
-    }
-    
-    return result
-}
-```
-
-The source file contains example code for creating embeddings and using dot product work to find semantic similarity:
-
-```swift
-let emb1 = embeddings(someText: "John bought a new car")
-let emb2 = embeddings(someText: "Sally drove to the store")
-let emb3 = embeddings(someText: "The dog saw a cat")
-let dotProductResult1 = dotProduct(emb1, emb2)
-print(dotProductResult1)
-let dotProductResult2 = dotProduct(emb1, emb3)
-print(dotProductResult2)
-```
-
-The output is:
-
-```Console
-0.8416926
-0.79411536
-```
-
-For this example, we use an in-memory store of embedding vectors and chunk text.
-A text document is broken into smaller chunks of text. Each chunk is embedded
-and stored in the embeddingsStore. The chunk text is stored in the chunks array.
-The embeddingsStore and chunks array are used to find the most similar chunk
-to a prompt. The most similar chunk is used to generate a response to the prompt.
-
-```swift
-var embeddingsStore: Array<[Float]> = Array()
-var chunks: Array<String> = Array()
-
-func addEmbedding(_ embedding: [Float]) {
-    embeddingsStore.append(embedding)
-    //print("Added embedding: count=\(embeddingsStore.count)  \(embedding)")
+    return zip(a, b).reduce(0.0) { $0 + $1.0 * $1.1 }
 }
 
-func addChunk(_ chunk: String) {
-    chunks.append(chunk)
+func cosineSimilarity(_ a: [Double],
+                      _ b: [Double]) -> Double {
+    guard !a.isEmpty, a.count == b.count else { return 0.0 }
+    return dotProduct(a, b)
 }
-```
+~~~~~~~~
 
+Since we normalize all vectors when they are generated, cosine similarity reduces to a simple dot product.
 
-## Create Local Embeddings Vectors From Local Text Files With OpenAI GPT APIs
+## Text Chunking
 
+The **TextChunker.swift** file handles splitting documents into chunks suitable for embedding. We use Apple's **NLTokenizer** for sentence segmentation and then group sentences into chunks that don't exceed a maximum character count:
 
-```swift
-func readList(_ input: String) -> [Float] {
-    return input.split(separator: ",\n").compactMap {
-        Float($0.trimmingCharacters(in: .whitespaces))
-    }
-}
-
-let fileManager = FileManager.default
-let currentDirectoryURL = URL(fileURLWithPath: fileManager.currentDirectoryPath)
-let dataDirectoryURL = currentDirectoryURL.appendingPathComponent("data")
-
-// Top level code expression to process all *.txt files in the data/ directory:
-
-do {
-    let directoryContents = try fileManager.contentsOfDirectory(at: dataDirectoryURL, includingPropertiesForKeys: nil)
-    let txtFiles = directoryContents.filter { $0.pathExtension == "txt" }
-    for txtFile in txtFiles {
-        let content = try String(contentsOf: txtFile)
-        let chnks = segmentTextIntoChunks(text: content.plainText(),
-                                          max_chunk_size: 100)
-        for chunk in chnks {
-            let embedding = embeddings(someText: chunk)
-            if embedding.count > 0 {
-                addEmbedding(embedding)
-                addChunk(chunk)
-            }
-        }
-    }
-} catch {
-}
-       
+{lang="swift",linenos=off}
+~~~~~~~~
 func segmentTextIntoSentences(text: String) -> [String] {
     let tokenizer = NLTokenizer(unit: .sentence)
     tokenizer.string = text
-    let sentences = tokenizer.tokens(for: text.startIndex..<text.endIndex).map {
-       token -> String in
-         return String(text[token.lowerBound..<token.upperBound])
+    return tokenizer.tokens(
+        for: text.startIndex..<text.endIndex
+    ).map { range in
+        String(text[range])
     }
-    return sentences
 }
 
-func segmentTextIntoChunks(text: String, max_chunk_size: Int) -> [String] {
+func segmentTextIntoChunks(text: String,
+                           maxChunkSize: Int) -> [String] {
     let sentences = segmentTextIntoSentences(text: text)
-    var chunks: Array<String> = Array()
+    var chunks: [String] = []
     var currentChunk = ""
-    var currentChunkSize = 0
+    var currentSize = 0
+
     for sentence in sentences {
-        if currentChunkSize + sentence.count < max_chunk_size {
+        if currentSize + sentence.count < maxChunkSize {
             currentChunk += sentence
-            currentChunkSize += sentence.count
+            currentSize += sentence.count
         } else {
-            chunks.append(currentChunk)
+            if !currentChunk.isEmpty {
+                chunks.append(currentChunk)
+            }
             currentChunk = sentence
-            currentChunkSize = sentence.count
+            currentSize = sentence.count
         }
+    }
+    if !currentChunk.isEmpty {
+        chunks.append(currentChunk)
     }
     return chunks
 }
-```
+~~~~~~~~
 
+This approach preserves sentence boundaries so that each chunk contains complete sentences — important for both embedding quality and for providing readable context to the LLM.
 
+## In-Memory Vector Store
 
-## Using Local Embeddings Vector Database With OpenAI GPT APIs
+The **VectorStore.swift** file provides a simple in-memory vector database:
 
-We use the OpenAI QA API using gpt-4o-mini model (reformatted to fit the page width):
+{lang="swift",linenos=off}
+~~~~~~~~
+struct VectorStore {
+    private(set) var embeddings: [[Double]] = []
+    private(set) var chunks: [String] = []
 
-```swift
-let openAiQaHost = "https://api.openai.com/v1/chat/completions"
-
-func openAiQaHelper(body: String)  -> String {
-    var ret = ""
-    var content = "{}"
-    let requestUrl = URL(string: openAiQaHost)!
-    var request = URLRequest(url: requestUrl)
-    request.httpMethod = "POST"
-    request.httpBody = body.data(using: String.Encoding.utf8);
-    request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-    request.setValue("Bearer " + openai_key, forHTTPHeaderField: "Authorization")
-    let task = URLSession.shared.dataTask(with: request) { (data, response, error) in
-        if let error = error {
-            print("-->> Error accessing OpenAI servers: \(error)")
-            return
-        }
-        if let data = data, let s = String(data: data, encoding: .utf8) {
-            content = s
-            CFRunLoopStop(CFRunLoopGetMain())
-        }
+    mutating func add(chunk: String,
+                      embedding: [Double]) {
+        chunks.append(chunk)
+        embeddings.append(embedding)
     }
-    task.resume()
-    CFRunLoopRun()
-    let c = String(content)
-    //print("DEBUG response c:", c)
-    // pull returned content for string instead of using a
-    // JSON parser:
-    let i1 = c.range(of: "\"content\":")
-    if let r1 = i1 {
-        let i2 = c.range(of: "\"}")
-        if let r2 = i2 {
-            ret = String(
-                    String(
-                      String(c[r1.lowerBound..<r2.lowerBound])
-                        .dropFirst(11)))
+
+    var count: Int { chunks.count }
+
+    func search(queryEmbedding: [Double],
+                threshold: Double = 0.4,
+                maxResults: Int = 5)
+                -> [(chunk: String, score: Double)] {
+        var results: [(chunk: String, score: Double)] = []
+        for i in 0..<embeddings.count {
+            let score = cosineSimilarity(
+                queryEmbedding, embeddings[i])
+            if score > threshold {
+                results.append((chunks[i], score))
+            }
         }
+        return results
+            .sorted { $0.score > $1.score }
+            .prefix(maxResults)
+            .map { $0 }
     }
-    return ret
 }
+~~~~~~~~
 
-func questionAnswering(context: String, question: String) -> String {
-    let body = "{ \"model\": \"gpt-3.5-turbo\", \"messages\": [ {\"role\": \"system\", \"content\": \"" +
-      context + "\"}, {\"role\": \"user\", \"content\": \"" + question + "\"}]}"
+The **search** method computes cosine similarity between the query embedding and every stored chunk, then returns the top matches above a threshold. For a production system you would use a dedicated vector database, but this simple approach works well for small document collections.
 
-    //print("DEBUG body:", body)
-    
-    let answer = openAiQaHelper(body: body)
-    if let i1 = answer.range(of: "\"content\":") {
-        // variable answer is a string containing JSON. We want to extract the value of the "content" key and we do so without using a JSON parser.
-        return String(answer[answer.startIndex..<i1.lowerBound])
-    }
-    return answer
-}
+The **ingestDocuments** function reads all **.txt** files from a directory, chunks them, generates embeddings, and populates the vector store:
 
-//  Top level query interface:
+{lang="swift",linenos=off}
+~~~~~~~~
+func ingestDocuments(from directoryURL: URL,
+                     apiKey: String,
+                     chunkSize: Int = 200)
+                     async -> VectorStore {
+    var store = VectorStore()
+    let fileManager = FileManager.default
 
-func query(_ query: String) -> String {
-    let queryEmbedding = embeddings(someText: query)
-    var contextText = ""
-    for i in 0..<embeddingsStore.count {
-        let dotProductResult = dotProduct(queryEmbedding, embeddingsStore[i])
-        if dotProductResult > 0.8 {
-            contextText.append(chunks[i])
-            contextText.append(" ")
+    do {
+        let contents = try fileManager.contentsOfDirectory(
+            at: directoryURL,
+            includingPropertiesForKeys: nil)
+        let txtFiles = contents.filter {
+            $0.pathExtension == "txt"
         }
+
+        for file in txtFiles {
+            let text = try String(contentsOf: file,
+                                  encoding: .utf8)
+            let chunks = segmentTextIntoChunks(
+                text: text.plainText(),
+                maxChunkSize: chunkSize)
+
+            for chunk in chunks {
+                if let embedding =
+                    await generateEmbedding(
+                        for: chunk, apiKey: apiKey) {
+                    store.add(chunk: chunk,
+                              embedding: embedding)
+                }
+            }
+            print("  Indexed \(file.lastPathComponent)" +
+                  " (\(chunks.count) chunks)")
+        }
+    } catch {
+        fputs("[Error] Reading documents: " +
+              "\(error)\n", stderr)
     }
-    //print("\n\n+++++++ contextText = \(contextText)\n\n")
-    let answer = questionAnswering(context: contextText, question: query)
-    //print("* * debug: query: ", query)
-    //print("* * debug: answer:", answer)
-    return answer
 
+    return store
 }
+~~~~~~~~
 
-print(query("What is the history of chemistry?"))
-print(query("What is the definition of sports?"))
-print(query("What is the microeconomics?"))
-```
+## Running the Example
 
-The output for these three questions looks like:
+The **main.swift** file exercises the full RAG pipeline. First it demonstrates embedding similarity, then it indexes the sample documents, and finally it answers three questions. Here is the output:
 
-```Console
-The history of chemistry dates back to ancient times when people began to manipulate materials to produce useful products. The ancient Egyptians were skilled in metallurgy and used various chemicals to embalm bodies. The Greeks were interested in theories of matter and sought to understand the nature of substances.\n\nDuring the Middle Ages, alchemy became popular, with alchemists seeking to transform base metals into gold and searching for an elixir of life. While alchemy was considered a pseudoscience, it did lead to important discoveries such as the distillation of alcohol and the discovery of various acids.\n\nThe Scientific Revolution of the 17th century brought about significant changes in chemistry. The work of Robert Boyle, Antoine Lavoisier, and others laid the foundation for modern chemistry. Lavoisier is considered the father of modern chemistry for his work in establishing the law of conservation of mass, which states that matter cannot be created or destroyed.\n\nThe 19th century saw the development of organic chemistry, as scientists sought to understand the chemistry of carbon-based compounds, which make up many biological molecules. The 20th century brought about significant advances in analytical chemistry, as well as the development of quantum mechanics and the discovery of the structure of DNA, which revolutionized the field of biochemistry.\n\nToday, chemistry plays a critical role in fields such as medicine, agriculture, materials science, and environmental science.
+{linenos=off}
+~~~~~~~~
+$ swift run
+=== Document QA with Gemini ===
 
+Embedding model: gemini-embedding-2
+Chat model:      gemini-3-flash-preview
 
-Sports can be defined as activities involving physical athleticism, physical dexterity, and governed by rules to ensure fair competition and consistent adjudication of the winner. The term \"sport\" originally meant leisure, but it now primarily refers to physical activities that involve competition at various levels of skill and proficiency. Some organizations also include all physical activity and exercise in the definition of sport.
+--- Embedding Similarity Demo ---
 
+  Embedded: "John bought a new car" (3072 dimensions)
+  Embedded: "Sally drove to the store" (3072 dimensions)
+  Embedded: "The dog saw a cat" (3072 dimensions)
 
-Microeconomics is a branch of economics that focuses on the behavior and decision-making of individual units within an economy, such as households, firms, and industries. It examines how these units interact in various markets to determine the prices of goods and services and how resources are allocated efficiently. Microeconomics also considers the role of government policies and regulations in influencing these interactions and outcomes. Topics studied in microeconomics include supply and demand, market structures, consumer behavior, production and cost analysis, and welfare analysis.
-```
+  Similarity("car" vs "drove"): 0.7162
+  Similarity("car" vs "dog/cat"): 0.4965
+  → Related sentences score higher
 
-## Wrap Up for Using Local Embeddings Vector Database to Enhance the Use of GPT3 APIs With Local Documents
+--- Indexing Documents ---
 
-As I write this in early April 2023, I have been working almost exclusively with OpenAI APIs for the last year and using the Python libraries for LangChain and LlamaIndex for the last three months.
+  Indexed chemistry.txt (17 chunks)
+  Indexed sports.txt (3 chunks)
+  Indexed health.txt (25 chunks)
+  Indexed economics.txt (15 chunks)
 
-I started writing the examples in this chapter for my own use, implementing a tiny subset of the LangChain and LlamaIndex libraries in Swift in order to write efficient command line utilities for creating local embedding vector data stores and for interactive chat using my own data.
+  Total chunks indexed: 60
 
-By writing about my “scratching my own itch” command line experiments here I hope that I get pull requests for https://github.com/mark-watson/Docs_QA_Swift from readers who are interested in helping to extend this code with new functionality.
+--- Question Answering ---
 
+Q: What is the history of chemistry?
 
+A: Based on the provided text, the history of chemistry
+is defined by its evolving definitions and focus:
+
+*   **1730:** Georg Ernst Stahl defined chemistry as the
+    art of resolving mixed, compound, or aggregate bodies
+    into their principles and composing bodies from those
+    principles.
+*   **1837:** Jean-Baptiste Dumas characterized chemistry
+    as the science concerned with the laws and effects of
+    molecular forces.
+*   **1947:** Linus Pauling accepted a definition of
+    chemistry as the science of substances: their
+    structure, properties, and the reactions that change
+    them into other substances.
+*   **1998:** Professor Raymond Chang broadened the
+    definition to the study of matter and the changes it
+    undergoes.
+
+------------------------------------------------------------
+
+Q: What is the definition of sports?
+
+A: Based on the provided text, the definition of sport
+includes the following:
+
+*   Activities based in physical athleticism or physical
+    dexterity.
+*   Derived from the Old French *desport* meaning
+    "leisure."
+*   The oldest English definition (circa 1300) is
+    "anything humans find amusing or entertaining."
+*   Usually governed by rules to ensure fair competition
+    and consistent adjudication of the winner.
+
+------------------------------------------------------------
+
+Q: What is microeconomics?
+
+A: Microeconomics examines the behavior of basic elements
+in the economy, including individual agents — such as
+households and firms or buyers and sellers — and markets,
+as well as their interactions.
+
+------------------------------------------------------------
+~~~~~~~~
+
+The embedding similarity demo shows that semantically related sentences ("bought a car" and "drove to the store") score higher (0.72) than unrelated ones ("bought a car" and "the dog saw a cat" at 0.50). This cosine similarity metric is what powers the retrieval step: when you ask a question, we embed it and find the most similar document chunks.
+
+The question answering results show that Gemini 3 Flash provides well-structured, factual answers grounded in the retrieved context. The system instruction constrains the model to answer using only the provided document chunks, reducing hallucination.
+
+## Chapter Wrap Up
+
+In this chapter we built a complete RAG (Retrieval-Augmented Generation) pipeline in Swift:
+
+1. **Document ingestion** — Read text files, split them into sentence-aware chunks
+2. **Embedding generation** — Convert each chunk to a 3072-dimensional vector using Gemini Embedding 2
+3. **Semantic search** — Find the most relevant chunks for a query using cosine similarity
+4. **Grounded generation** — Feed the retrieved context to Gemini 3 Flash to generate accurate answers
+
+This pattern is the foundation of many production AI applications. The key insight is that by grounding the LLM in your own documents, you get accurate, domain-specific answers rather than relying on the model's training data alone.
+
+For production use, you would want to replace the in-memory vector store with a persistent vector database like Qdrant, Pinecone, or pgvector, and add features like metadata filtering, hybrid search, and chunk overlap. But the core pattern — embed, retrieve, generate — remains the same.
