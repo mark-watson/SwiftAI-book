@@ -1,6 +1,6 @@
 # Setting Up Swift for Command Line Development
 
-Except for the last chapter in this book that uses Xcode for developing a complete macOS/iOS/iPadOS example application, I assume that you will work through the book examples using the command line and your favorite editor. If you want to use Xcode for the command line examples, you can open the Swift package file on the command line and open Xcode using, for example:
+Dear reader, I assume that you will work through the book examples using the command line and your favorite editor. If you want to use Xcode for the command line examples, you can open the Swift package file on the command line and open Xcode using, for example:
 
 {linenos=off}
 ~~~~~~~~
@@ -11,6 +11,13 @@ open Package.swift
 You notice that most of the examples are command line apps or libraries with command line test programs and the **README.md** files in the example directories provide instructions for building and running on the command line.
 
 You can also run Xcode and from the File Menu open an example  **Package.swift** file. You can then use the Product / Test menu to run the test code for the example. You might need to use the View / Debug Area / Active Console menu to show the output area.
+
+You should clone the repository for this book if you want to have the source code at hand:
+
+    git clone https://github.com/mark-watson/SwiftAI-book
+    cd SwiftAI-book
+    cd source-code
+
 
 I assume that you are familiar with the Swift programming language and Xcode.
 
