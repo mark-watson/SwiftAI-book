@@ -56,29 +56,35 @@ struct ChatCLI {
         // Verify model
         let model = SystemLanguageModel.default
         guard model.isAvailable else {
-            throw RuntimeError("Model unavailable: \(model.availability)")
+            throw RuntimeError(
+                "Model unavailable: \(model.availability)")
         }
 
-        let session = LanguageModelSession(instructions: sysPrompt)
+        let session = LanguageModelSession(
+            instructions: sysPrompt)
         print("Temperature: \(temperature)")
         print("System Prompt: \(sysPrompt)")
         let options = GenerationOptions(temperature: temperature)
 
-        print("Apple-Intelligence chat (streaming, T=0.2). Type /quit to exit.\n")
+        print("Apple-Intelligence chat (T=0.2). /quit to exit.\n")
 
         while true {
             print("Enter your message: ", terminator: "")
-            guard let prompt = readLine(strippingNewline: true) else { break }
+            guard let prompt =
+                readLine(strippingNewline: true) else { break }
             if prompt.isEmpty || prompt == "/quit" { break }
 
-            var previous = ""       // text already printed
+            var previous = ""   // text already printed
 
             let task = Task {
-                for try await part in session.streamResponse(to: prompt, options: options) {
+                for try await part in session.streamResponse(
+                    to: prompt, options: options) {
                     let current: String = String(describing: part)
-                    let delta = current.dropFirst(previous.count) // new characters only
+                    // emit only new characters
+                    let delta = current.dropFirst(previous.count)
                     if !delta.isEmpty {
-                        FileHandle.standardOutput.write(Data(delta.utf8))
+                        FileHandle.standardOutput.write(
+                            Data(delta.utf8))
                         fflush(stdout)
                         previous = current
                     }
@@ -88,7 +94,8 @@ struct ChatCLI {
 
             // ^C cancels the streaming task
             signal(SIGINT, SIG_IGN)
-            let sigSrc = DispatchSource.makeSignalSource(signal: SIGINT, queue: .main)
+            let sigSrc = DispatchSource.makeSignalSource(
+                signal: SIGINT, queue: .main)
             sigSrc.setEventHandler { task.cancel() }
             sigSrc.resume()
             defer { sigSrc.cancel() }
@@ -105,31 +112,67 @@ struct RuntimeError: Error, CustomStringConvertible {
 }
 ```
 
-Here are the first few lines of output given the prompt *Describe the math for calculating the orbit of Jupiter, then write a very short design for a Python script*:
+Here is sample output from two prompts:
 
 ```text
 $ swift run
 [1/1] Planning build
 Building for debugging...
-[1/1] Write swift-version-39B54973F684ADAB.txt
-Build of product 'chattool' complete! (0.16s)
+[1/1] Write swift-version--58304C5D6DBC2206.txt
+Build of product 'chattool' complete! (0.12s)
 Temperature: 0.2
 System Prompt: You are a helpful assistant.
-Apple-Intelligence chat (streaming, T=0.2). Type /quit to exit.
+Apple-Intelligence chat (T=0.2). /quit to exit.
 
-Enter your message: Describe the math for calculating the orbit of Jupiter, then write a very short design for a Python script
-Calculating the orbit of Jupiter involves solving Kepler's laws of planetary motion, which describe the elliptical orbits of planets around the Sun. The key equations involve gravitational forces and conservation laws. Here's a brief overview of the math involved:
+Enter your message: why is the sky blue?
+The sky appears blue due to a phenomenon called Rayleigh scattering.
+This occurs because the Earth's atmosphere is composed of gases and
+small particles, such as nitrogen and oxygen. When sunlight enters
+the atmosphere, it collides with these particles.
 
- ### Key Concepts:
+Sunlight is made up of different colors, each with a different
+wavelength. Blue light has a shorter wavelength than other colors,
+such as red or yellow. Because of this shorter wavelength, blue light
+is scattered in all directions by the gases and particles in the
+atmosphere.
 
-1. **Kepler's Laws:**
-   - **First Law (Law of Ellipses):** Planets move along ellipses with the Sun at one focus.
-   - **Second Law (Law of Equal Areas):** A line segment joining a planet and the Sun sweeps out equal areas during equal intervals of time.
-   - **Third Law (Law of Harmonies):** The square of the orbital period (\(T\)) is proportional to the cube of the semi-major axis (\(a\)): \(T^2 = \frac{4\pi^2}{GM}a^3\).
+As a result, when we look up at the sky, we see the scattered blue
+light more prominently than the other colors. This is why the sky
+appears blue during the day.
 
-2. **Gravitational Force:**
-   - The gravitational force between two masses (\(m_1\) and \(m_2\)) is given by Newton's law: \(F = G \frac{m_1 m_2}{r^2}\), where \(G\) is the gravitational constant and \(r\) is the distance between centers.
+Enter your message: write a Swift function to print the first 11 prime numbers
+Here is a Swift function that prints the first 11 prime numbers:
 
-3. **Centripetal Force:**
-   - For circular orbits, centripetal force equals gravitational force: \(F = \frac{mv^2}{r}\).
+```swift
+func printFirst11PrimeNumbers() {
+    var primes: [Int] = []
+    var num = 2
+
+    while primes.count < 11 {
+        var isPrime = true
+
+        for prime in primes {
+            if prime * prime > num { break }
+            if num % prime == 0 {
+                isPrime = false
+                break
+            }
+        }
+
+        if isPrime { primes.append(num) }
+        num += 1
+    }
+
+    print("The first 11 prime numbers are: \(primes)")
+}
+
+printFirst11PrimeNumbers()
+```
+
+This function starts with the smallest prime number, 2, and checks
+each subsequent number to see if it is prime. If it is, it adds it
+to the `primes` array. The loop continues until there are 11 prime
+numbers in the array, at which point it prints them.
+
+Enter your message: /quit
 ```
