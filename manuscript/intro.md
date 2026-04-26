@@ -19,7 +19,7 @@ You should clone the repository for this book if you want to have the source cod
     cd source-code
 
 
-I assume that you are familiar with the Swift programming language and Xcode.
+I assume that you are familiar with the Swift programming language. Apple has a free book on Swift programming that I recommend that is available as a down link on Apple's Swift documentation page: [https://www.apple.com/lae/swift/](https://www.apple.com/lae/swift/).
 
 Swift is a general purpose language that is well supported in macOS and iOS, with good support for Linux, and with some support in Windows. For the purposes of this book, we are only considering the use of Swift on macOS and iOS. Most of the examples in this book rely on libraries that are specifically available on macOS and iOS like CoreML and the NLP libraries.
 
@@ -42,11 +42,11 @@ I don't usually install libraries locally from source code unless I am curious a
 
 ## Creating Swift Packages
 
-We will cover using the Swift Package Manager to create new packages using the command line here. Later we will create projects using Apple's XCode IDE when we develop the example application Knowledge Graph Navigator.
+We will cover using the Swift Package Manager to create new packages using the command line here.
 
 You will want to use the [Swift Package Manager documentation](https://github.com/apple/swift-package-manager/blob/main/Documentation/Usage.md) for reference.
 
-We will be generating executable projects and library (with a sample main program) projects. The commands for generating the stub for an executable application project are:
+We will be generating executable projects and library (with a sample main program) projects. The commands for generating the stub for an **executable application project** are:
 
 {linenos=off}
 ~~~~~~~~
@@ -55,7 +55,7 @@ cd BingSearch
 swift package init --type executable
 ~~~~~~~~
 
-and build the stub of a library with a demo main program:
+and build the stub of a **library** with a demo main program:
 
 {linenos=off}
 ~~~~~~~~
