@@ -1,8 +1,11 @@
-# Part 4: Knowledge Representation and Data Acquisition
+# Part 4: The Semantic Web, Knowledge Graphs, and Linked Data
 
-In this part we cover:
+The web as most people know it is designed for human readers — HTML pages with text, images, and links. The *semantic web* is an ambitious parallel effort to represent the same information as structured data that software agents can query, reason about, and combine. In this part we explore that world and build Swift tools for working with it.
 
-- Introduction to the semantic web and linked data
-- A general discussion of Knowledge Representation
-- Create Knowledge Graphs from text input
-- Knowledge Graph Explorer application
+We begin with a chapter on **Linked Data and the Semantic Web** that introduces the foundational concepts. You will learn about RDF (the Resource Description Framework), where every fact is expressed as a *triple* — subject, property, value — and every entity is identified by a URI that can be dereferenced to learn more. We compare Wikipedia (designed for humans) with DBpedia and Wikidata (designed for machines) to make the idea concrete, and walk through real SPARQL queries against live endpoints. The chapter also surveys the standard RDF vocabularies you will encounter in practice — FOAF, RDFS, OWL, Dublin Core, and the widely-used schema.org vocabulary — and discusses how LLMs and knowledge graphs can work together, with LLMs translating natural language into SPARQL queries and knowledge graphs providing grounded, verifiable facts that reduce hallucination.
+
+The second chapter puts theory into practice by building **SparqlQuery_swift**, a clean, dependency-free Swift library for querying SPARQL endpoints. The library uses modern `async/await` concurrency and Swift's `Codable` system to model the standard W3C SPARQL JSON response format. Three public functions — `sparqlDBpedia`, `sparqlWikidata`, and a generic `sparqlEndpoint` — let you query any standards-compliant SPARQL 1.1 endpoint and get back a simple `[[String: String]]` array of results. We work through progressively interesting queries: looking up the population of Sedona, Arizona; finding people born there; and querying Wikidata for the population of Paris — complete with the `SERVICE wikibase:label` pattern that every Wikidata user needs to know.
+
+Part 4 concludes with the **Knowledge Base Navigator**, a modern reimagining of the classic Knowledge Graph Navigator (KGN) project. Rather than wiring together symbolic NLP with direct SPARQL calls, this version uses Google's Gemini API in a two-stage pipeline: first the LLM extracts and disambiguates entities from natural-language input, then it retrieves detailed encyclopedic information and analyzes relationships between selected entities. The result is an interactive command-line tool that combines the breadth of an LLM with the structured-data sensibility of a knowledge graph explorer — and it is built entirely with Foundation's `URLSession`, `Codable`, and Swift Concurrency, with zero external dependencies.
+
+By the end of Part 4 you will understand how the semantic web organizes human knowledge as queryable data, have a reusable SPARQL library in your toolbox, and have seen how LLMs and knowledge graphs complement each other in practice.

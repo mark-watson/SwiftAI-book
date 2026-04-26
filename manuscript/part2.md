@@ -1,10 +1,13 @@
 # Part 2: Large Language Models
 
-In this part we cover:
+Large Language Models have transformed the practice of artificial intelligence more than any other single development in my four decades as an AI practitioner. In this part we explore four distinct ways to access LLMs from Swift — giving you the flexibility to choose the right approach for any project depending on your requirements for cost, privacy, latency, and model capability.
 
-- Commercial OpenAI LLM APIs
-- Commercial Anthropic LLM APIs
-- Accessing open weight models using the commercial Groq service
-- Accesiing xAIs Grok model via an API
-- Accessing local LLMs using Ollama
-- Using Local LLMs with Apple's MLX Framework
+We begin with the **OpenAI APIs**, the service that introduced much of the world to modern LLMs. The chapter builds a clean, dependency-free Swift client around OpenAI's chat completion and text embedding endpoints. You will learn how to use `Codable` request structs, manage API keys through environment variables, and call utility functions for text summarization, question answering, and general completions — all backed by the capable and cost-effective `gpt-4o-mini` model.
+
+Next we turn to **local inference with Ollama**. Running models on your own hardware is appealing for privacy, offline use, and eliminating per-token costs. This chapter wraps the `ollama-swift` library in a Swift actor for safe concurrent access and demonstrates one of the most exciting capabilities of modern LLMs: **tool calling**. You will build a weather lookup stub and a math expression evaluator that the model can invoke on its own, seeing firsthand how an LLM can decide when to call external functions to answer a question.
+
+The third chapter dives into **Apple's MLX framework**, which lets you run quantised language models entirely on Apple Silicon with no network calls and no API keys. Because Apple's M-series chips give the CPU, GPU, and Neural Engine a single unified view of RAM, there is no host-to-device copy step — inference is fast and low-overhead. We build a command-line tool that downloads a model from Hugging Face on the first run, caches it locally, and offers both single-prompt and interactive REPL modes. The chapter also covers the Metal shader compilation step that `swift build` skips, a practical detail that trips up many newcomers to MLX.
+
+Part 2 concludes with the **AnyLanguageModel package** from Hugging Face — an elegant, unified abstraction layer that mirrors Apple's FoundationModels API but works with any provider. You write your inference and tool-handling logic once and then swap backends — OpenAI, Google Gemini, or a local Ollama model — by changing a single line of initialization code. This chapter demonstrates all three providers side by side, including a Gemini example with tool calling using the `@Generable` and `@Guide` macros.
+
+By the end of Part 2 you will have hands-on experience with commercial cloud APIs, local open-weight models, on-device Apple Silicon inference, and a provider-agnostic abstraction that future-proofs your applications against the rapidly evolving LLM landscape.
