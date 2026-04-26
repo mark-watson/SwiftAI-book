@@ -17,6 +17,7 @@ nlp.md
 docs_qa.md
 part4.md
 sw.md
+sparql.md
 kgn.md
 part5.md
 ai_chat.md
