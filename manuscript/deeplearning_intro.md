@@ -1,6 +1,6 @@
 # Deep Learning Introduction
 
-Apple's work in smoothly integrating deep learning into their developer tools for macOS, iOS, and iPadOS applications is in my opinion nothing short of brilliant. We will finish this book with an application that uses two deep learning models that provide almost all of the functionality of the application.
+Apple's work in smoothly integrating deep learning into their developer tools for macOS, iOS, and iPadOS applications is in my opinion nothing short of brilliant. We will look at an application that uses two deep learning models that provide almost all of the functionality of the application.
 
 Before diving into Apple's CoreML libraries in later chapters we will take a shallow dive into the principles of deep learning and take a lay-of-the-land look at the type of most commonly used models. This chapter has no example programs and is intended as background material.
 

@@ -8,102 +8,256 @@ I will not cover older symbolic methods of NLP here, rather I refer you to my pr
 
 You will learn how to apply both DL and NLP by using the state-of-the-art full-feature libraries that Apple provides in their iOS and macOS development tools.
 
-
 ## Using Apple's **NaturalLanguage** Swift Library
 
-We will use one of Apple's NLP libraries consisting of pre-built models in the last chapter of this book. In order to fully understand the example in the last chapter you will need to read Apple's high-level discussion of using CoreML [https://developer.apple.com/documentation/coreml](https://developer.apple.com/documentation/coreml) and their specific support for NLP [https://developer.apple.com/documentation/naturallanguage/](https://developer.apple.com/documentation/naturallanguage/).
+Apple's **NaturalLanguage** framework provides a modern, Swift-native API for on-device natural language processing. The framework includes several key classes:
+
+- **NLTagger** — performs tokenization, named entity recognition, lemmatization, part-of-speech tagging, and sentiment analysis
+- **NLLanguageRecognizer** — identifies the dominant language of text
+- **NLTokenizer** — splits text into words, sentences, or paragraphs
+- **NLEmbedding** — provides pre-trained word embeddings for finding semantically similar words
+
+These models run entirely on-device with no network calls required, making them fast, private, and available offline. You can read Apple's documentation at [https://developer.apple.com/documentation/naturallanguage/](https://developer.apple.com/documentation/naturallanguage/).
 
 There are many pre-trained CoreML compatible models on the web, both from Apple and also from third party (e.g., [https://github.com/likedan/Awesome-CoreML-Models](https://github.com/likedan/Awesome-CoreML-Models)).
 
 Apple also provides tools for converting TensorFlow and PyTorch models to be compatible with CoreML [https://coremltools.readme.io/docs](https://coremltools.readme.io/docs).
 
-## A simple Wrapper Library for Apple's NLP Models
+## NLP Utility Library
 
-I will not go into too much detail here but I created a small wrapper library for Apple's NLP models that will make it easier for you to jump in and have fun experimenting with them: [https://github.com/mark-watson/Nlp_swift](https://github.com/mark-watson/Nlp_swift).
+I created a small utility library that wraps the NaturalLanguage framework to make it easy to experiment with five key NLP capabilities. The source code for this example is in the **source-code/Nlp_swift** directory.
 
-The main library implementation file uses the **@available(OSX 10.13, *)** attribute to indicate that the following function is available on macOS 10.13 and later versions.
+### Named Entity Recognition
 
-```swift
-import Foundation
-import NaturalLanguage
+Named Entity Recognition (NER) identifies references to people, places, and organizations in text. The **getEntities** function uses **NLTagger** with the **.nameType** scheme:
 
-let tagger = NSLinguisticTagger(tagSchemes:[.tokenType, .language, .lexicalClass,
-    .nameType, .lemma], options: 0) 
-let options: NSLinguisticTagger.Options = [.omitPunctuation, .omitWhitespace,
-    .joinNames]
-
-@available(OSX 10.13, *)
+{lang="swift",linenos=off}
+~~~~~~~~
 public func getEntities(for text: String) -> [(String, String)] {
-    var words: [(String, String)] = []
+    let tagger = NLTagger(tagSchemes: [.nameType])
     tagger.string = text
-    let range = NSRange(location: 0, length: text.utf16.count)
-    tagger.enumerateTags(in: range, unit: .word, scheme: .nameType,
-    options: options) { tag, tokenRange, stop in
-        let word = (text as NSString).substring(with: tokenRange)
-        words.append((word, tag?.rawValue ?? "unkown"))
+    let options: NLTagger.Options = [.omitPunctuation,
+                                     .omitWhitespace,
+                                     .joinNames]
+    var results: [(String, String)] = []
+    tagger.enumerateTags(
+        in: text.startIndex..<text.endIndex,
+        unit: .word,
+        scheme: .nameType,
+        options: options
+    ) { tag, range in
+        if let tag = tag {
+            results.append((String(text[range]), tag.rawValue))
+        }
+        return true
     }
-    return words
+    return results
 }
+~~~~~~~~
 
-@available(OSX 10.13, *)
+The function creates an **NLTagger** configured for the **.nameType** tag scheme and enumerates over the words in the input text. The **.joinNames** option ensures that multi-word names like "George Bush" are returned as a single entity. Each word is tagged as a **PersonalName**, **PlaceName**, **OrganizationName**, or **OtherWord**. We filter out **OtherWord** tags in the main program to show only the named entities.
+
+### Lemmatization
+
+Lemmatization reduces words to their base dictionary forms. For example, "went" becomes "go" and "representatives" becomes "representative". The **getLemmas** function uses the **.lemma** scheme:
+
+{lang="swift",linenos=off}
+~~~~~~~~
 public func getLemmas(for text: String) -> [(String, String)] {
-    var words: [(String, String)] = []
+    let tagger = NLTagger(tagSchemes: [.lemma])
     tagger.string = text
-    let range = NSRange(location: 0, length: text.utf16.count)
-    tagger.enumerateTags(in: range, unit: .word, scheme: .lemma, 
-            options: options) { tag, tokenRange, stop in
-        let word = (text as NSString).substring(with: tokenRange)
-        words.append((word, tag?.rawValue ?? "unkown"))
+    let options: NLTagger.Options = [.omitPunctuation,
+                                     .omitWhitespace]
+    var results: [(String, String)] = []
+    tagger.enumerateTags(
+        in: text.startIndex..<text.endIndex,
+        unit: .word,
+        scheme: .lemma,
+        options: options
+    ) { tag, range in
+        let word = String(text[range])
+        let lemma = tag?.rawValue ?? word
+        results.append((word, lemma))
+        return true
     }
-    return words
+    return results
 }
-```
+~~~~~~~~
 
-The public function **getEntities** takes a String parameter called **text** and returns an array of tuples containing **(String, String)**. Here's a breakdown of what this function does:
+This is structurally similar to **getEntities** but uses the **.lemma** tag scheme. When the tagger cannot determine a lemma for a word (for example, proper nouns), it falls back to returning the original word.
 
-- The function initializes an empty array called words to store the extracted entities.
-- The line **tagger.string = text** sets the input text for a tagger object. The tagger is an instance of **NSLinguisticTagger**, which is a natural language processing class provided by Apple's Foundation framework.
-- The next line creates an **NSRange** object called **range** that represents the entire length of the input text.
-- The **tagger.enumerateTags(in:range, unit:.word, scheme:.nameType, options:options)** method is called to iterate over the words in the input text and extract their associated tags. The **in:** parameter specifies the range of the text to process. The **unit:** parameter specifies that the enumeration should be done on a word-by-word basis. The **scheme:** parameter specifies the linguistic scheme to use, in this case, the **.nameType** scheme, which is used to identify named entities. The **options:** parameter specifies additional options or settings for the tagger.
-- Inside the enumeration block, the code retrieves the current word and its associated tag using the **tokenRange** and **tag** parameters.
-- The line **let word = (text as NSString).substring(with: tokenRange)** extracts the substring corresponding to the current word using **tokenRange**.
-- The line **words.append((word, tag?.rawValue ?? "unknown"))** appends a tuple containing the extracted word and its associated tag to the words array. If the tag is nil, it uses the default value of "unknown".
-- Finally, the words array is returned, which contains all the extracted entities (words and their associated tags) from the input text.
+### Language Detection
 
-The public function called **getLemmas** that takes a String parameter called **text** and returns an array of tuples containing **(String, String)**. Here's a breakdown of what the function **getLemmas** is very similar to the last function **getEntities**. The function **getLemmas** does the following:
+The **NLLanguageRecognizer** class can identify over 50 languages. Our wrapper provides both a simple dominant-language function and a more detailed hypotheses function:
 
-- The function initializes an empty array called words to store the extracted lemmas.
-- The line tagger.string = text sets the input text for a tagger object.
-- The next line creates an **NSRange** object called **range** that represents the entire length of the input text.
-- The **tagger.enumerateTags(in:range, unit:.word, scheme:.lemma, options: options)** method is called to iterate over the words in the input text and extract their corresponding lemmas.
-- Inside the enumeration block, the code retrieves the current word and its associated lemma using the tokenRange and tag parameters.
-- The line **let word = (text as NSString).substring(with: tokenRange)** extracts the substring corresponding to the current word using **tokenRange**.
-- Finally, the words array is returned, which contains all the extracted lemmas (words and their associated base forms) from the input text.
-
-In summary, function **getLemmas** uses the **NSLinguisticTagger** to perform linguistic analysis on a given text and extract the base forms (lemmas) of words. The lemmas are then stored in an array of tuples and returned as the result of the function.
-
-Here is some test code:
-
-```swift
-let quote = "President George Bush went to Mexico with IBM representatives. Here's to the crazy ones. The misfits. The rebels. The troublemakers. The round pegs in the square holes. The ones who see things differently. They're not fond of rules. And they have no respect for the status quo. You can quote them, disagree with them, glorify or vilify them. About the only thing you can't do is ignore them. Because they change things. They push the human race forward. And while some may see them as the crazy ones, we see genius. Because the people who are crazy enough to think they can change the world, are the ones who do. - Steve Jobs (Founder of Apple Inc.)"
-if #available(OSX 10.13, *) {
-            print("\nEntities:\n")
-            print(getEntities(for: quote))
-            print("\nLemmas:\n")
-            print(getLemmas(for: quote))
+{lang="swift",linenos=off}
+~~~~~~~~
+public func detectLanguage(for text: String) -> String {
+    let recognizer = NLLanguageRecognizer()
+    recognizer.processString(text)
+    guard let language = recognizer.dominantLanguage else {
+        return "Unknown"
+    }
+    return language.rawValue
 }
-```
 
-Here is an edited listing of the output with most of the output removed for brevity:
+public func languageHypotheses(for text: String,
+                               maxCount: Int = 5)
+                               -> [(String, Double)] {
+    let recognizer = NLLanguageRecognizer()
+    recognizer.processString(text)
+    let hypotheses = recognizer.languageHypotheses(
+                         withMaximum: maxCount)
+    return hypotheses
+        .map { ($0.key.rawValue, $0.value) }
+        .sorted { $0.1 > $1.1 }
+}
+~~~~~~~~
 
-```
-Entities:
+The **detectLanguage** function returns an ISO 639-1 language code (e.g., "en", "fr", "de"). The **languageHypotheses** function returns multiple candidate languages with confidence scores, which is useful when text contains multiple languages or when the dominant language is ambiguous.
 
-[("President", "OtherWord"), ("George Bush", "PersonalName"), ("went", "OtherWord"), ("to", "OtherWord"), ("Mexico", "PlaceName"), ("with", "OtherWord"), ("IBM", "OrganizationName"), 
-  ...]
+### Sentiment Analysis
 
-Lemmas:
+Apple's NaturalLanguage framework includes a sentiment scoring model that rates text on a scale from -1.0 (very negative) to 1.0 (very positive):
 
-[("President", "President"), ("George Bush", "George"), ("went", "go"), ("to", "to"), ("Mexico", "Mexico"),
-  ...]
-```
+{lang="swift",linenos=off}
+~~~~~~~~
+public func analyzeSentiment(for text: String) -> Double {
+    let tagger = NLTagger(tagSchemes: [.sentimentScore])
+    tagger.string = text
+    let (tag, _) = tagger.tag(at: text.startIndex,
+                               unit: .paragraph,
+                               scheme: .sentimentScore)
+    if let tag = tag, let score = Double(tag.rawValue) {
+        return score
+    }
+    return 0.0
+}
+~~~~~~~~
+
+We also provide a **sentimentBySentence** function that uses **NLTokenizer** to split text into individual sentences and then scores each one separately. This is useful for analyzing reviews or documents that contain mixed positive and negative statements:
+
+{lang="swift",linenos=off}
+~~~~~~~~
+public func sentimentBySentence(for text: String)
+                                -> [(String, Double)] {
+    let tokenizer = NLTokenizer(unit: .sentence)
+    tokenizer.string = text
+    var results: [(String, Double)] = []
+    tokenizer.enumerateTokens(
+        in: text.startIndex..<text.endIndex
+    ) { range, _ in
+        let sentence = String(text[range])
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        if !sentence.isEmpty {
+            let score = analyzeSentiment(for: sentence)
+            results.append((sentence, score))
+        }
+        return true
+    }
+    return results
+}
+~~~~~~~~
+
+### Word Embeddings
+
+Apple provides pre-trained word embeddings that map words to high-dimensional vectors, allowing you to find semantically similar words. The **findSimilarWords** function uses **NLEmbedding** to query these built-in embeddings:
+
+{lang="swift",linenos=off}
+~~~~~~~~
+public func findSimilarWords(for word: String,
+                             maxResults: Int = 5)
+                             -> [(String, Double)] {
+    guard let embedding = NLEmbedding.wordEmbedding(
+              for: .english) else {
+        return []
+    }
+    var results: [(String, Double)] = []
+    embedding.enumerateNeighbors(
+        for: word, maximumCount: maxResults
+    ) { neighbor, distance in
+        results.append((neighbor, distance))
+        return true
+    }
+    return results
+}
+~~~~~~~~
+
+The function returns the nearest neighbors sorted by cosine distance. Lower distance values indicate higher semantic similarity. This is useful for building features like search query expansion and synonym suggestions.
+
+## Running the Example
+
+The **main.swift** file exercises all five NLP capabilities. Here is the output from running the example:
+
+{linenos=off}
+~~~~~~~~
+$ swift run
+=== Named Entity Recognition ===
+
+  George Bush → PersonalName
+  Mexico → PlaceName
+  IBM → OrganizationName
+  Steve Jobs → PersonalName
+  Apple → OrganizationName
+  Los Altos → PlaceName
+  California → PlaceName
+
+=== Lemmatization (showing changed forms) ===
+
+  went → go
+  representatives → representative
+  reported → report
+  founded → found
+  Altos → alto
+
+=== Language Detection ===
+
+  "The quick brown fox jumps over the lazy dog...." → en
+  "Le renard brun rapide saute par-dessus le chien pa..." → fr
+  "Der schnelle braune Fuchs springt über den faulen ..." → de
+  "El rápido zorro marrón salta sobre el perro perezo..." → es
+
+=== Sentiment Analysis ===
+
+  "I absolutely love this product! It's amazing and works ..."
+    score: 1.00 (positive)
+
+  "This is the worst experience I have ever had. Terrible ..."
+    score: -1.00 (negative)
+
+  "The meeting is scheduled for 3pm tomorrow in the confer..."
+    score: -0.80 (negative)
+
+  "The weather today is partly cloudy with a chance of rai..."
+    score: -0.80 (negative)
+
+=== Sentence-Level Sentiment ===
+
+  "The hotel room was beautiful and spacious...." → 0.60 (positive)
+  "However, the service was disappointing and slow...." → -1.00 (negative)
+  "The food at the restaurant was absolutely deliciou..." → 1.00 (positive)
+  "I would not recommend the spa facilities...." → -1.00 (negative)
+
+=== Word Embeddings (similar words) ===
+
+  king → throne (0.91), prince (0.93), duke (0.95),
+         majesty (0.96), warrior (0.99)
+  computer → workstation (0.84), mainframe (0.88), laptop (0.89),
+             software (0.90), computing (0.90)
+  happy → nice (0.81), glad (0.82), wonderful (0.82),
+          thing (0.86), miserable (0.87)
+~~~~~~~~
+
+The named entity recognition correctly identifies "George Bush" and "Steve Jobs" as personal names, "Mexico", "Los Altos", and "California" as place names, and "IBM" and "Apple" as organization names. The multi-word entity joining (via the **.joinNames** option) works well, treating "George Bush" as a single entity.
+
+The lemmatization results show how the framework reduces inflected forms to their base dictionary entries: "went" becomes "go", "representatives" becomes "representative", and so on.
+
+Language detection is accurate across all four test languages. The sentiment analysis model is quite strong on clearly positive and negative text, but note that it can sometimes score neutral factual statements with slightly negative sentiment — this is a known characteristic of the on-device model. The sentence-level sentiment analysis shows how you can break down a mixed review to understand sentiment at a finer granularity.
+
+The word embeddings results demonstrate that Apple's built-in model captures meaningful semantic relationships: the nearest neighbors of "king" include "throne", "prince", and "duke", while "computer" neighbors include "workstation", "mainframe", and "laptop".
+
+## Chapter Wrap Up
+
+In this chapter we explored Apple's NaturalLanguage framework, which provides powerful on-device NLP capabilities without requiring any network calls or third-party dependencies. The framework's **NLTagger** class handles named entity recognition, lemmatization, part-of-speech tagging, and sentiment analysis. **NLLanguageRecognizer** provides robust language detection across dozens of languages, and **NLEmbedding** offers pre-trained word vectors for computing semantic similarity.
+
+All of these models run entirely on-device, making them suitable for applications that require privacy, offline capability, or low latency. For more advanced NLP tasks you may want to combine these framework capabilities with custom CoreML models or with the LLM-based approaches we cover in other chapters of this book.
