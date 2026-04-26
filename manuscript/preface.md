@@ -7,7 +7,7 @@ This eBook will be updated occasionally so please periodically check the [leanpu
 The first edition was released spring of 2022.
 The second edition was released December 2024.
 The third edition was released June 2025.
-The fourth edition was releasedApril 2026.
+The fourth edition was released April 2026.
 
 If you would like to support my work please consider purchasing my books on [Leanpub](https://leanpub.com/u/markwatson) and star my git repositories that you find useful on [GitHub](https://github.com/mark-watson?tab=repositories&q=&type=public). You can also interact with me on social media on [Mastodon](https://mastodon.social/@mark_watson) and [Twitter](https://twitter.com/mark_l_watson).
 
