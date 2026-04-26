@@ -33,19 +33,22 @@ struct CodingCLI {
         let options = GenerationOptions(temperature: 0.2)
         print("Apple-Intelligence chat (T=0.2). /quit to exit.\n")
 
-        while let prompt = readLine(strippingNewline: true) {
+        while true {
+            print("Enter prompt:")
+            print("> ", terminator: "")
+            guard let prompt = readLine(strippingNewline: true) else { break }
             if prompt.isEmpty || prompt == "/quit" { break }
 
             var printed = ""
             let task = Task {
                 for try await part in session.streamResponse(
                     to: prompt, options: options) {
-                    let delta = part.dropFirst(printed.count)
+                    let delta = part.content.dropFirst(printed.count)
                     if !delta.isEmpty {
                         FileHandle.standardOutput.write(
                             Data(delta.utf8))
                         fflush(stdout)
-                        printed = part
+                        printed = part.content
                     }
                 }
                 print()
@@ -60,6 +63,7 @@ struct CodingCLI {
 
             _ = try await task.value
         }
+
     }
 
     // ---- 3. Helper: summarise all code ----
