@@ -130,5 +130,5 @@ Modern large language models (LLMs) like those we use throughout this book open 
 
 ## Semantic Web and Linked Data Wrap Up
 
-In the next chapter we will use SPARQL queries to extract structured information from DBpedia about entities such as people, places, and organizations. We will be using my Swift SPARQL library [https://github.com/mark-watson/SparqlQuery_swift](https://github.com/mark-watson/SparqlQuery_swift) to run queries against live endpoints.
+In the next chapter we will use SPARQL queries to extract structured information from DBpedia about entities such as people, places, and organizations. We will be using my Swift SPARQL librarythat is in the directory **SparqlQuery_swift** in the GitHub repository for this book to run queries against live endpoints.
 
