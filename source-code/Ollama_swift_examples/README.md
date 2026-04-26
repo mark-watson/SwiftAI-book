@@ -10,7 +10,7 @@ This project demonstrates how to interact with local LLMs using [Ollama](https:/
 
 ## Prerequisites
 - [Ollama](https://ollama.com) installed and running.
-- A model downloaded (defaults to `llama3.2:latest`).
+- A model downloaded (defaults to `qwen3:1.7b`).
 
 ## Usage
 
@@ -18,7 +18,7 @@ This project demonstrates how to interact with local LLMs using [Ollama](https:/
 import Ollama_swift_examples
 import Ollama
 
-let service = OllamaService(model: "llama3.2:latest")
+let service = OllamaService(model: "qwen3:1.7b")
 
 // Simple chat
 let response = try await service.chat(messages: [.user("Hello!")])
@@ -61,7 +61,7 @@ Mark Watson. Source: https://leanpub.com/SwiftAI
 
 This eBook will be updated occasionally so please periodically check the [leanpub.com web page for this book](https://leanpub.com/SwiftAI) for updates.
 
-This is the second edition released spring of December 2024.
+This is the second edition released spring 2026.
 
 Please visit the [author's website](http://markwatson.com).
 

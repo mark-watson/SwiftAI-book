@@ -1,5 +1,6 @@
 import Ollama
 import Foundation
+import JavaScriptCore
 
 /// A service to interact with Ollama models using Swift concurrency.
 public actor OllamaService {
@@ -111,10 +112,11 @@ public let evaluatorTool =
     ],
     required: ["expression"]
 ) { input in
-    let expression = NSExpression(format: input.expression)
-    if let result = expression.expressionValue(
-        with: nil, context: nil) as? NSNumber {
-        return EvaluatorOutput(result: "\(result)")
+    // Use JavaScriptCore for safe expression evaluation.
+    let context = JSContext()!
+    if let value = context.evaluateScript(input.expression),
+       !value.isUndefined, !value.isNull {
+        return EvaluatorOutput(result: value.toString())
     } else {
         return EvaluatorOutput(
             result: "Error: Could not evaluate expression")
