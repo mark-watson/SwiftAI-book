@@ -16,7 +16,7 @@ The GitHub repository for this example is:
 https://github.com/mark-watson/OpenAI_swift
 ~~~~~~~~
 
-I recommend reading the online documentation for the [online documentation for the APIs](https://openai.com/docs/) to see all the capabilities of the beta OpenAI APIs.  Let's start by jumping into the example code that is a GitHub repository [https://github.com/mark-watson/OpenAI_swift](https://github.com/mark-watson/OpenAI_swift) that you can use in your projects.
+I recommend reading the online documentation for the [online documentation for the APIs](https://openai.com/docs/) to see all the capabilities of the beta OpenAI APIs.  Let's start by jumping into the example code that is in the directory **source-code/OpenAI_swift**.
 
 The library that I wrote for this chapter supports four functions: for completing text, summarizing text, answering general questions, and getting embeddings for text. The get-4o-mini that we will use here is very inexpensive and capable. 
 

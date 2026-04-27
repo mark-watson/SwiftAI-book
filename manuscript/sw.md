@@ -114,7 +114,7 @@ You have now seen a few common RDF vocabularies. Another vocabulary widely used 
 
 ## Understanding the SPARQL Query Language
 
-For the purposes of the material in this book, the two sample SPARQL queries here are sufficient for you to get started using my SPARQL library [https://github.com/mark-watson/SparqlQuery_swift](https://github.com/mark-watson/SparqlQuery_swift) with arbitrary RDF data sources and simple queries.
+For the purposes of the material in this book, the two sample SPARQL queries here are sufficient for you to get started using my SPARQL library that is in the directory **source-code/SparqlQuery_swift** with arbitrary RDF data sources and simple queries.
 
 {width: "90%"}
 ![My Swift SPARQL library open in Xcode](images/xcode_sparql.png)
