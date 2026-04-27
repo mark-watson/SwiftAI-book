@@ -19,6 +19,7 @@ kgn.md
 part5.md
 ai_chat.md
 ai_coder.md
+part6.md
 knowledge-navigator.md
 anomaly-detection.md
 autocontext.md

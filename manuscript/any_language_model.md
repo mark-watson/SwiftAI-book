@@ -2,7 +2,11 @@
 
 As Swift developers, we are witnessing a Cambrian explosion of Large Language Models in addition to the built-in models that Apple provides. While Apple provides its native FoundationModels framework for integrating AI, the landscape is far larger, encompassing powerful remote APIs from OpenAI, Google, and Anthropic, as well as efficient local models running via Ollama, MLX, and Llama.cpp. Historically, supporting multiple providers meant writing and maintaining a separate, complex API client for each one. This approach leads to significant code duplication, vendor lock-in, and a brittle architecture that is difficult to adapt.
 
-This chapter introduces the AnyLanguageModel package from Hugging Face, at [https://github.com/huggingface/AnyLanguageModel](https://github.com/huggingface/AnyLanguageModel). It provides an elegant, unified abstraction layer that acts as an API-compatible, drop-in replacement for Apple's FoundationModels, allowing you to write your inference and tool-handling logic once. The primary advantage of this single framework is flexibility. You can effortlessly swap backends—moving from Apple's system model to gpt-4o-mini, gemini-2.5-flash, or a local qwen3 model—often by changing only a single line of initialization code. This strategy future-proofs your application, simplifies testing, and empowers you to choose the right model for the job based on cost, performance, or privacy.
+This chapter introduces the AnyLanguageModel package from Hugging Face, at:
+
+[https://github.com/huggingface/AnyLanguageModel](https://github.com/huggingface/AnyLanguageModel).
+
+This package provides an elegant, unified abstraction layer that acts as an API-compatible, drop-in replacement for Apple's FoundationModels, allowing you to write your inference and tool-handling logic once. The primary advantage of this single framework is flexibility. You can effortlessly swap backends—moving from Apple's system model to gpt-4o-mini, gemini-2.5-flash, or a local qwen3 model—often by changing only a single line of initialization code. This strategy future-proofs your application, simplifies testing, and empowers you to choose the right model for the job based on cost, performance, or privacy.
 
 The example source code for this chapter is in the directory **anymodel** in the GitHub repository for this book.
 
