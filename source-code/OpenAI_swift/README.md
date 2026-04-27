@@ -1,18 +1,47 @@
-# OpenAI Swift API Library - currently being updated for second edition of book
+# OpenAI Swift API Library — Example for Mark Watson's book "Artificial Intelligence Using Swift"
 
-Example from my book "Artificial Intelligence Using Swift"
+Book URI: https://leanpub.com/SwiftAI
 
 You can read my book for free online at: https://leanpub.com/SwiftAI/read
 
-Note: run on the command line to pick up environment variable for OpenAI API key:
+A lightweight, zero-dependency Swift wrapper around the [OpenAI REST API](https://platform.openai.com/docs/api-reference). Provides two core capabilities:
 
-    OPENAI_KEY
+- **Chat Completions** (`gpt-4o-mini`) — text generation, summarization, and question answering
+- **Embeddings** (`text-embedding-ada-002`) — vector representations for semantic similarity and search
 
-# This is an example program in my book "Artificial Intelligence Using Swift"
+The library uses Foundation's `URLSession` directly with `Codable` request types, so no third-party packages are required.
 
-This example is released using the Apache 2 license.
+## Prerequisites
+
+Set your OpenAI API key:
+
+    export OPENAI_KEY="your-key-here"
+
+## Usage
+
+This package is a **library**. Add it as a dependency in another Swift package, or experiment with the public functions directly:
+
+```swift
+import OpenAI_swift
+
+// Summarize text
+let summary = summarize(text: "Long article text...", maxTokens: 60)
+
+// Ask a question
+let answer = questionAnswering(question: "What is the capital of France?")
+
+// Get embeddings for semantic search
+let vector = OpenAI.embeddings(text: "some sentence")
+```
+
+## Build & Test
+
+    swift build
+    swift test
 
 ## Book Cover Material, Copyright, and License
+
+This example is released using the Apache 2 license.
 
 Copyright 2022-2026 Mark Watson. All rights reserved.
 
@@ -28,14 +57,7 @@ You are required to give appropriate credit in any derived works:
 
 ```text
 This work is derived from all or part of "Artificial Intelligence Using Swift" by
-Mark Watson. Source: https://leanpub.com/lovinglisp
+Mark Watson. Source: https://leanpub.com/SwiftAI
 ```
 
-This eBook will be updated occasionally so please periodically check the [leanpub.com web page for this book](https://leanpub.com/SwiftAI) for updates.
-
-
 Please visit the [author's website](http://markwatson.com).
-
-If you found a copy of this book on the web and find it of value then please consider buying a copy at [leanpub.com/SwiftAI](https://leanpub.com/SwiftAI) to support the author and fund work for future updates.  You can also see all of my books on [my website https://markwatson.com/#books](https://markwatson.com/#books).
-
-

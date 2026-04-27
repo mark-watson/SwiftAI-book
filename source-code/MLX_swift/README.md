@@ -1,9 +1,10 @@
-# MLX_swift — Local LLM Inference on Apple Silicon
+# MLX_swift — Local LLM Inference on Apple Silicon — Example for Mark Watson's book "Artificial Intelligence Using Swift"
 
-A command-line tool from the book
-**[Practical Artificial Intelligence Programming with Swift](https://leanpub.com/swiftai)**.
+Book URI: https://leanpub.com/SwiftAI
 
-Runs a small, quantised language model entirely **on-device** using
+You can read my book for free online at: https://leanpub.com/SwiftAI/read
+
+A command-line tool that runs a small, quantised language model entirely **on-device** using
 Apple's [MLX](https://github.com/ml-explore/mlx-swift) framework.
 No API keys. No network calls during inference. All data stays on
 your Mac.
@@ -135,6 +136,25 @@ All tunable values are constants at the top of `main.swift`:
 
 ---
 
-## License
+## Book Cover Material, Copyright, and License
+
+This example is released using the Apache 2 license.
 
 Copyright 2022-2026 Mark Watson. All rights reserved.
+
+## This Book is Licensed with Creative Commons Attribution CC BY Version 3 That Allows Reuse In Derived Works
+
+You are free to:
+
+- Share — copy and redistribute the material in any medium or format
+- Adapt — remix, transform, and build upon the material
+for any purpose, even commercially.
+
+You are required to give appropriate credit in any derived works:
+
+```text
+This work is derived from all or part of "Artificial Intelligence Using Swift" by
+Mark Watson. Source: https://leanpub.com/SwiftAI
+```
+
+Please visit the [author's website](http://markwatson.com).

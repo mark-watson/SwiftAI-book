@@ -1,4 +1,8 @@
-# Running local LLMs using Ollama (Swift 6 Edition)
+# Running Local LLMs Using Ollama — Example for Mark Watson's book "Artificial Intelligence Using Swift"
+
+Book URI: https://leanpub.com/SwiftAI
+
+You can read my book for free online at: https://leanpub.com/SwiftAI/read
 
 This project demonstrates how to interact with local LLMs using [Ollama](https://ollama.com) and the [ollama-swift](https://github.com/mattt/ollama-swift) library, updated for **Swift 6** and modern concurrency practices.
 
@@ -59,12 +63,4 @@ This work is derived from all or part of "Artificial Intelligence Using Swift" b
 Mark Watson. Source: https://leanpub.com/SwiftAI
 ```
 
-This eBook will be updated occasionally so please periodically check the [leanpub.com web page for this book](https://leanpub.com/SwiftAI) for updates.
-
-This is the second edition released spring 2026.
-
 Please visit the [author's website](http://markwatson.com).
-
-If you found a copy of this book on the web and find it of value then please consider buying a copy at [leanpub.com/SwiftAI](https://leanpub.com/SwiftAI) to support the author and fund work for future updates.  You can also see all of my books on [my website https://markwatson.com/](https://markwatson.com/).
-
-
