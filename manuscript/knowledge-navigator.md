@@ -417,45 +417,6 @@ Enter entity names or a descriptive sentence (or 'quit' to exit):
 > 
 ```
 
-### Example Session
-
-```
-╔══════════════════════════════════════════════════════════╗
-║        GEMINI KNOWLEDGE BASE NAVIGATOR (Swift)           ║
-╚══════════════════════════════════════════════════════════╝
-
-Enter entity names or a descriptive sentence (or 'quit' to exit):
-> Bill Gates and Microsoft
-
-[Extracting entities using Gemini...]
-
---- IDENTIFIED ENTITIES ---
-1. Bill Gates: An American business magnate, software developer, and philanthropist who co-founded Microsoft Corporation.
-2. Microsoft: A multinational technology corporation that develops, manufactures, and licenses computer software.
----------------------------
-
-Enter entity numbers (space separated):
-> 1 2
-
-[Fetching detailed facts and relationships...]
-
-=== BILL GATES ===
-* Born: October 28, 1955, Seattle, Washington
-* Occupation: Business magnate, investor, philanthropist
-* Net Worth: ~$120 billion (as of 2024)
-* Founded Microsoft in 1975 with Paul Allen
-
-=== MICROSOFT ===
-* Founded: April 4, 1975
-* Headquarters: Redmond, Washington
-* Industry: Technology, Software, Cloud Computing
-* Revenue: $211 billion (2023)
-
-=== RELATIONSHIP ===
-Bill Gates co-founded Microsoft with Paul Allen in 1975. He served as CEO until 2000
-and remained Chairman until 2014. Microsoft was the primary source of Gates' wealth.
-```
-
 ## Key Takeaways
 
 1. **`Codable` for REST APIs**: Define the request and response shapes as nested `Codable` structs — no third-party JSON library needed

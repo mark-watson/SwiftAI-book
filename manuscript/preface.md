@@ -13,7 +13,7 @@ If you would like to support my work please consider purchasing my books on [Lea
 
 # Preface
 
-Why use Swift for hacking AI? Common Lisp has been my go-to language for artificial intelligence development and research since 1982. The transition to using Swift was a transition motivated by practical aspects of Swift and the Swift ecosystem.
+Why use Swift for hacking AI? Common Lisp has been my go-to language for artificial intelligence development and research since 1982. My transition to often using Swift is motivated by practical aspects of Swift and the Swift ecosystem.
 
 The Swift language has also replaced much of my Python workflow for AI work.
 
