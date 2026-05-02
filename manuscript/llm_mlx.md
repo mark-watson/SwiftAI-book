@@ -76,6 +76,8 @@ The logic lives entirely in `main.swift`. `build.sh` handles the
 Metal shader compilation step that `swift build` skips (see
 "Running the Example" below).
 
+![On-device LLM inference with Apple MLX](images/FIG_MLX_swift.jpg)
+
 ## Package.swift
 
 ```swift

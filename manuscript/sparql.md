@@ -59,6 +59,8 @@ let package = Package(
 
 We require macOS 13 or later because the `async/await` form of `URLSession.data(for:)` — which we use to make the HTTP requests — was introduced in that release. No third-party packages are needed; Foundation's `URLSession` and `JSONDecoder` handle everything.
 
+![SPARQL endpoint client architecture](images/FIG_SparqlQuery_swift.jpg)
+
 ## The Library: Full Source Listing
 
 {lang="swift",linenos=off}
@@ -348,3 +350,5 @@ In this chapter we built a clean, dependency-free Swift library for querying SPA
 - The simple `[[String: String]]` return type makes results trivial to iterate in any Swift program.
 
 In the next chapter we will build on this library to create a knowledge graph navigator that uses both SPARQL queries and a large language model together — letting natural language questions drive structured lookups against DBpedia.
+
+![Knowledge graph navigation with NLP and SPARQL](images/FIG_KnowledgeGraphNavigator_swift.jpg)

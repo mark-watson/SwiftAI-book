@@ -23,6 +23,8 @@ There are many pre-trained CoreML compatible models on the web, both from Apple 
 
 Apple also provides tools for converting TensorFlow and PyTorch models to be compatible with CoreML [https://coremltools.readme.io/docs](https://coremltools.readme.io/docs).
 
+![Apple NaturalLanguage NLP pipeline](images/FIG_Nlp_swift.jpg)
+
 ## NLP Utility Library
 
 I created a small utility library that wraps the NaturalLanguage framework to make it easy to experiment with five key NLP capabilities. The source code for this example is in the **source-code/Nlp_swift** directory.

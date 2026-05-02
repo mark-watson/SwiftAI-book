@@ -10,6 +10,8 @@ This package provides an elegant, unified abstraction layer that acts as an API-
 
 The example source code for this chapter is in the directory **anymodel** in the GitHub repository for this book.
 
+![Multi-provider LLM abstraction architecture](images/FIG_anymodel.jpg)
+
 ## OpenAI Example
 
 Our first example uses the OpenAI API with the `gpt-4o-mini` model. The `LanguageModelSession` class provides the same interface regardless of which provider you use:

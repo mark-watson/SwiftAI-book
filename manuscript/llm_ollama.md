@@ -75,6 +75,8 @@ public actor OllamaService {
 }
 ~~~~~~~~
 
+![Ollama client with tool calling architecture](images/FIG_Ollama_swift_examples.jpg)
+
 ## Tool Definitions
 
 One of the most powerful features of modern LLMs is **tool calling** — the model can decide to invoke external functions to answer a question. The `ollama-swift` library provides a `Tool` type that defines the function schema and implementation. Here we define two tools: a weather lookup stub and a math expression evaluator.

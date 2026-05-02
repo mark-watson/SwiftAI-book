@@ -28,6 +28,8 @@ knowledge-navigator/
     └── Models.swift      # Codable request/response structs
 ```
 
+![Gemini-powered knowledge navigator architecture](images/FIG_knowledge-navigator.jpg)
+
 ### Package Definition
 
 `Package.swift` targets macOS 13+ to access Swift Concurrency (`async`/`await`) from a command-line entry point:

@@ -179,6 +179,8 @@ Overall, these functions provide a simple, modern way to scrape information from
 
 I wrote these utility functions to get the plain text from a web site, HTML header text, and anchors. You can clone this library and extend it for other types of HTML elements you may need to process.
 
+![HTML scraping library architecture](images/FIG_WebScraping_swift.jpg)
+
 The test program shows how to call the APIs in the library:
 
 {lang="swift",linenos=on}

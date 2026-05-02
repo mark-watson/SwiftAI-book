@@ -45,6 +45,8 @@ Three source files make up the package:
 | `PrintHistogram.swift` | ASCII histogram utility |
 | `main.swift` | Data loading, preprocessing, training, inference |
 
+![Gaussian anomaly detection architecture](images/FIG_anomaly-detection.jpg)
+
 ## `AnomalyDetection` Class
 
 The class is initialised with the full example array. The initialiser partitions data into training, cross-validation, and test sets, then computes per-feature means.

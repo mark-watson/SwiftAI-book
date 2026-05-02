@@ -117,7 +117,7 @@ Test Suite 'All tests' passed at 2021-08-06 16:36:23.468.
 	 Executed 1 test, with 0 failures (0 unexpected) in 2.019 (2.021) seconds
 ~~~~~~~~
 
-
+![Shell command execution architecture](images/FIG_ShellProcess_swift.jpg)
 
 ## FileIO Examples
 

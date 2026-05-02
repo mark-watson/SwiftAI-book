@@ -27,6 +27,8 @@ CodingCLI_swift/
 └── test.py          ← sample file so the tool has something to summarise
 ```
 
+![Code analysis and chat architecture](images/FIG_CodingCLI_swift.jpg)
+
 ## Package.swift
 
 The package requires no external dependencies. The only special configuration is linking `FoundationModels`, which ships as a system framework but is not yet in the default linker search path for Swift packages:

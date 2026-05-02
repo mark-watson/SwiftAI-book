@@ -217,6 +217,8 @@ func cosineSimilarity(_ a: [Double],
 
 Since we normalize all vectors when they are generated, cosine similarity reduces to a simple dot product.
 
+![Document QA with Gemini RAG pipeline](images/FIG_Docs_QA_Swift.jpg)
+
 ## Text Chunking
 
 The **TextChunker.swift** file handles splitting documents into chunks suitable for embedding. We use Apple's **NLTokenizer** for sentence segmentation and then group sentences into chunks that don't exceed a maximum character count:

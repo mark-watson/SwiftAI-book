@@ -145,6 +145,8 @@ func completions(promptText: String, maxTokens: Int = 25) -> String {
 
 This Swift implementation provides a streamlined interface to OpenAI's API services, focusing primarily on chat completions and text embeddings functionality. The code is structured around a central OpenAI struct that encapsulates all API interactions and provides a clean, type-safe interface for making requests.
 
+![OpenAI API client architecture](images/FIG_OpenAI_swift.jpg)
+
 ## Core Architecture
 
 The implementation follows a modular design pattern, separating concerns between network communication, request/response handling, and utility functions. It utilizes Swift's strong type system through dedicated request models and leverages environment variables for secure API key management.

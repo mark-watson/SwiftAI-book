@@ -40,7 +40,11 @@ let package = Package(
 )
 ```
 
-No external dependencies — the entire project relies on Swift's standard library and Foundation. **BM25.swift** provides a complete, self-contained implementation of the Okapi BM25 ranking function — a probabilistic model widely used in information retrieval. Unlike plain TF-IDF, BM25 accounts for document length and term-frequency saturation. It penalises overly long documents and caps the contribution of repeated terms so that a word appearing 100 times is not 100× as useful as one appearing once.
+No external dependencies — the entire project relies on Swift's standard library and Foundation.
+
+![Hybrid RAG with BM25 and vector search](images/FIG_autocontext.jpg)
+
+**BM25.swift** provides a complete, self-contained implementation of the Okapi BM25 ranking function — a probabilistic model widely used in information retrieval. Unlike plain TF-IDF, BM25 accounts for document length and term-frequency saturation. It penalises overly long documents and caps the contribution of repeated terms so that a word appearing 100 times is not 100× as useful as one appearing once.
 
 The implementation centres on a `BM25Index` struct. We pre-compute all needed statistics at initialisation time so that query scoring is fast:
 

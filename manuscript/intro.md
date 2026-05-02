@@ -149,4 +149,6 @@ The "targets" section lists the targets that are part of the package. In this ca
 
 Hopefully you have cloned the git repositories for each book example and understand how I have configured the examples for your use.
 
+![Swift AI example project overview](images/FIG_My-Swift-Snippets.jpg)
+
 For the rest of this book, you can read chapters in any order. In some cases, earlier chapters will contain implementations of libraries used in later chapters.
