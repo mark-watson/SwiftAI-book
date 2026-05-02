@@ -36,6 +36,8 @@ ollama pull qwen3:1.7b
 swift run ollama-example
 ```
 
+![Multi-provider LLM abstraction architecture](FIG_anymodel.jpg)
+
 ## Book Cover Material, Copyright, and License
 
 This example is released using the Apache 2 license.

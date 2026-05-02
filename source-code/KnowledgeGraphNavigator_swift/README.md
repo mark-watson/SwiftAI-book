@@ -29,6 +29,8 @@ For example, given *"Bill Gates was at Microsoft with Melinda Gates"*, the progr
 | `Sources/.../Relationships/Relationships.swift` | Discovers and formats RDF relationship triples between entity pairs |
 | `Sources/.../main.swift` | Demo: exercises entity extraction, detail lookup, and relationship discovery |
 
+![Knowledge graph navigation with NLP and SPARQL](FIG_KnowledgeGraphNavigator_swift.jpg)
+
 ## Book Cover Material, Copyright, and License
 
 This example is released using the Apache 2 license.

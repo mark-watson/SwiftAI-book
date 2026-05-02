@@ -36,6 +36,8 @@ ChatTool_swift/
     └── ChatTool.swift    # @main entry point with streaming chat loop
 ```
 
+![Apple Intelligence streaming chat architecture](FIG_ChatTool_swift.jpg)
+
 ## Book Cover Material, Copyright, and License
 
 This example is released using the Apache 2 license.

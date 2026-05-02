@@ -47,6 +47,8 @@ knowledge-navigator/
     └── Models.swift      # Codable request/response structs
 ```
 
+![Gemini-powered knowledge navigator architecture](FIG_knowledge-navigator.jpg)
+
 ## Book Cover Material, Copyright, and License
 
 This example is released using the Apache 2 license.

@@ -32,6 +32,8 @@ This package is a **library** — it has no executable target. To use it in anot
     swift build
     swift test
 
+![Shell command execution architecture](FIG_ShellProcess_swift.jpg)
+
 ## Book Cover Material, Copyright, and License
 
 This example is released using the Apache 2 license.

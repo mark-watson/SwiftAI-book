@@ -122,6 +122,8 @@ MLX_swift/
    `AsyncStream<Generation>` whose `.chunk` cases contain
    streaming decoded text.
 
+![On-device LLM inference with Apple MLX](FIG_MLX_swift.jpg)
+
 ---
 
 ## Configuration

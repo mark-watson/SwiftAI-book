@@ -24,6 +24,8 @@ Demonstrates Apple's NaturalLanguage framework for on-device NLP tasks:
 | `Sources/Nlp_swift/NLP.swift` | NLP utility functions using NLTagger, NLLanguageRecognizer, and NLEmbedding |
 | `Sources/Nlp_swift/main.swift` | Interactive demo exercising all NLP capabilities |
 
+![Apple NaturalLanguage NLP pipeline](FIG_Nlp_swift.jpg)
+
 ## Book Cover Material, Copyright, and License
 
 This example is released using the Apache 2 license.

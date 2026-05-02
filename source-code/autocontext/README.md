@@ -51,6 +51,8 @@ autocontext/
     ├── Embeddings.swift    # Gemini Embedding API client + vector math
 ```
 
+![Hybrid RAG with BM25 and vector search](FIG_autocontext.jpg)
+
 ## Book Cover Material, Copyright, and License
 
 This example is released using the Apache 2 license.

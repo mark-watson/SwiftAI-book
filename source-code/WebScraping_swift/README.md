@@ -40,6 +40,8 @@ print(headers)
 
 > **Note:** The first build will show warnings from the SwiftSoup library — these are safe to ignore.
 
+![HTML scraping library architecture](FIG_WebScraping_swift.jpg)
+
 ## Book Cover Material, Copyright, and License
 
 This example is released using the Apache 2 license.

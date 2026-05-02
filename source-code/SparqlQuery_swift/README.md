@@ -46,6 +46,8 @@ for row in results {
     swift build
     swift test
 
+![SPARQL endpoint client architecture](FIG_SparqlQuery_swift.jpg)
+
 ## Book Cover Material, Copyright, and License
 
 This example is released using the Apache 2 license.

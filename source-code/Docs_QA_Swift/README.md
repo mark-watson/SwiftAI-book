@@ -32,6 +32,8 @@ Set your Google API key:
 | `Sources/Docs_QA_Swift/main.swift` | Demo: ingests documents, answers questions via RAG |
 | `data/` | Sample text files (chemistry, economics, health, sports) |
 
+![Document QA with Gemini RAG pipeline](FIG_Docs_QA_Swift.jpg)
+
 ## Book Cover Material, Copyright, and License
 
 This example is released using the Apache 2 license.

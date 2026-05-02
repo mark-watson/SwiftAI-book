@@ -39,6 +39,8 @@ let vector = OpenAI.embeddings(text: "some sentence")
     swift build
     swift test
 
+![OpenAI API client architecture](FIG_OpenAI_swift.jpg)
+
 ## Book Cover Material, Copyright, and License
 
 This example is released using the Apache 2 license.

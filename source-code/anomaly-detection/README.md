@@ -44,6 +44,8 @@ Using the trained model:
 malignant result = true, benign result = false
 ```
 
+![Gaussian anomaly detection architecture](FIG_anomaly-detection.jpg)
+
 ## Book Cover Material, Copyright, and License
 
 This example is released using the Apache 2 license.

@@ -47,6 +47,8 @@ CodingCLI_swift/
     └── CodingCLI.swift   # @main entry point: file scanning, summarization, and chat
 ```
 
+![Code analysis and chat architecture](FIG_CodingCLI_swift.jpg)
+
 ## Book Cover Material, Copyright, and License
 
 This example is released using the Apache 2 license.

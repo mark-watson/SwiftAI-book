@@ -41,6 +41,7 @@ Tests are written using the new Swift Testing framework:
 swift test
 ```
 
+![Ollama client with tool calling architecture](FIG_Ollama_swift_examples.jpg)
 
 ## Book Cover Material, Copyright, and License
 
