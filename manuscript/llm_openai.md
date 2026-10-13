@@ -31,8 +31,7 @@ to your **.profile** or other shell resource file that contains your key value (
 
 The file **Sources/OpenAI_swift/OpenAI_swift.swift** contains the source code (code description follows the listing):
 
-{lang="swift",linenos=off}
-~~~~~~~~
+```swift
 import Foundation
 
 struct OpenAI {
@@ -139,7 +138,7 @@ func completions(promptText: String, maxTokens: Int = 25) -> String {
     OpenAI.chat(messages: [["role": "user", "content": promptText]],
                            maxTokens: maxTokens)
 }
-~~~~~~~~
+```
 
 
 

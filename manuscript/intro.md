@@ -68,8 +68,7 @@ swift package init --type library
 
 You can reference Swift libraries using the **Swift.package** file for each of your projects. We will look at parts of two **Swift.package** files here. The first is for my SPARQL query client library that we will develop in a later chapter. This library **SparqlQuery_swift** is used in both book examples Knowledge Graph Navigator (**KGN**) macOS/iOS/iPadOS example application as well as a text version **KnowledgeGraphNavigator_swift**.
 
-{lang=swift, linenos=on}
-~~~~~~~~
+```swift
 import PackageDescription
 
 let package = Package(
@@ -92,7 +91,7 @@ let package = Package(
             dependencies: ["SparqlQuery_swift", "SwiftyJSON"]),
     ]
 )
-~~~~~~~~
+```
 
 This Swift package file is used to declare a Swift package named "SparqlQuery_swift". The package contains one library target named "SparqlQuery_swift" and one test target named "SparqlQuery_swiftTests". The library target depends on the "SwiftyJSON" package, which is specified as a dependency in the "dependencies" section of the package.
 
@@ -104,8 +103,7 @@ The "targets" section lists the targets that are part of the package. In this ca
 
 The **Swift.package** file for text version **KnowledgeGraphNavigator_swift** is shown here:
 
-{lang=swift, linenos=on}
-~~~~~~~~
+```swift
 import PackageDescription
 
 let package = Package(
@@ -132,7 +130,7 @@ let package = Package(
               "SwiftyJSON", "SwiftSoup"]),
     ]
 )
-~~~~~~~~
+```
 
 This Swift package file is used to declare a Swift package named "KnowledgeGraphNavigator_swift". The package contains one target named "KnowledgeGraphNavigator_swift". The target depends on the "SparqlQuery_swift", "Nlp_swift", "SwiftyJSON", and "SwiftSoup" packages, which are specified as dependencies in the "dependencies" section of the package.
 

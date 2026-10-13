@@ -32,8 +32,7 @@ SparqlQuery_swift/
 
 ### Package.swift
 
-{lang="swift",linenos=off}
-~~~~~~~~
+```swift
 // swift-tools-version:5.9
 import PackageDescription
 
@@ -55,7 +54,7 @@ let package = Package(
             dependencies: ["SparqlQuery_swift"]),
     ]
 )
-~~~~~~~~
+```
 
 We require macOS 13 or later because the `async/await` form of `URLSession.data(for:)` — which we use to make the HTTP requests — was introduced in that release. No third-party packages are needed; Foundation's `URLSession` and `JSONDecoder` handle everything.
 
@@ -63,8 +62,7 @@ We require macOS 13 or later because the `async/await` form of `URLSession.data(
 
 ## The Library: Full Source Listing
 
-{lang="swift",linenos=off}
-~~~~~~~~
+```swift
 // SparqlQuery_swift.swift
 // Copyright 2022-2026 Mark Watson. All rights reserved.
 //
@@ -164,7 +162,7 @@ public func sparqlEndpoint(
         return row.isEmpty ? nil : row
     }
 }
-~~~~~~~~
+```
 
 Let's walk through the key design decisions.
 
@@ -196,8 +194,7 @@ The result is flattened: each `Binding`'s `BoundValue.value` string is extracted
 
 Let's look at a few examples of what you can do with the library. The simplest possible query asks for one fact about a known resource — the population of Sedona, Arizona:
 
-{lang="swift",linenos=off}
-~~~~~~~~
+```swift
 import SparqlQuery_swift
 
 let query = """
@@ -212,7 +209,7 @@ let results = try await sparqlDBpedia(query: query)
 for row in results {
     print("Population:", row["population"] ?? "unknown")
 }
-~~~~~~~~
+```
 
 Sample output:
 
@@ -225,8 +222,7 @@ Population: 10031
 
 A more interesting query asks DBpedia to find people who were born in Sedona. The `?person` variable will be bound to each matching URI:
 
-{lang="swift",linenos=off}
-~~~~~~~~
+```swift
 let query = """
 SELECT ?person ?name WHERE {
   ?person <http://dbpedia.org/ontology/birthPlace>
@@ -241,7 +237,7 @@ let results = try await sparqlDBpedia(query: query)
 for row in results {
     print(row["name"] ?? "", "—", row["person"] ?? "")
 }
-~~~~~~~~
+```
 
 This query introduces two new SPARQL features:
 
@@ -252,8 +248,7 @@ This query introduces two new SPARQL features:
 
 The same library works with Wikidata. Wikidata uses numeric property identifiers (e.g., `P18` for "image", `P569` for "date of birth") rather than descriptive URIs, but the SPARQL syntax is identical. Here we ask for the capital city of France and its population:
 
-{lang="swift",linenos=off}
-~~~~~~~~
+```swift
 let query = """
 SELECT ?capital ?capitalLabel ?population WHERE {
   wd:Q142 wdt:P36 ?capital .
@@ -268,7 +263,7 @@ let results = try await sparqlWikidata(query: query)
 for row in results {
     print(row["capitalLabel"] ?? "", "population:", row["population"] ?? "")
 }
-~~~~~~~~
+```
 
 Sample output:
 
@@ -283,8 +278,7 @@ The `SERVICE wikibase:label` block is a Wikidata-specific extension that automat
 
 The test file exercises the library against the live DBpedia endpoint:
 
-{lang="swift",linenos=off}
-~~~~~~~~
+```swift
 import XCTest
 @testable import SparqlQuery_swift
 
@@ -305,7 +299,7 @@ final class SparqlQueryTests: XCTestCase {
         XCTAssertNotNil(results.first?["population"])
     }
 }
-~~~~~~~~
+```
 
 Run the tests with:
 
@@ -327,15 +321,14 @@ Note that this test makes a live network request to DBpedia. If DBpedia is tempo
 
 **Explore with `?p ?o` patterns.** If you want to see all the facts DBpedia knows about a resource, use an open triple pattern:
 
-{lang="swift",linenos=off}
-~~~~~~~~
+```swift
 let query = """
 SELECT ?property ?value WHERE {
   <http://dbpedia.org/resource/Sedona,_Arizona> ?property ?value
 }
 LIMIT 50
 """
-~~~~~~~~
+```
 
 This is equivalent to `SELECT *` in SQL — a great way to discover what properties are available before writing a more targeted query.
 

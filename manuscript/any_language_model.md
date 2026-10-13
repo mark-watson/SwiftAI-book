@@ -16,8 +16,7 @@ The example source code for this chapter is in the directory **anymodel** in the
 
 Our first example uses the OpenAI API with the `gpt-4o-mini` model. The `LanguageModelSession` class provides the same interface regardless of which provider you use:
 
-{lang="swift",linenos=off}
-~~~~~~~~
+```swift
 import AnyLanguageModel
 import Foundation
 
@@ -47,7 +46,7 @@ struct OpenAIExample {
         print(response.content)
     }
 }
-~~~~~~~~
+```
 
 Notice how simple this is: create a model, create a session, and call `respond`. The same pattern works for every provider. Here is sample output from running this code:
 
@@ -68,8 +67,7 @@ Build dreams line by line.
 
 One of the most powerful features of AnyLanguageModel is that it brings a unified tool-calling interface across all providers. Here we define a `WeatherTool` using the `@Generable` and `@Guide` macros (mirroring Apple's FoundationModels API), then use it with Google's Gemini:
 
-{lang="swift",linenos=off}
-~~~~~~~~
+```swift
 import AnyLanguageModel
 import Foundation
 
@@ -122,7 +120,7 @@ struct GeminiExample {
         print(response.content)
     }
 }
-~~~~~~~~
+```
 
 The `WeatherTool` struct conforms to the `Tool` protocol. Its `Arguments` struct uses `@Generable` to let the model generate structured arguments, and `@Guide` annotations describe each parameter to the model. When the model decides to call this tool, the framework handles the JSON schema generation, argument parsing, and function invocation automatically.
 
@@ -141,8 +139,7 @@ The weather in Tokyo is sunny and 72°F / 23°C.
 
 For local inference with no API key required, we use `OllamaLanguageModel`. This connects to a locally running Ollama service on the default port:
 
-{lang="swift",linenos=off}
-~~~~~~~~
+```swift
 import AnyLanguageModel
 import Foundation
 
@@ -160,7 +157,7 @@ struct OllamaExample {
         print(response.content)
     }
 }
-~~~~~~~~
+```
 
 Make sure Ollama is running locally and you have pulled the model:
 

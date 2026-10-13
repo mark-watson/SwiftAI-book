@@ -97,8 +97,7 @@ The package has two targets: a library named `TextAdventureGame` that holds the 
 
 **Package.swift:**
 
-{lang="swift",linenos=off}
-~~~~~~~~
+```swift
 // swift-tools-version: 6.1
 import PackageDescription
 
@@ -131,14 +130,13 @@ let package = Package(
     // statics are fine.
     swiftLanguageModes: [.v5]
 )
-~~~~~~~~
+```
 
 ## Chat Messages and the Client Protocol
 
 Each entry in the conversation is a role and a string. `Codable` turns it into the JSON the API expects with no extra work, because the case names `system`, `user`, and `assistant` match the wire format:
 
-{lang="swift",linenos=off}
-~~~~~~~~
+```swift
 public struct ChatMessage: Codable, Equatable, Sendable {
     public enum Role: String, Codable, Sendable {
         case system, user, assistant
@@ -151,26 +149,24 @@ public struct ChatMessage: Codable, Equatable, Sendable {
         self.content = content
     }
 }
-~~~~~~~~
+```
 
 The game depends on a protocol, not on the concrete client. This lets you test the game logic without an API key:
 
-{lang="swift",linenos=off}
-~~~~~~~~
+```swift
 /// The chat-completion operation the game depends on.
 /// FireworksClient is the real implementation; tests
 /// substitute a mock.
 public protocol ChatCompleting: Sendable {
     func chat(messages: [ChatMessage]) async throws -> String
 }
-~~~~~~~~
+```
 
 ## The Fireworks Client
 
 A chat completions request is a JSON POST with a bearer token. The response puts the model's reply in the `content` field of the first choice. `FireworksClient` is a `struct` that holds its configuration, in the same style as the `OpenAI` struct in the chapter on the OpenAI APIs:
 
-{lang="swift",linenos=off}
-~~~~~~~~
+```swift
 public struct FireworksClient: ChatCompleting {
     public struct APIError: Error, CustomStringConvertible {
         let message: String
@@ -213,12 +209,11 @@ public struct FireworksClient: ChatCompleting {
         self.endpoint = Config.endpoint
         self.model = Config.model
     }
-~~~~~~~~
+```
 
 The snake case property name `max_tokens` is intentional: `Codable` maps struct properties to JSON keys by name, so matching the API removes the need for a `CodingKeys` enum. The endpoint, model, and key name live in one `enum`:
 
-{lang="swift",linenos=off}
-~~~~~~~~
+```swift
 enum Config {
     static let model =
         "accounts/fireworks/models/deepseek-v4p1-flash"
@@ -226,12 +221,11 @@ enum Config {
         "https://api.fireworks.ai/inference/v1/chat/completions"
     static let apiKeyEnv = "FIREWORKS_API_KEY"
 }
-~~~~~~~~
+```
 
 The call uses the async `URLSession` method `data(for:)`. It checks the HTTP status first and reports the raw response body, which gives a clearer message than a JSON decoding error:
 
-{lang="swift",linenos=off}
-~~~~~~~~
+```swift
     /// Send the conversation history to the model and
     /// return its reply.
     public func chat(
@@ -275,7 +269,7 @@ The call uses the async `URLSession` method `data(for:)`. It checks the HTTP sta
         return content
     }
 }
-~~~~~~~~
+```
 
 A temperature of 0.8 gives the Game Master variety. A low temperature makes the prose flat and repetitive. The `max_tokens` limit of 1024 caps the length of one scene.
 
@@ -285,8 +279,7 @@ The client also has a second initializer that takes an API key, session, endpoin
 
 `Game` owns the conversation history. Three methods cover everything the loop needs: load the story, start or restart an adventure, and take one turn. Note the rollback in `takeTurn`: when the call fails, the method removes the user message so a retry does not stack up unanswered turns in the history.
 
-{lang="swift",linenos=off}
-~~~~~~~~
+```swift
 public final class Game {
     private let client: any ChatCompleting
     private let storyText: String
@@ -352,7 +345,7 @@ public final class Game {
         }
     }
 }
-~~~~~~~~
+```
 
 `startAdventure` also handles restarts, because it rebuilds the history from the system prompt. Dropping the old conversation gives a fresh game and resets the token cost of each turn.
 
@@ -360,8 +353,7 @@ public final class Game {
 
 The executable target is a `while true` loop that reads a line, handles commands that start with a slash, and otherwise calls `takeTurn`. The whole file:
 
-{lang="swift",linenos=off}
-~~~~~~~~
+```swift
 import Foundation
 import TextAdventureGame
 
@@ -443,7 +435,7 @@ gameLoop: while true {
         print("Try again or type /quit to exit.")
     }
 }
-~~~~~~~~
+```
 
 Three details matter here. Inside a `switch`, a plain `break` exits only the `switch`, so the labeled `break gameLoop` exits the loop. `readLine()` returns `nil` at end of input, so you can pipe a file of commands into the game. A failed turn prints the error and keeps the game running: a rate limit should end the turn, not the program.
 
@@ -451,8 +443,7 @@ Three details matter here. Inside a `switch`, a plain `break` exits only the `sw
 
 The tests use the **Swift Testing** framework and a mock that implements `ChatCompleting`. Because `Game` talks to the protocol, no test needs a network or a key, so `swift test` works on any machine:
 
-{lang="swift",linenos=off}
-~~~~~~~~
+```swift
 import Foundation
 @testable import TextAdventureGame
 import Testing
@@ -538,7 +529,7 @@ struct GameTests {
         #expect(game.messages.count == 1)
     }
 }
-~~~~~~~~
+```
 
 The test file also has suites that check that `loadStory()` finds `story.txt` in the current directory and that a `ChatMessage` encodes to the `{"role": ..., "content": ...}` shape the API wants. Running them (timing output removed):
 

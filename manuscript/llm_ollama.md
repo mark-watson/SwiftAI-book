@@ -21,8 +21,7 @@ When the model is downloaded it is also cached for future use on your laptop.
 
 The library wraps the raw `Ollama.Client` in a Swift actor to provide safe concurrent access. It supports basic chat, streaming chat, and optional tool calling:
 
-{lang="swift",linenos=off}
-~~~~~~~~
+```swift
 import Ollama
 import Foundation
 import JavaScriptCore
@@ -73,7 +72,7 @@ public actor OllamaService {
         }
     }
 }
-~~~~~~~~
+```
 
 ![Ollama client with tool calling architecture](images/FIG_Ollama_swift_examples.jpg)
 
@@ -83,8 +82,7 @@ One of the most powerful features of modern LLMs is **tool calling** — the mod
 
 The weather tool uses `Codable` structs for its input and output, and returns a hardcoded stub response. In a real application you would call a weather API:
 
-{lang="swift",linenos=off}
-~~~~~~~~
+```swift
 public struct WeatherInput: Codable {
     public let location: String
 }
@@ -114,12 +112,11 @@ public let weatherTool =
         unit: "Fahrenheit",
         description: "Sunny")
 }
-~~~~~~~~
+```
 
 The evaluator tool uses `JavaScriptCore` to safely evaluate math expressions. We use `JSContext` rather than `NSExpression` because `NSExpression` has known security risks when used with untrusted input:
 
-{lang="swift",linenos=off}
-~~~~~~~~
+```swift
 public struct EvaluatorInput: Codable {
     public let expression: String
 }
@@ -151,12 +148,11 @@ public let evaluatorTool =
             result: "Error: Could not evaluate expression")
     }
 }
-~~~~~~~~
+```
 
 We also add an extension on `Ollama.Tool` that allows calling a tool directly with the arguments dictionary returned by the model:
 
-{lang="swift",linenos=off}
-~~~~~~~~
+```swift
 extension Ollama.Tool {
     public func callAsFunction(
         _ arguments: [String: Ollama.Value]
@@ -168,14 +164,13 @@ extension Ollama.Tool {
         return try await self(input)
     }
 }
-~~~~~~~~
+```
 
 ## Example Tests
 
 The tests use Swift's modern **Testing** framework rather than XCTest. Here is the test/example code we will run:
 
-{lang="swift",linenos=off}
-~~~~~~~~
+```swift
 import Testing
 import Ollama
 import Foundation
@@ -286,7 +281,7 @@ struct OllamaServiceTests {
         print("Streaming Response: \(fullResponse)")
     }
 }
-~~~~~~~~
+```
 
 The output for the basic chat test looks like:
 

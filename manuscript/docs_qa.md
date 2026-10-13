@@ -19,8 +19,7 @@ The **GeminiAPI.swift** file provides two core capabilities: generating embeddin
 
 We define Codable structs for the Gemini embedding API request and response:
 
-{lang="swift",linenos=off}
-~~~~~~~~
+```swift
 private struct EmbedRequest: Codable {
     struct Content: Codable {
         struct Part: Codable {
@@ -37,12 +36,11 @@ private struct EmbedResponse: Codable {
     }
     let embedding: Embedding
 }
-~~~~~~~~
+```
 
 The **generateEmbedding** function sends text to the Gemini **embedContent** endpoint and returns a normalized vector:
 
-{lang="swift",linenos=off}
-~~~~~~~~
+```swift
 func generateEmbedding(for text: String,
                        apiKey: String)
                        async -> [Double]? {
@@ -84,7 +82,7 @@ func generateEmbedding(for text: String,
         return nil
     }
 }
-~~~~~~~~
+```
 
 Gemini Embedding 2 returns 3072-dimensional vectors. We L2-normalize them immediately so that dot product equals cosine similarity, simplifying later comparisons.
 
@@ -92,8 +90,7 @@ Gemini Embedding 2 returns 3072-dimensional vectors. We L2-normalize them immedi
 
 For question answering we use the Gemini **generateContent** endpoint with a system instruction that constrains the model to answer using only the provided context:
 
-{lang="swift",linenos=off}
-~~~~~~~~
+```swift
 private struct GeminiRequest: Codable {
     let systemInstruction: SystemInstruction?
     let contents: [Content]
@@ -122,12 +119,11 @@ private struct GeminiResponse: Codable {
         let text: String
     }
 }
-~~~~~~~~
+```
 
 The **questionAnswering** function sends the retrieved context as a system instruction and the user's question as the content:
 
-{lang="swift",linenos=off}
-~~~~~~~~
+```swift
 func questionAnswering(context: String, question: String,
                        apiKey: String) async -> String? {
     let model = "models/gemini-3-flash-preview"
@@ -185,14 +181,13 @@ func questionAnswering(context: String, question: String,
         return nil
     }
 }
-~~~~~~~~
+```
 
 ### Vector Math Utilities
 
 We include three small utility functions for vector operations:
 
-{lang="swift",linenos=off}
-~~~~~~~~
+```swift
 func normalized(_ v: [Double]) -> [Double] {
     let mag = sqrt(v.reduce(0.0) { $0 + $1 * $1 })
     guard mag > 0 else { return v }
@@ -213,7 +208,7 @@ func cosineSimilarity(_ a: [Double],
     guard !a.isEmpty, a.count == b.count else { return 0.0 }
     return dotProduct(a, b)
 }
-~~~~~~~~
+```
 
 Since we normalize all vectors when they are generated, cosine similarity reduces to a simple dot product.
 
@@ -223,8 +218,7 @@ Since we normalize all vectors when they are generated, cosine similarity reduce
 
 The **TextChunker.swift** file handles splitting documents into chunks suitable for embedding. We use Apple's **NLTokenizer** for sentence segmentation and then group sentences into chunks that don't exceed a maximum character count:
 
-{lang="swift",linenos=off}
-~~~~~~~~
+```swift
 func segmentTextIntoSentences(text: String) -> [String] {
     let tokenizer = NLTokenizer(unit: .sentence)
     tokenizer.string = text
@@ -259,7 +253,7 @@ func segmentTextIntoChunks(text: String,
     }
     return chunks
 }
-~~~~~~~~
+```
 
 This approach preserves sentence boundaries so that each chunk contains complete sentences — important for both embedding quality and for providing readable context to the LLM.
 
@@ -267,8 +261,7 @@ This approach preserves sentence boundaries so that each chunk contains complete
 
 The **VectorStore.swift** file provides a simple in-memory vector database:
 
-{lang="swift",linenos=off}
-~~~~~~~~
+```swift
 struct VectorStore {
     private(set) var embeddings: [[Double]] = []
     private(set) var chunks: [String] = []
@@ -299,14 +292,13 @@ struct VectorStore {
             .map { $0 }
     }
 }
-~~~~~~~~
+```
 
 The **search** method computes cosine similarity between the query embedding and every stored chunk, then returns the top matches above a threshold. For a production system you would use a dedicated vector database, but this simple approach works well for small document collections.
 
 The **ingestDocuments** function reads all **.txt** files from a directory, chunks them, generates embeddings, and populates the vector store:
 
-{lang="swift",linenos=off}
-~~~~~~~~
+```swift
 func ingestDocuments(from directoryURL: URL,
                      apiKey: String,
                      chunkSize: Int = 200)
@@ -347,7 +339,7 @@ func ingestDocuments(from directoryURL: URL,
 
     return store
 }
-~~~~~~~~
+```
 
 ## Running the Example
 

@@ -33,8 +33,7 @@ I created a small utility library that wraps the NaturalLanguage framework to ma
 
 Named Entity Recognition (NER) identifies references to people, places, and organizations in text. The **getEntities** function uses **NLTagger** with the **.nameType** scheme:
 
-{lang="swift",linenos=off}
-~~~~~~~~
+```swift
 public func getEntities(for text: String) -> [(String, String)] {
     let tagger = NLTagger(tagSchemes: [.nameType])
     tagger.string = text
@@ -55,7 +54,7 @@ public func getEntities(for text: String) -> [(String, String)] {
     }
     return results
 }
-~~~~~~~~
+```
 
 The function creates an **NLTagger** configured for the **.nameType** tag scheme and enumerates over the words in the input text. The **.joinNames** option ensures that multi-word names like "George Bush" are returned as a single entity. Each word is tagged as a **PersonalName**, **PlaceName**, **OrganizationName**, or **OtherWord**. We filter out **OtherWord** tags in the main program to show only the named entities.
 
@@ -63,8 +62,7 @@ The function creates an **NLTagger** configured for the **.nameType** tag scheme
 
 Lemmatization reduces words to their base dictionary forms. For example, "went" becomes "go" and "representatives" becomes "representative". The **getLemmas** function uses the **.lemma** scheme:
 
-{lang="swift",linenos=off}
-~~~~~~~~
+```swift
 public func getLemmas(for text: String) -> [(String, String)] {
     let tagger = NLTagger(tagSchemes: [.lemma])
     tagger.string = text
@@ -84,7 +82,7 @@ public func getLemmas(for text: String) -> [(String, String)] {
     }
     return results
 }
-~~~~~~~~
+```
 
 This is structurally similar to **getEntities** but uses the **.lemma** tag scheme. When the tagger cannot determine a lemma for a word (for example, proper nouns), it falls back to returning the original word.
 
@@ -92,8 +90,7 @@ This is structurally similar to **getEntities** but uses the **.lemma** tag sche
 
 The **NLLanguageRecognizer** class can identify over 50 languages. Our wrapper provides both a simple dominant-language function and a more detailed hypotheses function:
 
-{lang="swift",linenos=off}
-~~~~~~~~
+```swift
 public func detectLanguage(for text: String) -> String {
     let recognizer = NLLanguageRecognizer()
     recognizer.processString(text)
@@ -114,7 +111,7 @@ public func languageHypotheses(for text: String,
         .map { ($0.key.rawValue, $0.value) }
         .sorted { $0.1 > $1.1 }
 }
-~~~~~~~~
+```
 
 The **detectLanguage** function returns an ISO 639-1 language code (e.g., "en", "fr", "de"). The **languageHypotheses** function returns multiple candidate languages with confidence scores, which is useful when text contains multiple languages or when the dominant language is ambiguous.
 
@@ -122,8 +119,7 @@ The **detectLanguage** function returns an ISO 639-1 language code (e.g., "en", 
 
 Apple's NaturalLanguage framework includes a sentiment scoring model that rates text on a scale from -1.0 (very negative) to 1.0 (very positive):
 
-{lang="swift",linenos=off}
-~~~~~~~~
+```swift
 public func analyzeSentiment(for text: String) -> Double {
     let tagger = NLTagger(tagSchemes: [.sentimentScore])
     tagger.string = text
@@ -135,12 +131,11 @@ public func analyzeSentiment(for text: String) -> Double {
     }
     return 0.0
 }
-~~~~~~~~
+```
 
 We also provide a **sentimentBySentence** function that uses **NLTokenizer** to split text into individual sentences and then scores each one separately. This is useful for analyzing reviews or documents that contain mixed positive and negative statements:
 
-{lang="swift",linenos=off}
-~~~~~~~~
+```swift
 public func sentimentBySentence(for text: String)
                                 -> [(String, Double)] {
     let tokenizer = NLTokenizer(unit: .sentence)
@@ -159,14 +154,13 @@ public func sentimentBySentence(for text: String)
     }
     return results
 }
-~~~~~~~~
+```
 
 ### Word Embeddings
 
 Apple provides pre-trained word embeddings that map words to high-dimensional vectors, allowing you to find semantically similar words. The **findSimilarWords** function uses **NLEmbedding** to query these built-in embeddings:
 
-{lang="swift",linenos=off}
-~~~~~~~~
+```swift
 public func findSimilarWords(for word: String,
                              maxResults: Int = 5)
                              -> [(String, Double)] {
@@ -183,7 +177,7 @@ public func findSimilarWords(for word: String,
     }
     return results
 }
-~~~~~~~~
+```
 
 The function returns the nearest neighbors sorted by cosine distance. Lower distance values indicate higher semantic similarity. This is useful for building features like search query expansion and synonym suggestions.
 

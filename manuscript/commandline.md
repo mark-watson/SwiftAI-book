@@ -16,8 +16,7 @@ You can clone this repository if you want to have the source code at hand:
 
 The following listing shows the library implementation. In line 5 we use the constructor **Process** from the Apple **Foundation** library to get a new process object that we set fields **executableURL** and **argList**. In lines 8 and 9 we create a new Unix style pipe to capture the output from the shell process we are starting and attach it to the process. After we run the task, we capture the output and return it as the value of function **run_in_shell**.
 
-{lang="swift",linenos=on}
-~~~~~~~~
+```swift
 import Foundation
 
 @available(OSX 10.13, *)
@@ -39,7 +38,7 @@ public func run_in_shell(commandPath: String, argList: [String] = []) -> String 
     }
     return ""
 }
-~~~~~~~~
+```
 
 The function named **run_in_shell** takes two parameters: **commandPath** (a string representing the path to the executable command to be run) and **argList** (an array of strings representing the arguments to be passed to the command). The function returns a string that represents the output of the command.
 
@@ -53,8 +52,7 @@ Overall, this function provides a simple way to run a shell command and capture 
 
 As in most examples in this book we use the Swift testing framework to run the example code at the command line using *swift test*. Running *swift test* does an implicit *swift build*.
 
-{lang="swift",linenos=on}
-~~~~~~~~
+```swift
 import XCTest
 @testable import ShellProcess_swift
 
@@ -79,7 +77,7 @@ final class ShellProcessTests: XCTestCase {
         ("testExample", testExample),
     ]
 }
-~~~~~~~~
+```
 
 This Swift unit test function is part of a test suite for the **ShellProcess_swift** package. The function is named **testExample** and is decorated with the **@testable** import statement to indicate that it tests an internal implementation detail of the **ShellProcess_swift** package.
 
@@ -91,8 +89,7 @@ The **allTests** variable is an array of tuples that map the test function names
 
 The test output (with some text removed for brevity) is:
 
-{lang="swift",linenos=on}
-~~~~~~~~
+```swift
 $ swift test
 Test Suite 'All tests' started at 2021-08-06 16:36:21.447
 ** s1:
@@ -115,7 +112,7 @@ Tests
 
 Test Suite 'All tests' passed at 2021-08-06 16:36:23.468.
 	 Executed 1 test, with 0 failures (0 unexpected) in 2.019 (2.021) seconds
-~~~~~~~~
+```
 
 ![Shell command execution architecture](images/FIG_ShellProcess_swift.jpg)
 
@@ -126,8 +123,7 @@ This file I/O example uses the **ShellProcess_swift** library we saw in the last
 When writing command line Swift programs you will often need to do simple file IO so let's look at some examples here:
 
 
-{lang="swift",linenos=on}
-~~~~~~~~
+```swift
 import Foundation
 import ShellProcess_swift // my library
 
@@ -166,7 +162,7 @@ func test_files_demo() -> Void {
 if #available(OSX 10.13, *) {
     test_files_demo()
 }
-~~~~~~~~
+```
 
 The OS version checks in this Swift code use the **#available** conditional compilation block.
 
@@ -182,8 +178,7 @@ I created a temporary Swift project with the previous code listing and a **Packa
 
 Unlike the example in the last section where we built a reusable library with a test program, here we have a standalone program contained in a single file so we will use *swift run* to build and run this example:
 
-{lang="swift",linenos=on}
-~~~~~~~~
+```swift
 $ swift run
 [5/5] Build complete!
 a second string
@@ -197,7 +192,7 @@ README.md
 Sources
 out.txt
 out2.txt
-~~~~~~~~
+```
 
 If you are instead working inside the *SwiftAI-book* mono-repo clone and the local relative path is configured, SwiftPM resolves `ShellProcess_swift` from the neighbouring folder rather than fetching it from GitHub, and the build output simply shows `[N/N] Build complete!` with no fetch step.
 
@@ -205,8 +200,7 @@ If you are instead working inside the *SwiftAI-book* mono-repo clone and the loc
 
 The *SwiftAI-book* repository ships a root-level `Package.swift` that acts as an **umbrella package** for the entire mono-repo. This gives remote users a single GitHub URL they can add as a Swift Package dependency and then selectively import any example:
 
-{lang="swift",linenos=on}
-~~~~~~~~
+```swift
 // In your own project's Package.swift:
 dependencies: [
     .package(url: "https://github.com/mark-watson/SwiftAI-book.git",
@@ -222,12 +216,11 @@ targets: [
         ]
     )
 ]
-~~~~~~~~
+```
 
 The umbrella manifest (at the root of the repo) explicitly re-declares the full internal dependency graph. For example, `KnowledgeGraphNavigator_swift` depends on `SparqlQuery_swift` — that relationship is listed in the umbrella's `targets` array so SwiftPM resolves it correctly even though it does not read the individual sub-package manifests:
 
-{lang="swift",linenos=on}
-~~~~~~~~
+```swift
 // source-code/KnowledgeGraphNavigator_swift/Package.swift
 // (local sub-package manifest — for working inside the clone)
 dependencies: [
@@ -248,7 +241,7 @@ targets: [
         path: "source-code/KnowledgeGraphNavigator_swift/Sources/…"
     ),
 ]
-~~~~~~~~
+```
 
 Local readers who clone the book can open any individual sub-directory in Xcode (or run `swift build` / `swift test` from within it) and the relative-path dependency will resolve instantly from the neighbouring folder on disk.
 
@@ -256,8 +249,7 @@ Local readers who clone the book can open any individual sub-directory in Xcode 
 
 There is an example of using the Swift REPL at the end of the next chapter on web scraping. For reference, you can start a REPL with:
 
-{lang="swift",linenos=on}
-~~~~~~~~
+```swift
 $ swift run --repl
 Type :help for assistance.
 1> import WebScraping_swift
@@ -267,7 +259,7 @@ $R0: String = "Mark Watson: AI Practitioner and Polyglot Programmer"...
 4> foo(s: "cat") 
 $R1: String = "cat"
 5> 
-~~~~~~~~
+```
 
 You can import packages and interactively enter Swift expressions, including defining functions.
 

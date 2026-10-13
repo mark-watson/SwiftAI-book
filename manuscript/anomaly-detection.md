@@ -51,8 +51,7 @@ Three source files make up the package:
 
 The class is initialised with the full example array. The initialiser partitions data into training, cross-validation, and test sets, then computes per-feature means.
 
-{lang="swift",linenos=on}
-~~~~~~~~
+```swift
 class AnomalyDetection {
 
     private static let sqrt2Pi: Double = 2.50662827463
@@ -103,14 +102,13 @@ class AnomalyDetection {
         self.mu = muArr
     }
 }
-~~~~~~~~
+```
 
 ### Training: Searching for the Best Epsilon
 
 The `train()` method loops over 40 candidate `\epsilon`$ values from 0.05 to 0.44, calling `trainHelper(epsilon:)` for each. The candidate that produces the fewest cross-validation errors is retained.
 
-{lang="swift",linenos=on}
-~~~~~~~~
+```swift
 func train() {
     var bestErrorCount = Double.greatestFiniteMagnitude
     for loop in 0..<40 {
@@ -125,14 +123,13 @@ func train() {
     _ = trainHelper(epsilon: bestEpsilon)
     test(epsilon: bestEpsilon)
 }
-~~~~~~~~
+```
 
 ### The Gaussian Probability Function
 
 The private method `probability(_:)` computes the model score for a single input vector. Note that the last element of the vector is the label column and is skipped.
 
-{lang="swift",linenos=on}
-~~~~~~~~
+```swift
 private func probability(_ x: [Double]) -> Double {
     var sum = 0.0
     for f in 0..<(numFeatures - 1) {
@@ -143,18 +140,17 @@ private func probability(_ x: [Double]) -> Double {
     }
     return sum / Double(numFeatures)
 }
-~~~~~~~~
+```
 
 ### Public Inference
 
 After training, you can classify any new input vector with `isAnomaly(_:)`:
 
-{lang="swift",linenos=on}
-~~~~~~~~
+```swift
 func isAnomaly(_ x: [Double]) -> Bool {
     return probability(x) < bestEpsilon
 }
-~~~~~~~~
+```
 
 ## Preprocessing the Wisconsin Data
 
@@ -165,8 +161,7 @@ Raw feature values range from 1 to 10. The `main.swift` file applies two preproc
 
 The label column (originally 2 for benign, 4 for malignant) is mapped to 0.0 and 1.0 respectively.
 
-{lang="swift",linenos=on}
-~~~~~~~~
+```swift
 for i in 0..<9 { xs[i] *= 0.1 }
 
 var minVal =  Double.greatestFiniteMagnitude
@@ -182,14 +177,13 @@ if range > 0 {
 }
 
 xs[9] = (xs[9] - 2.0) * 0.5
-~~~~~~~~
+```
 
 ## Feature Histograms
 
 Before training it is worth checking that the data distributions are roughly Gaussian. The `PrintHistogram` utility prints a simple 5-bin ASCII histogram for each feature. The output reveals that many features have more mass at one extreme — this is exactly the problem that the log transformation above helps to address.
 
-{lang="swift",linenos=on}
-~~~~~~~~
+```swift
 func printHistogram(title: String, data: [[Double]],
                     colIndex: Int, min: Double,
                     max: Double, numBins: Int) {
@@ -206,7 +200,7 @@ func printHistogram(title: String, data: [[Double]],
         print("\(i)\t\(count)")
     }
 }
-~~~~~~~~
+```
 
 ## Running the Example
 
