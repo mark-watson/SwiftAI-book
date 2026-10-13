@@ -6,8 +6,8 @@ import PackageDescription
 let package = Package(
     name: "CodingCLI",
 
-    // 1️⃣ Tell SwiftPM we require at least macOS 12 so
-    //    `Task.value`, async/await, and FoundationModels are available.
+    // macOS 26 is required for FoundationModels (the built-in "apple"
+    // provider). Remote/local OpenAI-compatible providers need nothing extra.
     platforms: [
         .macOS(.v26)
     ],
@@ -20,11 +20,16 @@ let package = Package(
         .executableTarget(
             name: "CodingCLI",
 
-            // 2️⃣ Link the system framework that ships with Xcode 17+
-            //    (no external dependency required).
+            // Link the system framework that ships with Xcode 17+
+            // (no external dependency required). libedit, for line editing,
+            // is loaded at run time with dlopen.
             linkerSettings: [
                 .linkedFramework("FoundationModels")
             ]
         )
-    ]
+    ],
+
+    // Swift 5 language mode: the CLI is effectively single-threaded and keeps
+    // its session state in plain statics.
+    swiftLanguageModes: [.v5]
 )

@@ -1,0 +1,62 @@
+{
+  "default_provider": "fireworks",
+  "providers": {
+    "fireworks": {
+      "type": "openai",
+      "endpoint": "https://api.fireworks.ai/inference/v1/chat/completions",
+      "api_key_env": "FIREWORKS_API_KEY",
+      "model": "accounts/fireworks/models/deepseek-v4p1-flash",
+      "generation": {
+        "temperature": 0.6,
+        "max_tokens": 32768
+      },
+      "pricing": {
+        "input": 0.14,
+        "cached_input": 0.028,
+        "output": 0.28
+      }
+    },
+    "deepseek": {
+      "type": "openai",
+      "endpoint": "https://api.deepseek.com/v1/chat/completions",
+      "api_key_env": "DEEPSEEK_API_KEY",
+      "model": "deepseek-flash",
+      "generation": {
+        "temperature": 0.6,
+        "max_tokens": 32768
+      },
+      "pricing": {
+        "input": 0.15,
+        "cached_input": 0.003,
+        "output": 0.6
+      }
+    },
+    "mlx": {
+      "type": "mlx",
+      "endpoint": "http://localhost:11434/v1/chat/completions",
+      "model": "qwen3.8:27b-mlx",
+      "generation": {
+        "temperature": 0.6,
+        "max_tokens": 32768
+      }
+    },
+    "omlx": {
+      "type": "mlx",
+      "endpoint": "http://127.0.0.1:8000/v1/chat/completions",
+      "model": "mlx-community--Qwen3.6-35B-A3B-4bit",
+      "generation": {
+        "temperature": 0.6,
+        "max_tokens": 32768
+      }
+    },
+    "sushi": {
+      "type": "mlx",
+      "endpoint": "http://127.0.0.1:12345/v1/chat/completions",
+      "model": "Qwen3.8-Flash-Next-Sushi-2.6bpw",
+      "generation": {
+        "temperature": 1.0,
+        "max_tokens": 32000
+      }
+    }
+  }
+}

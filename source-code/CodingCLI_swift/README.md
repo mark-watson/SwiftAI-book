@@ -1,50 +1,170 @@
-# CodingCLI — Code-Aware Chat with Apple Intelligence — Example for Mark Watson's book "Artificial Intelligence Using Swift"
+# CodingCLI — AI Coding Agent (Apple Intelligence, OpenAI-compatible, and local MLX models) — Example for Mark Watson's book "Artificial Intelligence Using Swift"
 
 Book URI: https://leanpub.com/SwiftAI
 
 You can read my book for free online at: https://leanpub.com/SwiftAI/read
 
-A command-line tool that reads all source files in the current directory, summarizes the project using Apple Intelligence, and then opens an interactive chat session where you can ask questions about your code.
+An AI pair programmer in your terminal: a multi-turn agentic loop with five coding tools (`read_file`, `list_dir`, `grep`, `run_shell`, `propose_edit`), human-approved colored diffs, and a choice of LLM backends — the on-device **Apple Intelligence** model (FoundationModels, no API key), any **OpenAI-compatible** cloud endpoint (Fireworks.ai, DeepSeek, …), or a **local MLX/Ollama** server.
 
-**How it works:**
+This is a Swift port of the feature set of the Racket `racket-coding-agent` project (itself a port of the Python `py-coding-agent`).
 
-1. **Scan** — recursively finds all `.swift`, `.py`, and `.lisp` files under the current directory (files ≤ 8 KB each)
-2. **Summarize** — sends the combined source to the on-device Apple Intelligence model and prints a per-file project summary
-3. **Chat** — starts a streaming interactive session so you can ask follow-up questions about the codebase
+## Features
 
-This uses the **FoundationModels** framework — no API keys, no network calls during inference. Apple Intelligence handles everything locally (or via Private Cloud Compute for larger requests).
+- **Agentic loop** with five tools: `read_file`, `list_dir`, `grep`, `run_shell` (whitelisted: `make`, `ls`, `pwd`, `cat`, `uv`), and `propose_edit`
+- **Colorized unified diffs** with `y/n/s` approval before any file is touched; `--dry-run` never writes, `-y` auto-approves (still showing the diff)
+- **`make check` gate** — runs after every accepted edit and reports failures back to the model
+- **Safety guards** — stale-base / no-op / empty-file checks on edits; hidden files (`.env`, `foo~`, `#foo#`) refused; repeated identical tool calls stop the loop
+- **Intent classifier** (keyword heuristic + LLM fallback) routes general questions to web search and coding tasks to the tools
+- **Web search** with Brave or Exa
+- **Skills** — `/<name>` loads `~/.agents/skills/<name>/SKILL.md` into the conversation
+- **Context tools** — `/context` shows a per-message breakdown, `/compact` summarizes history to save tokens, `/summary` summarizes the source files in the current directory
+- **Token accounting** — `/tokens` with cost estimates (including cached-input pricing) from the provider config
+- **Unix-friendly one-shot mode** with script-friendly exit codes
+- **Line editing** — history, `Ctrl-R`, and Tab completion via libedit, with persistent history
 
 ## Requirements
 
 | Requirement | Minimum |
 |---|---|
 | macOS | 26 (Tahoe) |
-| Apple Intelligence | Must be enabled in System Settings |
-| Xcode | 17+ (for FoundationModels framework) |
+| Xcode | 17+ (for the FoundationModels framework) |
+| Apple Intelligence | Enabled in System Settings — only for the built-in `apple` provider |
+
+Optional environment variables: `FIREWORKS_API_KEY`, `DEEPSEEK_API_KEY` (or whatever a provider's `api_key_env` names), and `BRAVE_SEARCH_API_KEY` / `EXA_SEARCH_API_KEY` for web search.
 
 ## Build & Install
 
-    swift build
+    swift build              # or: make build
+    make install             # release build copied to /usr/local/bin (PREFIX=... to change)
 
-Optionally copy the binary to a directory on your `$PATH` so you can run it from any project:
-
-    cp .build/debug/CodingCLI ~/bin/
+Shell completions for bash, zsh, and fish are in `completions/`.
 
 ## Usage
 
-Navigate to any source directory and run:
+    CodingCLI                                  # interactive REPL in the current directory
+    CodingCLI "fix the bug in calc.py"         # one-shot
+    CodingCLI -p "refactor foo" -p "add tests" # repeatable prompt parts
+    echo "explain Tools.swift" | CodingCLI --stdin
+    CodingCLI --cwd ~/proj --provider apple "summarize this project"
+    CodingCLI --provider mlx --model llama3.2:3b "hi"
+    CodingCLI -y "apply the fix"               # auto-approve diffs (still shows them)
+    CodingCLI --dry-run "show what would change"
+    CodingCLI --quiet --plain -p "hello" > out.txt
 
-    CodingCLI
+```
+-p, --prompt TEXT     prompt text, repeatable, joined with newlines
+--stdin               read prompt from stdin (pipe/heredoc)
+-y, --yes             auto-approve propose_edit after showing diff
+--dry-run             show diffs but do not write files
+--provider NAME       provider profile from the harness config (or apple)
+--model ID            override the model for this provider
+--cwd DIR             chdir before running
+--debug               log raw requests/responses (same as /debug)
+-q, --quiet           no banner, no [intent] line, less tool chatter
+--plain, --no-color   no ANSI colors in diffs
+-v, --version         show version and exit
+-h, --help            show help and exit
+```
 
-The tool prints a project summary, then starts an interactive chat loop. Type `/quit` or press Enter on an empty line to exit.
+Exit codes: `0` ok, `1` model/network error, `2` `make check` failed, `3` change rejected/skipped, `5` bad arguments.
+
+Press `Ctrl-C` during a model turn to cancel that turn without leaving the REPL.
+
+## Providers and the harness config
+
+Two JSON config layers are merged at startup — project-local wins over global, nested objects merge recursively, and other values are replaced wholesale:
+
+* **Global:** `~/.coding_harness.json`
+* **Local:** `.local_coding_harness.json` in the project directory
+
+See `coding_harness.example.json` for a full example:
+
+```json
+{
+  "default_provider": "fireworks",
+  "providers": {
+    "fireworks": {
+      "type": "openai",
+      "endpoint": "https://api.fireworks.ai/inference/v1/chat/completions",
+      "api_key_env": "FIREWORKS_API_KEY",
+      "model": "accounts/fireworks/models/deepseek-v4p1-flash",
+      "generation": { "temperature": 0.6, "max_tokens": 32768 },
+      "pricing": { "input": 0.14, "cached_input": 0.028, "output": 0.28 }
+    },
+    "mlx": {
+      "type": "mlx",
+      "endpoint": "http://localhost:11434/v1/chat/completions",
+      "model": "qwen3.8:27b-mlx",
+      "generation": { "temperature": 0.6, "max_tokens": 32768 }
+    }
+  },
+  "search": { "engine": "brave", "enabled": false },
+  "quiet": false, "plain": false, "debug": false
+}
+```
+
+Provider types:
+
+| Type | Backend |
+|---|---|
+| `openai` | OpenAI-style chat completions with SSE streaming (Fireworks.ai, DeepSeek, compatible endpoints) |
+| `mlx` | Non-streaming OpenAI-style `/v1/chat/completions` (`mlx_lm.server`, oMLX, Ollama); `ollama`, `omlx`, `sushi` are aliases; optional Bearer key via `api_key_env` |
+| `apple` | On-device Apple Intelligence via FoundationModels — no key, no network |
+
+* An `apple` profile is **built in**, so CodingCLI works with no config at all. It is the default only when the config declares no other providers. Its context window is small, so only the tail of earlier conversation is replayed to it.
+* The default profile is `default_provider`, else `fireworks` if present, else the first profile alphabetically.
+* Optional per-profile `pricing` (USD per 1M tokens: `input`, `cached_input`, `output`) gives `/tokens` its cost estimate; without it, `/tokens` reports counts only.
+* Switch profiles with `/provider <name>`; `/provider` alone lists them.
+
+Legacy settings (precedence CLI > env > legacy file > harness config):
+
+* File: `$XDG_CONFIG_HOME/coding-agent/config.json` or `~/.config/coding-agent/config.json`, a flat object such as `{"provider": "mlx", "model": "m", "quiet": true, "plain": true, "debug": false, "search": true, "search-engine": "exa"}`. Its `provider` applies only when there is no harness config.
+* Env: `CODING_AGENT_PROVIDER` / `AGENT_PROVIDER`, `CODING_AGENT_MODEL`, `CODING_AGENT_QUIET`, `CODING_AGENT_PLAIN`, `CODING_AGENT_DEBUG`.
+
+## REPL commands
+
+| Command | Description |
+|---|---|
+| `/reset` | Clear conversation history |
+| `/history` | Dump the full message log |
+| `/context` | Show a formatted summary of the current context |
+| `/compact` | Compact history into a summary, then show the new context |
+| `/summary` | Scan `.swift`/`.py`/`.lisp` files here and summarize the project |
+| `/model <id>` | Switch model for the current provider |
+| `/provider` | Show the current provider and available profiles |
+| `/provider <name>` | Switch provider profile |
+| `/debug` | Toggle raw request/response logging |
+| `/search` | Toggle web search on/off |
+| `/search brave` / `/search exa` | Enable web search with that engine |
+| `/tokens` | Show session token usage and estimated cost |
+| `/skills` | List skills in `~/.agents/skills` |
+| `/<skill-name>` | Load that skill into the conversation |
+| `/quit` | Exit (an empty line at EOF also exits) |
+
+## Line editing and history
+
+On a terminal the REPL uses libedit (loaded at run time with `dlopen`): arrow keys, `Ctrl-A`/`Ctrl-E`/`Ctrl-K`/`Ctrl-U`/`Ctrl-W`, `Ctrl-R` reverse search, and `Tab` completion of slash commands, provider profiles, search engines, and configured model ids. History persists to `~/.coding_agent_history` (last 1000 entries; shared with the Racket version). Piped input falls back to plain line reading, as it does if libedit cannot be loaded.
 
 ## Project Structure
 
 ```
 CodingCLI_swift/
 ├── Package.swift
+├── Makefile                   # build / check / install (make check gates every accepted edit)
+├── coding_harness.example.json
+├── completions/               # bash, zsh, fish
 └── Sources/CodingCLI/
-    └── CodingCLI.swift   # @main entry point: file scanning, summarization, and chat
+    ├── CodingCLI.swift        # @main entry point, CLI flag parsing
+    ├── Agent.swift            # REPL, slash commands, skills, context, intent routing, one-shot mode
+    ├── ChatLoop.swift         # provider-agnostic agentic tool-calling loop
+    ├── OpenAIClient.swift     # OpenAI-compatible SSE + MLX clients, token/cost stats
+    ├── AppleProvider.swift    # Apple Intelligence provider, FoundationModels tools, /summary
+    ├── Tools.swift            # tool registry and the five coding tools
+    ├── Approval.swift         # settings, subprocess helper, colored diffs, y/n/s prompts
+    ├── HarnessConfig.swift    # hierarchical JSON config, provider profiles, legacy config
+    ├── Search.swift           # Brave and Exa web search
+    ├── LineInput.swift        # libedit line editing, history, Tab completion
+    └── JSON.swift             # JSON value type
 ```
 
 ![Code analysis and chat architecture](FIG_CodingCLI_swift.jpg)
