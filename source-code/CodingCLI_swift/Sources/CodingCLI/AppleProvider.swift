@@ -43,6 +43,11 @@ import FoundationModels
     var new: String
 }
 
+@Generable struct FetchURLArgs {
+    @Guide(description: "Web page URL (http or https).")
+    var url: String
+}
+
 // Records the tool calls made during one FoundationModels response.
 final class AppleToolRecorder: @unchecked Sendable {
     struct Call { let id: String; let name: String; let args: String; let result: String }
@@ -118,6 +123,15 @@ struct ProposeEditTool: Tool {
     }
 }
 
+struct FetchURLTool: Tool {
+    let recorder: AppleToolRecorder
+    let name = "fetch_url"
+    var description: String { toolDescription(name) }
+    func call(arguments: FetchURLArgs) async throws -> String {
+        recorder.run(name, ["url": .string(arguments.url)])
+    }
+}
+
 enum AppleProvider {
     // The on-device model has a small context window, so only the tail of the
     // earlier conversation is replayed into each new session.
@@ -189,6 +203,7 @@ enum AppleProvider {
             "grep": GrepTool(recorder: recorder),
             "run_shell": RunShellTool(recorder: recorder),
             "propose_edit": ProposeEditTool(recorder: recorder),
+            "fetch_url": FetchURLTool(recorder: recorder),
         ]
         let (instructions, prompt) = split(messages)
         let session = LanguageModelSession(tools: names.compactMap { all[$0] },

@@ -2,7 +2,7 @@ import Foundation
 
 // Tool registry and coding-agent tools.
 //
-// Five tools: read_file, list_dir, grep, run_shell, propose_edit.
+// Six tools: read_file, list_dir, grep, run_shell, propose_edit, fetch_url.
 // propose_edit shows a colored diff, asks y/n/s, and gates on `make check`.
 
 struct ToolParam {
@@ -24,7 +24,7 @@ enum Tools {
 
     static let shellWhitelist: Set<String> = ["make", "ls", "pwd", "cat", "uv"]
     static let maxCheckOutputChars = 2000
-    static let enabledTools = ["read_file", "list_dir", "grep", "run_shell", "propose_edit"]
+    static let enabledTools = ["read_file", "list_dir", "grep", "run_shell", "propose_edit", "fetch_url"]
 
     static func define(_ name: String, _ params: [ToolParam], _ description: String,
                        _ handler: @escaping ([String]) -> String) {
@@ -306,5 +306,9 @@ enum Tools {
                 ToolParam(name: "new", type: "string", description: "The proposed new contents of the file, in full.")],
                "Propose an edit or new-file creation. The user is shown a unified diff and asked to approve. On approval the file is written and `make check` is run.",
                { proposeEdit($0[0], $0[1], $0[2]) })
+        define("fetch_url",
+               [ToolParam(name: "url", type: "string", description: "Web page URL (http or https).")],
+               "Fetch a web page and return its readable text content (HTML tags, scripts, and styles removed; long pages truncated). Use this whenever the user asks about the contents of a web site or URL.",
+               { WebFetch.fetch($0[0]) })
     }
 }

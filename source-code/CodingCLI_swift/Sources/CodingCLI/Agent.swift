@@ -38,6 +38,8 @@ final class Agent {
         - If the user rejects an edit or `make check` fails, ask for clarification instead
           of retrying blindly.
         - run_shell only accepts whitelisted commands: make, ls, pwd, cat, uv.
+        - You CAN read web pages: when the user mentions a URL or web site, call fetch_url
+          and answer from its contents. Never claim you cannot access the internet.
         - When you are done, reply with a short natural-language summary of what changed.
         """
 
@@ -499,6 +501,10 @@ final class Agent {
     // Intent classification: keyword heuristic first, LLM fallback.
 
     static func heuristicClassify(_ lower: String) -> String? {
+        // A URL needs the fetch_url tool, which only the tool-calling route has.
+        if lower.contains("http://") || lower.contains("https://") || lower.contains("www.") {
+            return "coding"
+        }
         if generalKeywords.contains(where: lower.contains) { return "general" }
         if codingKeywords.contains(where: lower.contains) { return "coding" }
         return nil
@@ -559,7 +565,7 @@ final class Agent {
     func sendToModel(_ userLine: String) async throws {
         let intent = await classifyIntent(userLine)
         let label = ["general": "web search, no coding tools",
-                     "coding": "coding tools, no search",
+                     "coding": "coding + web fetch tools, no search",
                      "hybrid": "coding tools + web search if /search is on"][intent]!
         if !Settings.quiet { print("[intent: \(intent) → \(label)]") }
         let reply: String

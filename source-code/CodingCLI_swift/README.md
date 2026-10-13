@@ -4,13 +4,13 @@ Book URI: https://leanpub.com/SwiftAI
 
 You can read my book for free online at: https://leanpub.com/SwiftAI/read
 
-An AI pair programmer in your terminal: a multi-turn agentic loop with five coding tools (`read_file`, `list_dir`, `grep`, `run_shell`, `propose_edit`), human-approved colored diffs, and a choice of LLM backends — the on-device **Apple Intelligence** model (FoundationModels, no API key), any **OpenAI-compatible** cloud endpoint (Fireworks.ai, DeepSeek, …), or a **local MLX/Ollama** server.
+An AI pair programmer in your terminal: a multi-turn agentic loop with six tools (`read_file`, `list_dir`, `grep`, `run_shell`, `propose_edit`, `fetch_url`), human-approved colored diffs, and a choice of LLM backends — the on-device **Apple Intelligence** model (FoundationModels, no API key), any **OpenAI-compatible** cloud endpoint (Fireworks.ai, DeepSeek, …), or a **local MLX/Ollama** server.
 
 This is a Swift port of the feature set of the Racket `racket-coding-agent` project (itself a port of the Python `py-coding-agent`).
 
 ## Features
 
-- **Agentic loop** with five tools: `read_file`, `list_dir`, `grep`, `run_shell` (whitelisted: `make`, `ls`, `pwd`, `cat`, `uv`), and `propose_edit`
+- **Agentic loop** with six tools: `read_file`, `list_dir`, `grep`, `run_shell` (whitelisted: `make`, `ls`, `pwd`, `cat`, `uv`), `propose_edit`, and `fetch_url` (reads a web page as plain text; prompts containing a URL are routed to the tool loop)
 - **Colorized unified diffs** with `y/n/s` approval before any file is touched; `--dry-run` never writes, `-y` auto-approves (still showing the diff)
 - **`make check` gate** — runs after every accepted edit and reports failures back to the model
 - **Safety guards** — stale-base / no-op / empty-file checks on edits; hidden files (`.env`, `foo~`, `#foo#`) refused; repeated identical tool calls stop the loop
@@ -159,10 +159,11 @@ CodingCLI_swift/
     ├── ChatLoop.swift         # provider-agnostic agentic tool-calling loop
     ├── OpenAIClient.swift     # OpenAI-compatible SSE + MLX clients, token/cost stats
     ├── AppleProvider.swift    # Apple Intelligence provider, FoundationModels tools, /summary
-    ├── Tools.swift            # tool registry and the five coding tools
+    ├── Tools.swift            # tool registry and the six agent tools
     ├── Approval.swift         # settings, subprocess helper, colored diffs, y/n/s prompts
     ├── HarnessConfig.swift    # hierarchical JSON config, provider profiles, legacy config
     ├── Search.swift           # Brave and Exa web search
+    ├── WebFetch.swift         # fetch_url: download a page, HTML -> plain text
     ├── LineInput.swift        # libedit line editing, history, Tab completion
     └── JSON.swift             # JSON value type
 ```
