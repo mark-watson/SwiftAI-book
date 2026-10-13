@@ -8,6 +8,7 @@ The first edition was released spring of 2022.
 The second edition was released December 2024.
 The third edition was released June 2025.
 The fourth edition was released April 2026.
+The fifth edition was released October 2026.
 
 If you would like to support my work please consider purchasing my books on [Leanpub](https://leanpub.com/u/markwatson) and star my git repositories that you find useful on [GitHub](https://github.com/mark-watson?tab=repositories&q=&type=public). You can also interact with me on social media on [Mastodon](https://mastodon.social/@mark_watson) and [Twitter](https://twitter.com/mark_l_watson).
 
@@ -30,12 +31,6 @@ Both the source code examples and the manuscript for this book are kept in one g
 ### Visit My Website
 
 [https://markwatson.com](https://markwatson.com)
-
-
-
-## Parts of this Book are Specific for macOS and iOS, with Some Support for Linux
-
-Swift is a general purpose language that is well supported in macOS, iOS, and Linux, with some support in Windows. Here, we cover the use of Swift on macOS and iOS. Some of the examples in this book rely on libraries that are specifically available on macOS and iOS like CoreML and the NLP libraries. Several book examples also work on Linux, such as the examples using SQLite, the Microsoft Azure search APIs, web scraping, and semantic web/linked data.
 
 ## Code for this Book
 
@@ -62,10 +57,13 @@ The cover picture was taken by [WikiMedia Commons user Keta](https://commons.wik
 
 We use the following 3rd party libraries:
 
-- [https://github.com/SwiftyJSON/SwiftyJSON](https://github.com/SwiftyJSON/SwiftyJSON)
 - [https://github.com/apple/swift-argument-parser](https://github.com/apple/swift-argument-parser)
+- [https://github.com/huggingface/AnyLanguageModel](https://github.com/huggingface/AnyLanguageModel)
+- [https://github.com/huggingface/swift-transformers](https://github.com/huggingface/swift-transformers)
 - [https://github.com/mattt/ollama-swift](https://github.com/mattt/ollama-swift)
+- [https://github.com/ml-explore/mlx-swift-lm](https://github.com/ml-explore/mlx-swift-lm)
 - [https://github.com/scinfu/SwiftSoup](https://github.com/scinfu/SwiftSoup)
+- [https://github.com/SwiftyJSON/SwiftyJSON](https://github.com/SwiftyJSON/SwiftyJSON)
 
 ## Acknowledgements
 
