@@ -12,26 +12,26 @@ The data preparation strategy is:
 
 - Split all examples randomly into training (~60%), cross-validation (~28%), and test (~12%) sets.
 - From the training partition, keep only benign ("normal") examples — but let about 10% of malignant examples slip through, mirroring the reality that some anomalies will always contaminate a real-world training set.
-- Use the cross-validation set to search for a good value of the hyperparameter epsilon.
+- Use the cross-validation set to search for a good value of the hyperparameter `\epsilon`$.
 - Use the test set to compute precision, recall, and F1.
 
 ## The Gaussian Model
 
-The algorithm models each feature independently with a Gaussian (bell-curve) distribution. For feature *j*, we learn the mean μ_j and the variance σ²_j from the training data. Given a new input vector **x**, the probability assigned by the model is the average of the Gaussian densities across all features:
+The algorithm models each feature independently with a Gaussian (bell-curve) distribution. For feature `j`$, we learn the mean `\mu_j`$ and the variance `\sigma_j^2`$ from the training data. Given a new input vector `\mathbf{x}`$, the probability assigned by the model is the average of the Gaussian densities across all features:
 
-```
-p(x) = (1/n) Σ [ 1/(√(2π) · σ²_j) · exp(-(x_j - μ_j)²) ]
+```$
+p(\mathbf{x}) = \frac{1}{n} \sum_{j=1}^{n} \frac{1}{\sqrt{2\pi}\,\sigma_j^2} \exp\left(-(x_j - \mu_j)^2\right)
 ```
 
-If `p(x)` falls *below* epsilon, the input is flagged as an anomaly.
+If `p(\mathbf{x})`$ falls *below* `\epsilon`$, the input is flagged as an anomaly.
 
 The mean is easy to compute from training data. Variance is:
 
-```
-σ² = (1/m) Σ (x_i - μ)²
+```$
+\sigma^2 = \frac{1}{m} \sum_{i=1}^{m} (x_i - \mu)^2
 ```
 
-Epsilon is a *hyperparameter* that we tune against the cross-validation set rather than learning it from training data directly.
+`\epsilon`$ is a *hyperparameter* that we tune against the cross-validation set rather than learning it from training data directly.
 
 ## Swift Implementation Overview
 
@@ -107,7 +107,7 @@ class AnomalyDetection {
 
 ### Training: Searching for the Best Epsilon
 
-The `train()` method loops over 40 candidate epsilon values from 0.05 to 0.44, calling `trainHelper(epsilon:)` for each. The candidate that produces the fewest cross-validation errors is retained.
+The `train()` method loops over 40 candidate `\epsilon`$ values from 0.05 to 0.44, calling `trainHelper(epsilon:)` for each. The candidate that produces the fewest cross-validation errors is retained.
 
 {lang="swift",linenos=on}
 ~~~~~~~~
@@ -161,7 +161,7 @@ func isAnomaly(_ x: [Double]) -> Bool {
 Raw feature values range from 1 to 10. The `main.swift` file applies two preprocessing steps:
 
 1. **Scale** each of the 9 features by 0.1 to put them in the range [0, 1].
-2. **Log-transform** each feature with `log(x + 1.2)` and then min-max normalise back to [0, 1]. This pushes the heavy-tailed distributions closer to a Gaussian shape, which the model assumes.
+2. **Log-transform** each feature with `\log(x + 1.2)`$ and then min-max normalise back to `[0, 1]`$. This pushes the heavy-tailed distributions closer to a Gaussian shape, which the model assumes.
 
 The label column (originally 2 for benign, 4 for malignant) is mapped to 0.0 and 1.0 respectively.
 
@@ -215,7 +215,7 @@ cd source-code/anomaly-detection
 swift run
 ```
 
-The output includes the cross-validation error counts for each candidate epsilon, the final test-set metrics, and two inference examples:
+The output includes the cross-validation error counts for each candidate `\epsilon`$, the final test-set metrics, and two inference examples:
 
 {line-numbers=off}
 ~~~~~~~~
@@ -239,7 +239,7 @@ Results vary between runs because the train/validation/test split is randomised.
 
 ## Interpreting the Metrics
 
-**Precision** (≈0.73) measures what fraction of examples flagged as anomalies were genuine anomalies. **Recall** (≈0.94) measures what fraction of all true anomalies the model caught. The **F1 score** is their harmonic mean and balances both concerns.
+**Precision** (`\approx 0.73`$) measures what fraction of examples flagged as anomalies were genuine anomalies. **Recall** (`\approx 0.94`$) measures what fraction of all true anomalies the model caught. The **F1 score** is their harmonic mean and balances both concerns.
 
 In a medical screening context high recall is often more important than high precision: it is worse to miss a cancer (false negative) than to follow up on a benign case unnecessarily (false positive). The model's high recall (catching ~94% of malignant cases) makes it useful as a first-pass screening tool.
 
@@ -250,7 +250,7 @@ Features that remain far from Gaussian even after transformation (for example "B
 This chapter demonstrated how to port a Java Gaussian anomaly detection model to a standalone Swift command-line tool. The key ideas are:
 
 - Fit a per-feature Gaussian distribution to "normal" training examples.
-- Tune an epsilon cutoff using a cross-validation set.
+- Tune an `\epsilon`$ cutoff using a cross-validation set.
 - Evaluate precision, recall, and F1 on a held-out test set.
 - Pre-process features toward a Gaussian shape to get better model performance.
 
