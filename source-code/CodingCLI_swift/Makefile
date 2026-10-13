@@ -1,6 +1,6 @@
 .PHONY: help build release run check lint install uninstall clean
 
-PREFIX ?= /usr/local
+PREFIX ?= ~
 BINDIR := $(PREFIX)/bin
 
 help:

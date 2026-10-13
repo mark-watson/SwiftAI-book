@@ -1,263 +1,567 @@
-# Using Apple Intelligence to Build a Coding Assistant
+# AI Harness/Coding Agent
 
-Apple's on-device large language model — accessed through the `FoundationModels` framework — is a capable coding companion that runs entirely on device, with no API keys and no network requests. In this chapter we build **CodingCLI**, a command-line tool that:
+In this chapter we build **CodingCLI**, an AI pair programmer that runs in your terminal. You type a request such as "fix the bug in calc.py" and the agent reads your files, searches the code, runs a few safe shell commands, and proposes edits. Every edit appears as a colored diff that you approve or reject before the agent touches a file. After each accepted edit the agent runs `make check` and reports any failure back to the model.
 
-1. Walks the current project directory and reads every Swift, Python, and Lisp source file it finds
-2. Asks the model to summarise what each file does and what the project is about as a whole
-3. Drops into an interactive streaming chat loop so you can ask follow-up questions about the code
+The agent can talk to three kinds of LLM backend:
 
-This is a genuinely useful development tool. Run it inside any Swift package, Python project, or mixed-language repository and you get an instant, context-aware AI assistant that already "knows" the codebase.
+- **Apple Intelligence**, the on-device model in the `FoundationModels` framework. It needs no API key and makes no network calls. This provider is built in, so CodingCLI works with no config file at all.
+- Any **OpenAI-compatible** cloud endpoint, such as Fireworks.ai or DeepSeek, using streaming chat completions.
+- A **local MLX or Ollama** server that speaks the OpenAI `/v1/chat/completions` protocol.
+
+This program ports the feature set of my Python and Racket coding agents to Swift. It is larger than most examples in this book (about 2,600 lines in 13 files), so this chapter shows the key parts of the code and explains how they fit together. The full source is in the directory `source-code/CodingCLI_swift`.
 
 ## Requirements
 
-- **macOS 26 (Tahoe) or later** — `FoundationModels` ships as a system framework starting with macOS 26.
-- **Xcode 17 or later** — required to build against `FoundationModels`.
-- **Apple Silicon Mac** — the on-device model runs on Apple Neural Engine hardware.
+- **macOS 26 (Tahoe) or later.** `FoundationModels` ships as a system framework starting with macOS 26.
+- **Xcode 17 or later** to build against `FoundationModels`.
+- **Apple Intelligence enabled** in System Settings, but only for the built-in `apple` provider.
 
-No third-party Swift packages, no API keys, and no internet connection are required.
+There are no third-party Swift packages. Cloud providers need an API key in an environment variable (`FIREWORKS_API_KEY`, `DEEPSEEK_API_KEY`, or whatever the provider profile names). Web search needs `BRAVE_SEARCH_API_KEY` or `EXA_SEARCH_API_KEY`.
+
+## Features
+
+- An **agentic loop** with six tools: `read_file`, `list_dir`, `grep`, `run_shell`, `propose_edit`, and `fetch_url`.
+- **Colored unified diffs** with a `y/n/s` (yes, no, skip and tell the model why) prompt before any file changes. `--dry-run` never writes and `-y` approves without asking but still shows the diff.
+- A **`make check` gate** after every accepted edit.
+- **Safety guards:** a whitelist for shell commands, refusal to read hidden files such as `.env`, stale-base checks on edits, and a stop when the model repeats the same tool call.
+- An **intent classifier** that sends general questions to web search and coding tasks to the tools.
+- **Skills:** `/<name>` loads `~/.agents/skills/<name>/SKILL.md` into the conversation.
+- **Context tools:** `/context`, `/compact`, and `/summary`.
+- **Token counts and cost estimates** with `/tokens`.
+- A **one-shot mode** with exit codes for scripts.
+- **Line editing** with history, `Ctrl-R`, and Tab completion through libedit.
 
 ## Project Layout
 
 ```text
 CodingCLI_swift/
 ├── Package.swift
-├── Sources/
-│   └── CodingCLI/
-│       └── CodingCLI.swift
-└── test.py          ← sample file so the tool has something to summarise
+├── Makefile                   # build / check / install (make check gates every accepted edit)
+├── coding_harness.example.json
+└── Sources/CodingCLI/
+    ├── CodingCLI.swift        # @main entry point, CLI flag parsing
+    ├── Agent.swift            # REPL, slash commands, skills, context, intent routing, one-shot mode
+    ├── ChatLoop.swift         # provider-agnostic agentic tool-calling loop
+    ├── OpenAIClient.swift     # OpenAI-compatible SSE + MLX clients, token/cost stats
+    ├── AppleProvider.swift    # Apple Intelligence provider, FoundationModels tools, /summary
+    ├── Tools.swift            # tool registry and the six agent tools
+    ├── Approval.swift         # settings, subprocess helper, colored diffs, y/n/s prompts
+    ├── HarnessConfig.swift    # hierarchical JSON config, provider profiles, legacy config
+    ├── Search.swift           # Brave and Exa web search
+    ├── WebFetch.swift         # fetch_url: download a page, HTML -> plain text
+    ├── LineInput.swift        # libedit line editing, history, Tab completion
+    └── JSON.swift             # JSON value type
 ```
 
-![Code analysis and chat architecture](images/FIG_CodingCLI_swift.jpg)
+![Coding agent architecture](images/FIG_CodingCLI_swift.jpg)
+
+The flow of one request is:
+
+1. `Agent` reads a line in the REPL (or takes the one-shot prompt) and classifies its intent.
+2. A coding request goes to `llmChatWithTools`, which picks a backend from the active provider profile.
+3. For `openai` and `mlx` providers, `ChatLoop` runs the tool-calling loop itself. For the `apple` provider, `FoundationModels` runs its own loop and `AppleProvider` records each tool call.
+4. Both paths call the same tool code in `Tools.swift`, so the diffs, approvals, and safety checks behave the same for every backend.
 
 ## Package.swift
 
-The package requires no external dependencies. The only special configuration is linking `FoundationModels`, which ships as a system framework but is not yet in the default linker search path for Swift packages:
-
 ```swift
 // swift-tools-version: 6.2
+// The swift-tools-version declares the minimum version of Swift required to build this package.
+
 import PackageDescription
 
 let package = Package(
     name: "CodingCLI",
+
+    // macOS 26 is required for FoundationModels (the built-in "apple"
+    // provider). Remote/local OpenAI-compatible providers need nothing extra.
     platforms: [
         .macOS(.v26)
     ],
+
     products: [
         .executable(name: "CodingCLI", targets: ["CodingCLI"])
     ],
+
     targets: [
         .executableTarget(
             name: "CodingCLI",
+
+            // Link the system framework that ships with Xcode 17+
+            // (no external dependency required). libedit, for line editing,
+            // is loaded at run time with dlopen.
             linkerSettings: [
                 .linkedFramework("FoundationModels")
             ]
         )
-    ]
+    ],
+
+    // Swift 5 language mode: the CLI is effectively single-threaded and keeps
+    // its session state in plain statics.
+    swiftLanguageModes: [.v5]
 )
 ```
 
-The `.macOS(.v26)` platform constraint ensures SwiftPM refuses to build the package on an older OS where `FoundationModels` is unavailable. The `.linkedFramework("FoundationModels")` linker setting is the key: it tells the linker to pull in the system framework without requiring a SwiftPM dependency declaration.
+The `.linkedFramework("FoundationModels")` setting links the system framework without a package dependency. The package uses Swift 5 language mode because the tool keeps session state in static variables and runs one request at a time; Swift 6 strict concurrency checks would add work with no benefit here.
 
-## CodingCLI.swift — Full Listing
+## The Makefile and the `make check` Gate
 
-**CodingCLI.swift:**
+The agent runs `make check` after every edit you accept. In this project `check` just builds the code:
+
+```makefile
+check: build
+
+lint: check
+```
+
+In your own projects, point `check` at whatever proves the code still works: a compiler, a test suite, or a linter. If `make check` fails, the tool result tells the model, and it can try to fix the problem. The Makefile also has `build`, `release`, `run`, `install`, `uninstall`, and `clean` targets. `make install` copies the release binary to `~/bin` by default; set `PREFIX` to change that.
+
+## The Tools
+
+`Tools.swift` defines a small registry. Each tool has a name, a description, a list of string parameters, and a handler:
 
 ```swift
-import Foundation
-import FoundationModels
-import Dispatch
+struct ToolParam {
+    let name: String
+    let type: String
+    let description: String
+}
 
-@main
-struct CodingCLI {
-    static func main() async throws {
-        // ---- 1. Gather candidate source files ----
-        let exts = ["swift", "py", "lisp"]
-        var blobs: [String] = []
+struct ToolSpec {
+    let name: String
+    let description: String
+    let params: [ToolParam]
+    // Positional string arguments, in `params` order.
+    let handler: ([String]) -> String
+}
+```
 
-        let enumerator =
-            FileManager.default.enumerator(atPath: ".")!
+`Tools.render` turns registered tools into the OpenAI `"tools"` JSON array that cloud and MLX models expect. `registerAll` defines the six tools. Here are two of them:
 
-        while let path = enumerator.nextObject() as? String {
-            guard let ext = path.split(separator: ".").last,
-                  exts.contains(ext.lowercased()) else { continue }
+```swift
+        define("propose_edit",
+               [ToolParam(name: "path", type: "string", description: "Path to the file to edit or create."),
+                ToolParam(name: "old", type: "string", description: "For an existing file: the exact current contents. For a new file: pass empty string."),
+                ToolParam(name: "new", type: "string", description: "The proposed new contents of the file, in full.")],
+               "Propose an edit or new-file creation. The user is shown a unified diff and asked to approve. On approval the file is written and `make check` is run.",
+               { proposeEdit($0[0], $0[1], $0[2]) })
+        define("fetch_url",
+               [ToolParam(name: "url", type: "string", description: "Web page URL (http or https).")],
+               "Fetch a web page and return its readable text content (HTML tags, scripts, and styles removed; long pages truncated). Use this whenever the user asks about the contents of a web site or URL.",
+               { WebFetch.fetch($0[0]) })
+```
 
-            if let data = FileManager.default.contents(atPath: path),
-               data.count < 8 * 1024 {
-                let text = String(decoding: data, as: UTF8.self)
-                blobs.append("### \(path) ###\n\(text)")
-            }
+### Handling Bad Tool Calls
+
+Small models often send malformed tool calls. `runOne` turns each kind of error into a message for the model rather than throwing an error that would end the loop:
+
+```swift
+    static func runOne(name: String, argsJSON: String) -> String {
+        let short = argsJSON.count <= 120 ? argsJSON : String(argsJSON.prefix(117)) + "..."
+        if !Settings.quiet { print("* \(name) \(short)") }
+        if name.trimmingCharacters(in: .whitespaces).isEmpty {
+            // The model stopped mid-generation, so no function name survived.
+            return "Error: the model's tool call was truncated mid-generation (no function name provided). Received arguments: \(short)"
         }
-
-        let doc     = blobs.joined(separator: "\n")
-        let summary = try await Self.summarize(doc)
-        print("\n=== Project Summary ===\n\(summary)\n")
-
-        // ---- 2. Start interactive chat loop ----
-        let session = LanguageModelSession(
-            instructions: "You are a helpful assistant.")
-        let options = GenerationOptions(temperature: 0.2)
-        print("Apple-Intelligence chat (T=0.2). /quit to exit.\n")
-
-        while true {
-            print("Enter prompt:")
-            print("> ", terminator: "")
-            guard let prompt = readLine(strippingNewline: true) else { break }
-            if prompt.isEmpty || prompt == "/quit" { break }
-
-            var printed = ""
-            let task = Task {
-                for try await part in session.streamResponse(
-                    to: prompt, options: options) {
-                    let delta = part.content.dropFirst(printed.count)
-                    if !delta.isEmpty {
-                        FileHandle.standardOutput.write(
-                            Data(delta.utf8))
-                        fflush(stdout)
-                        printed = part.content
-                    }
-                }
-                print()
-            }
-
-            signal(SIGINT, SIG_IGN)
-            let sig = DispatchSource.makeSignalSource(
-                signal: SIGINT, queue: .main)
-            sig.setEventHandler { task.cancel() }
-            sig.resume()
-            defer { sig.cancel() }
-
-            _ = try await task.value
+        guard let parsed = try? JSON.parse(argsJSON) else {
+            return "Error: invalid JSON in arguments for tool '\(name)'. Received: \(short)"
         }
-
+        guard let obj = parsed.object else {
+            return "Error: arguments for tool '\(name)' must be a JSON object. Received: \(short)"
+        }
+        return callTool(name, obj)
     }
+```
 
-    // ---- 3. Helper: summarise all code ----
-    static func summarize(_ text: String) async throws -> String {
-        let session = LanguageModelSession(
-            instructions: """
-            Summarise the following multi-file project. \
-            For each file give one bullet explaining its role, \
-            then a two-sentence overall description.
-            """
-        )
-        let prompt = text.prefix(24 * 1024)
-        let resp = try await session.respond(
-            to: String(prompt),
-            options: GenerationOptions(temperature: 0))
-        return resp.content
+`callTool` also checks for missing arguments and lists the expected ones, which gives a confused model a clear way to retry.
+
+### Shell Commands
+
+`run_shell` only runs commands on a whitelist: `make`, `ls`, `pwd`, `cat`, and `uv`. It refuses any argument that names a hidden file, and it disables `uv` under `--dry-run` since `uv run` can execute code that writes files:
+
+```swift
+    static func runShell(_ command: String) -> String {
+        let tokens = command.split(whereSeparator: { $0 == " " || $0 == "\t" || $0 == "\n" }).map(String.init)
+        guard let cmd = tokens.first else { return "empty command" }
+        if !shellWhitelist.contains(cmd) {
+            return "Command '\(cmd)' not whitelisted. Allowed: \(shellWhitelist.sorted().joined(separator: ", "))"
+        }
+        // `uv run` executes arbitrary code, which could write files behind a
+        // --dry-run preview, so it is unavailable in that mode.
+        if Settings.dryRun && cmd == "uv" {
+            return "refused: 'uv' is disabled in --dry-run mode, where no files may be written. The user only wants to preview the proposed diffs."
+        }
+        if cmd != "ls", let bad = tokens.dropFirst().first(where: isHiddenArg) {
+            return "refusing to run command referencing hidden/internal file: \(bad)"
+        }
+        do {
+            let (out, code) = try Subprocess.run(cmd, Array(tokens.dropFirst()))
+            return (cmd == "ls" ? filterLsOutput(out) : out) + "(exit \(code))"
+        } catch {
+            return "Error running command: \(error)"
+        }
+    }
+```
+
+The command runs through `Process` with an argument array, not through a shell, so pipes, redirects, and `;` have no special meaning.
+
+### Proposing Edits
+
+`propose_edit` takes the whole old file and the whole new file. Asking for full contents is simpler and more reliable with small models than asking for patches. The function makes several checks before it shows a diff:
+
+```swift
+    static func proposeEdit(_ path: String, _ old: String, _ proposed: String) -> String {
+        let exists = FileManager.default.fileExists(atPath: path)
+        var new = proposed
+        var current = ""
+        if exists {
+            do {
+                current = try String(contentsOfFile: path, encoding: .utf8)
+            } catch {
+                return "Error reading \(path): \(error.localizedDescription)"
+            }
+        }
+        if exists && trimTrailingWhitespace(current) != trimTrailingWhitespace(old) {
+            return "stale base: on-disk contents of \(path) do not match the 'old' you provided. Read the file again and retry."
+        }
+        // Keep the conventional final newline the model left off.
+        if (current.hasSuffix("\n") || !exists), !new.isEmpty, !new.hasSuffix("\n") {
+            new += "\n"
+        }
+        if exists && current == new {
+            return "no changes (proposed content matches current file)"
+        }
+        if !exists && new.isEmpty {
+            return "refused: cannot create an empty file"
+        }
+        let diff = Approval.unifiedDiff(old: current, new: new, oldLabel: "a/\(path)", newLabel: "b/\(path)")
+        print("")
+        if !exists { print("(new file: \(path))") }
+        Approval.printColoredDiff(diff)
+        if Settings.dryRun {
+            return "dry-run: the user asked only to preview changes (--dry-run). The diff was shown and the file was intentionally not written. This edit is complete: do not retry it or try to write the file any other way. Finish with a summary of the proposed change."
+        }
+        if Settings.autoApprove {
+            // Safety: the diff is still shown above, then applied without a prompt.
+            if !Settings.quiet { print("[auto-approve: applying change without prompt]") }
+            return applyAndCheck(path, new, label: "applied (auto-approved)")
+        }
+        switch Approval.promptYesNoSkip() {
+        case .no: return "user rejected the change"
+        case .skip: return "user skipped: \(Approval.promptReason())"
+        case .yes: return applyAndCheck(path, new, label: "applied")
+        }
+    }
+```
+
+The **stale-base check** catches a model that edits from memory instead of from the file on disk. The comparison ignores trailing whitespace because models often drop or add the final newline. `Approval.unifiedDiff` writes both versions to temporary files and runs `diff -u`, and `printColoredDiff` colors added lines green, removed lines red, and headers cyan. `applyAndCheck` writes the file, runs `make check`, and returns the result (cut to 2,000 characters on failure) to the model.
+
+### Reading Web Pages
+
+`WebFetch.swift` implements `fetch_url`. Tool handlers are synchronous, so the code bridges `URLSession` with a semaphore. It then strips the HTML down to text with regular expressions:
+
+```swift
+    static func htmlToText(_ html: String) -> String {
+        var s = html
+        func replace(_ pattern: String, _ with: String) {
+            s = s.replacingOccurrences(of: pattern, with: with,
+                                       options: [.regularExpression, .caseInsensitive])
+        }
+        replace("<!--[\\s\\S]*?-->", " ")
+        for tag in ["script", "style", "noscript", "svg", "head", "template", "iframe"] {
+            replace("<\(tag)\\b[^>]*>[\\s\\S]*?</\(tag)\\s*>", " ")
+        }
+        replace("<(br|hr)\\b[^>]*>", "\n")
+        replace("</?(p|div|section|article|header|footer|nav|main|aside|li|ul|ol|tr|table|h[1-6]|blockquote|pre|dd|dt)\\b[^>]*>", "\n")
+        replace("<[^>]+>", " ")
+        s = decodeEntities(s)
+        replace("[ \\t\\u00a0]+", " ")
+        replace(" *\\n *", "\n")
+        replace("\\n{3,}", "\n\n")
+        return s.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+```
+
+This is not a full HTML parser, but it reads most pages well enough for a model. The tool caps output at 20,000 characters so one large page cannot fill the context window.
+
+## The Agentic Loop for OpenAI-Style Providers
+
+`ChatLoop.swift` holds the loop for the `openai` and `mlx` backends. It takes a `post` function that sends an OpenAI-style request and returns a response in a standard shape, so the loop does not care which backend it talks to:
+
+```swift
+typealias PostFunction = (JSON) async throws -> JSON
+```
+
+The core of `chatWithTools` sends the conversation and tools to the model, runs any tool calls, appends the results as `"tool"` messages, and repeats until the model replies with plain text:
+
+```swift
+        for _ in 0..<maxIterations {
+            try Task.checkCancellation()
+            var payload = requestPayload(model: model, maxTokens: maxTokens,
+                                         temperature: temperature, messages: messages)
+            if !rendered.isEmpty {
+                payload["tools"] = .array(rendered)
+                payload["tool_choice"] = "auto"
+            }
+            let data = try await post(payload)
+            guard let msg = responseMessage(data) else {
+                throw AgentError("response has no 'message'. Raw: \(data.serialized())")
+            }
+            let toolCalls = msg["tool_calls"]?.array ?? []
+            let text = content(msg)
+            messages.append(msg)
+
+            if toolCalls.isEmpty {
+                return (text.isEmpty ? "(empty response from model)" : text, messages)
+            }
+            let sig = signature(toolCalls)
+            if recentSignatures.first == sig
+                || recentSignatures.filter({ $0 == sig }).count >= repeatLimit - 1 {
+                return ("(stopped: the model repeated the identical tool call(s) without making progress; it may be too weak for this task or its arguments are malformed)", messages)
+            }
+            let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !trimmed.isEmpty {
+                print("")
+                print(trimmed)
+            }
+            runTools(toolCalls)
+        }
+```
+
+The loop stops a stuck model. It builds a signature for each batch of tool calls (the sorted list of names and arguments) and keeps the last five. The loop stops if the same batch comes back twice in a row, or three times within that window. It allows a single repeat after other calls because re-reading a file after a "stale base" error is real progress. After 20 iterations the loop makes one last call without tools to get a summary.
+
+### Streaming Clients
+
+`OpenAIClient.swift` holds the two `post` functions. The `openai` type sends `"stream": true` and reads server-sent events (SSE). `parseSSE` rebuilds a normal, non-streaming response from the chunks. Tool calls arrive in pieces keyed by an index, so the parser joins each call's argument fragments:
+
+```swift
+                for t in delta["tool_calls"]?.array ?? [] {
+                    let idx = t["index"]?.int ?? 0
+                    var e = calls[idx] ?? ("", "function", "", "")
+                    if let s = t["id"]?.string, !s.isEmpty { e.id = s }
+                    if let s = t["type"]?.string { e.type = s }
+                    if let s = t["function"]?["name"]?.string, !s.isEmpty { e.name = s }
+                    if let s = t["function"]?["arguments"]?.string { e.args += s }
+                    calls[idx] = e
+                }
+```
+
+Streaming lets the client use an idle timeout (600 seconds without data) instead of a cap on total time, so long generations from slow reasoning models still finish. The `mlx` type sends a plain request with a 900-second limit. Both clients add the `usage` block of each response to a `SessionStats` object that `/tokens` prints, with a cost estimate when the provider profile has a `pricing` block.
+
+## The Apple Intelligence Provider
+
+`FoundationModels` runs its own tool-calling loop, so the `apple` provider cannot use `ChatLoop`. Instead, `AppleProvider.swift` wraps each tool as a native `Tool`. The arguments are a `@Generable` struct, which lets the framework constrain the model's output to valid arguments:
+
+```swift
+@Generable struct ProposeEditArgs {
+    @Guide(description: "Path to the file to edit or create.")
+    var path: String
+    @Guide(description: "For an existing file: the exact current contents. For a new file: pass empty string.")
+    var old: String
+    @Guide(description: "The proposed new contents of the file, in full.")
+    var new: String
+}
+
+struct ProposeEditTool: Tool {
+    let recorder: AppleToolRecorder
+    let name = "propose_edit"
+    var description: String { toolDescription(name) }
+    func call(arguments: ProposeEditArgs) async throws -> String {
+        recorder.run(name, ["path": .string(arguments.path), "old": .string(arguments.old),
+                            "new": .string(arguments.new)])
     }
 }
 ```
 
-## Walking Through the Code
+Each tool forwards to `AppleToolRecorder.run`, which calls the same `Tools.runOne` used by the other backends and saves each call and result. When the response is done, `chatWithTools` writes the saved calls into the shared message history as assistant `tool_calls` messages and `tool` messages:
 
-### Phase 1 — Gathering Source Files
-
-The program starts by walking the current directory tree with `FileManager.default.enumerator(atPath: ".")`. For each path it finds, it checks the file extension against an allowlist (`swift`, `py`, `lisp`) and silently skips anything else — build artifacts, JSON files, images, and so on.
-
-Files larger than 8 KB are also skipped. This keeps the total context within the model's practical limits and avoids sending enormous auto-generated files (like `Package.resolved`) that would not add useful signal to the summary.
-
-Each accepted file is wrapped in a `### filename ###` header and appended to `blobs`. Joining all blobs produces a single multi-file document that the model can reason about as a unit.
-
-### Phase 2 — Summarising the Project
-
-`summarize(_:)` creates a dedicated `LanguageModelSession` with a system instruction that tells the model exactly what output format to produce: one bullet per file plus a two-sentence overview. Using `temperature: 0` here makes the summary deterministic and factual — we do not want creative variation in a structured summary.
-
-The `text.prefix(24 * 1024)` safety clamp truncates the combined source text to 24 KB before sending it to the model. The on-device model has a finite context window; this prevents a very large project from causing an error.
-
-`session.respond(to:options:)` is the non-streaming variant — it waits for the complete response before returning. That is appropriate here because we print the full summary once, before the chat loop starts.
-
-### Phase 3 — Streaming Chat Loop
-
-The chat session is separate from the summarisation session and carries its own conversation history. It uses the same `FoundationModels` streaming API we saw in the previous chapter, with a few additions:
-
-**The prompt display.** Before calling `readLine`, we print:
-
-```text
-Enter prompt:
->
+```swift
+        let (instructions, prompt) = split(messages)
+        let session = LanguageModelSession(tools: names.compactMap { all[$0] },
+                                           instructions: instructions.isEmpty ? nil : instructions)
+        var out = messages
+        func record() {
+            for c in recorder.drain() {
+                out.append(["role": "assistant", "content": "",
+                            "tool_calls": [["id": .string(c.id), "type": "function",
+                                            "function": ["name": .string(c.name),
+                                                         "arguments": .string(c.args)]]]])
+                out.append(["role": "tool", "tool_call_id": .string(c.id),
+                            "name": .string(c.name), "content": .string(c.result)])
+            }
+        }
 ```
 
-The `terminator: ""` on the second print keeps the cursor on the same line as `> `, giving the user a visual cue that input is expected there.
+This keeps one message format for every provider, so `/context`, `/compact`, and the one-shot exit codes work the same way with the on-device model.
 
-**Streaming with `FileHandle`.** `session.streamResponse(to:options:)` returns an `AsyncSequence` of `LanguageModelResponse` values. Each successive value contains the *full* response text generated so far (not just the new token). We compute the *delta* — the newly added characters — by dropping the characters we have already printed, then write only those new characters to `FileHandle.standardOutput`. Calling `fflush(stdout)` after each write ensures characters appear immediately rather than being buffered.
+The on-device model has a small context window. `split` turns the message list into session instructions (the system messages) and one prompt. The prompt holds the last 6,000 characters of earlier conversation, with each tool result cut to 1,500 characters, followed by the current request.
 
-**Cancellation with SIGINT.** Wrapping the streaming iteration in a `Task` lets us cancel it mid-stream. When the user presses **Control-C**, the `DispatchSource` signal handler calls `task.cancel()`, which propagates a `CancellationError` into the `AsyncSequence` iteration and stops the stream cleanly. The `defer { sig.cancel() }` tears down the signal handler after each turn so it does not accumulate.
+## Routing Requests by Intent
 
-**Loop structure.** The outer loop is `while true` rather than `while let prompt = readLine(...)` precisely because we need to print the prompt *before* `readLine` blocks waiting for input. The `guard let` inside the loop handles EOF (e.g., piped input ending).
+Not every question needs coding tools. `Agent.classifyIntent` first tries a keyword check, then falls back to asking the model:
+
+```swift
+    static func heuristicClassify(_ lower: String) -> String? {
+        // A URL needs the fetch_url tool, which only the tool-calling route has.
+        if lower.contains("http://") || lower.contains("https://") || lower.contains("www.") {
+            return "coding"
+        }
+        if generalKeywords.contains(where: lower.contains) { return "general" }
+        if codingKeywords.contains(where: lower.contains) { return "coding" }
+        return nil
+    }
+```
+
+There are three routes:
+
+- **general** questions ("weather in Paris", "who is ...") go to web search, and the model answers from the results with no tools.
+- **coding** requests go to the tool loop.
+- **hybrid** requests go to the tool loop, with web search results added when `/search` is on.
+
+## Configuration and Providers
+
+`HarnessConfig.swift` merges two JSON files: the global `~/.coding_harness.json` and the per-project `.local_coding_harness.json`. Local values win, and nested objects merge key by key. Here is part of `coding_harness.example.json`:
+
+```json
+{
+  "default_provider": "fireworks",
+  "providers": {
+    "fireworks": {
+      "type": "openai",
+      "endpoint": "https://api.fireworks.ai/inference/v1/chat/completions",
+      "api_key_env": "FIREWORKS_API_KEY",
+      "model": "accounts/fireworks/models/deepseek-v4p1-flash",
+      "generation": { "temperature": 0.6, "max_tokens": 32768 },
+      "pricing": { "input": 0.14, "cached_input": 0.028, "output": 0.28 }
+    },
+    "mlx": {
+      "type": "mlx",
+      "endpoint": "http://localhost:11434/v1/chat/completions",
+      "model": "qwen3.8:27b-mlx",
+      "generation": { "temperature": 0.6, "max_tokens": 32768 }
+    }
+  },
+  "search": { "engine": "brave", "enabled": false },
+  "quiet": false, "plain": false, "debug": false
+}
+```
+
+The code adds a built-in `apple` profile unless the config defines its own. The default profile is `default_provider` if set, else `fireworks` if present, else the first profile in alphabetical order, else `apple`. With no config files, the agent uses the on-device model.
+
+Settings come from four places. From lowest to highest priority: the harness config, a legacy flat config file at `~/.config/coding-agent/config.json`, environment variables such as `CODING_AGENT_PROVIDER`, and command-line flags.
+
+## The REPL and One-Shot Mode
+
+With no prompt, `CodingCLI` starts a REPL that supports these commands:
+
+| Command | Description |
+|---|---|
+| `/reset` | Clear conversation history |
+| `/history` | Dump the full message log |
+| `/context` | Show each message's role, size, and a preview |
+| `/compact` | Replace history with a model-written summary |
+| `/summary` | Summarize the `.swift`, `.py`, and `.lisp` files here |
+| `/model <id>` | Switch model for the current provider |
+| `/provider [name]` | Show or switch provider profiles |
+| `/debug` | Toggle raw request and response logging |
+| `/search [engine]` | Toggle web search, or pick `brave` or `exa` |
+| `/tokens` | Show token usage and estimated cost |
+| `/skills` | List skills in `~/.agents/skills` |
+| `/<skill-name>` | Load that skill into the conversation |
+| `/quit` | Exit |
+
+`/summary` keeps the behavior of the first version of this program: it gathers source files under 8 KB, sends up to 24 KB of them to the model at temperature 0, and prints one bullet per file plus a short overview. It now works with any provider.
+
+Pressing **Control-C** during a model turn cancels that turn without leaving the REPL. `runInterruptibleTurn` runs the turn in a `Task` and installs a `DispatchSource` signal handler that cancels it:
+
+```swift
+    func runInterruptibleTurn(_ line: String) async {
+        let task = Task { try await self.sendToModel(line) }
+        signal(SIGINT, SIG_IGN)
+        let sig = DispatchSource.makeSignalSource(signal: SIGINT, queue: .global())
+        sig.setEventHandler { task.cancel() }
+        sig.resume()
+        defer {
+            sig.cancel()
+            signal(SIGINT, SIG_DFL)
+        }
+        do {
+            try await task.value
+        } catch is CancellationError {
+            print("\n[interrupted]")
+        } catch let e as URLError where e.code == .cancelled {
+            print("\n[interrupted]")
+        } catch {
+            print("\nError talking to model: \(error)")
+        }
+        fflush(stdout)
+    }
+```
+
+`LineInput.swift` loads libedit at run time with `dlopen` instead of linking it. If the library is missing, or stdin is not a terminal, input falls back to plain `readLine()`. History persists in `~/.coding_agent_history`.
+
+With a prompt, given as an argument, with `-p`, or with `--stdin`, the agent runs one task and exits. `inferExitCode` scans the tool results to choose an exit code: `0` for success, `1` for a model or network error, `2` when `make check` failed, `3` when you rejected or skipped a change, and `5` for bad arguments. Shell scripts and CI jobs can act on these codes.
 
 ## Running the Tool
 
-Run the tool from the project's own source directory so it has something interesting to summarise:
+Build and show the options:
 
 ```text
-$ swift run
-Building for debugging...
-[7/7] Applying CodingCLI
-Build of product 'CodingCLI' complete! (0.56s)
+$ swift build
+$ .build/debug/CodingCLI --help
+usage: CodingCLI [ <option> ... ] [<prompt>] ...
 
-=== Project Summary ===
-### test.py ###
-*   This file creates a chat completion using the Groq library.
-*   It demonstrates how to use Groq to generate responses for a chat prompt.
+With a prompt, runs one task and exits; otherwise starts the REPL.
 
-### Package.swift ###
-*   This file defines the Swift package, specifying its name, platforms, products, and targets.
-*   It ensures compatibility with macOS 12 and links the FoundationModels framework.
+ -p <text>, --prompt <text>   Prompt text (repeatable, joined with newlines)
+ --stdin                      Read prompt from stdin (pipe/heredoc)
+ -y, --yes                    Auto-approve all propose_edit diffs (still shows diff)
+ --dry-run                    Show diffs but do not write files
+ --provider <name>            LLM provider profile (from harness config, or apple)
+ --model <id>                 Model id for current provider
+ --cwd <dir>                  Working directory before running
+ --debug                      Enable debug logging (same as /debug)
+ -q, --quiet                  Quiet: no banner, no [intent] line, less tool chatter
+ --plain, --no-color          Plain output: no ANSI colors in diffs
+ -v, --version                Show version and exit
+ -h, --help                   Show this help and exit
 
-### Sources/CodingCLI/CodingCLI.swift ###
-*   This file contains the main entry point of the Swift package.
-*   It gathers source files, summarizes them, and starts an interactive chat loop.
-
-Apple-Intelligence chat (T=0.2). /quit to exit.
-
-Enter prompt:
-> describe in 1 sentence why the sky is blue
-The sky appears blue due to Rayleigh scattering, where shorter blue wavelengths of
-sunlight are scattered in all directions by the gases and particles in Earth's atmosphere.
-Enter prompt:
-> write a concise Swift function to print the first 11 prime numbers
-func printFirst11Primes() {
-    var primes: [Int] = []
-    var num = 2
-    while primes.count < 11 {
-        var isPrime = true
-        for prime in primes {
-            if prime * prime > num { break }
-            if num % prime == 0 {
-                isPrime = false
-                break
-            }
-        }
-        if isPrime {
-            primes.append(num)
-        }
-        num += 1
-    }
-    for prime in primes {
-        print(prime)
-    }
-}
-
-printFirst11Primes()
-Enter prompt:
-> /quit
+Exit codes: 0 ok, 1 model/network error, 2 make check failed,
+            3 change rejected/skipped, 5 bad arguments.
 ```
 
-The second question demonstrates that the model can generate code on-demand — but notice the chat session does *not* automatically include the project summary in its context. The two sessions are independent. If you want the model to answer questions *specifically about your code*, phrase your prompts accordingly, for example: *"In CodingCLI.swift, what does the summarize function do?"* — or modify the chat session's `instructions` to include the summary text.
+Here is a one-shot run with the on-device model on a directory that holds a buggy `calc.py` (`add` returns `a - b`) and a Makefile:
+
+```text
+$ CodingCLI --cwd demo --provider apple --dry-run --plain "fix the bug in calc.py"
+[intent: coding → coding + web fetch tools, no search]
+* read_file {"path":"calc.py"}
+
+The function `add` currently returns `a - b` instead of `a + b`. Could you clarify what the expected behavior is for the `add` function?
+```
+
+The keyword `.py` routed the request to the coding tools, and the model read the file and found the bug. It then asked a question instead of calling `propose_edit`. In my tests the small on-device model often stops at this point, even when the prompt tells it to use `propose_edit`. A larger model from a cloud or local MLX provider follows the full read, edit, approve, and check cycle more reliably. Switch with `--provider` or `/provider`.
+
+Other ways to run the tool:
+
+```text
+CodingCLI                                  # interactive REPL in the current directory
+CodingCLI -p "refactor foo" -p "add tests" # repeatable prompt parts
+echo "explain Tools.swift" | CodingCLI --stdin
+CodingCLI --provider mlx --model llama3.2:3b "hi"
+CodingCLI -y "apply the fix"               # auto-approve diffs (still shows them)
+CodingCLI --quiet --plain -p "hello" > out.txt
+```
 
 ## Ideas for Extension
 
-This tool is a useful starting point. Here are some directions you might take it:
-
-- **Inject the summary into the chat context.** Pass `summary` as part of the chat session's `instructions` string so every follow-up question is answered in the context of the actual project.
-- **Support more file types.** Add `"rb"`, `"js"`, `"ts"`, `"go"`, or any other extension to the `exts` array.
-- **Increase the file size limit selectively.** For a small project the 8 KB cap is conservative. You could raise it, or apply a higher limit only for files matching certain patterns (e.g., the main entry-point file).
-- **Save the summary to disk.** Write the summary to `PROJECT_SUMMARY.md` so it persists between runs and can be committed to the repository.
-- **Accept a directory argument.** Replace the hardcoded `"."` with `CommandLine.arguments.dropFirst().first ?? "."` so the tool can be pointed at any directory.
+- **Add a tool.** Call `define` in `Tools.registerAll`, add its name to `enabledTools`, and add a matching `@Generable` argument struct and `Tool` in `AppleProvider.swift`.
+- **Use patch-style edits.** Full-file replacement wastes tokens on large files. A `replace_text` tool that swaps one exact snippet would scale better.
+- **Grow the shell whitelist** with care. Each command you add (`swift test`, `git diff`) widens what the model can do without asking.
+- **Tune the keyword lists** in `Agent.swift` for the kinds of requests you make most.
 
 ## Wrap Up
 
-In this chapter we built a practical AI coding assistant entirely on top of Apple's on-device `FoundationModels` framework. The tool requires no API keys, sends no data off-device, and works in any terminal — making it a private, fast alternative to cloud-based coding assistants for local development work.
+In this chapter we built a coding agent that works with Apple's on-device model, cloud models, and local models. The key design choice is that all three backends share one set of tools and one message format. The tool code holds the safety logic (whitelists, hidden-file checks, stale-base checks, diffs, and approval prompts), so every backend gets the same guards. The OpenAI-style backends run the tool loop in `ChatLoop`, while the Apple backend lets `FoundationModels` run the loop and records each call.
 
-The key techniques introduced here — multi-file context assembly, a dedicated summarisation session at `temperature: 0`, and a separate streaming chat session — compose naturally and can be adapted to many other document-analysis or question-answering tools.
+Start with the built-in `apple` provider for private, offline work on small tasks, and switch to a larger model when a task needs more steps than the on-device model handles well.
