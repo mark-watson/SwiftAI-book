@@ -1,0 +1,19 @@
+# Generated models (about 220 MB). Rebuild them with:
+#   uv run python/make_models.py
+#   swift run -c release TrainModels
+models/
+
+# Core ML model files anywhere else in the package
+*.mlmodel
+*.mlpackage/
+*.mlmodelc/
+
+# Hugging Face and Python caches
+.cache/
+__pycache__/
+*.pyc
+
+# Swift Package Manager
+.build/
+.swiftpm/
+Package.resolved
