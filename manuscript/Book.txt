@@ -22,4 +22,5 @@ part6.md
 knowledge-navigator.md
 anomaly-detection.md
 autocontext.md
+text-adventure-game.md
 wrapup.md
