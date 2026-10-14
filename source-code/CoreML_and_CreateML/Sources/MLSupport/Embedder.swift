@@ -32,6 +32,7 @@ public final class Embedder: @unchecked Sendable {
     /// Embeds texts concurrently and stacks them, in input order, into a
     /// [count, 384] matrix.
     public func embed(batch texts: [String]) async throws -> MLTensor {
+        precondition(!texts.isEmpty, "Batch must contain at least one text")
         let rows = try await withThrowingTaskGroup(of: (Int, MLTensor).self) { group in
             for (i, text) in texts.enumerated() {
                 group.addTask { (i, try await self.embed(text)) }

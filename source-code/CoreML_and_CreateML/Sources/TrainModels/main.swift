@@ -48,8 +48,9 @@ func trainTopicRouter() throws {
                                               labelColumn: "label", parameters: params)
         let metrics = classifier.evaluation(on: test, textColumn: "text", labelColumn: "label")
         let accuracy = 1.0 - metrics.classificationError
-        print(String(format: "%-14@ test accuracy %.3f  (%.1f s)",
-                     name, accuracy, Date().timeIntervalSince(start)))
+        let paddedName = name.padding(toLength: 14, withPad: " ", startingAt: 0)
+        print(String(format: "%@ test accuracy %.3f  (%.1f s)",
+                     paddedName, accuracy, Date().timeIntervalSince(start)))
         if best == nil || accuracy > best!.accuracy {
             best = (name, classifier, accuracy)
         }
@@ -68,7 +69,8 @@ func trainTopicRouter() throws {
                      "Write a haiku about cats"] {
         let scores = try best.model.predictionWithConfidence(from: question)
         let top = scores.max { $0.value < $1.value }!
-        print(String(format: "  %-36@ -> %@ (%.2f)", question, top.key, top.value))
+        let paddedQuestion = question.padding(toLength: 36, withPad: " ", startingAt: 0)
+        print(String(format: "  %@ -> %@ (%.2f)", paddedQuestion, top.key, top.value))
     }
 }
 
@@ -100,8 +102,9 @@ async throws {
         pairs.append((distribution.mostLikelyLabel!, example.annotation))
     }
     let metrics = ClassificationMetrics(pairs)
-    print(String(format: "%-22@ accuracy %.3f  malignant precision %.3f recall %.3f",
-                 name, metrics.accuracy,
+    let paddedName = name.padding(toLength: 22, withPad: " ", startingAt: 0)
+    print(String(format: "%@ accuracy %.3f  malignant precision %.3f recall %.3f",
+                 paddedName, metrics.accuracy,
                  metrics.precisionScore(label: "malignant"),
                  metrics.recallScore(label: "malignant")))
 }

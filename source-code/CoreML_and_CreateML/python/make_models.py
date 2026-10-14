@@ -224,8 +224,14 @@ class ScoringCharLM(nn.Module):
 
 
 def load_corpus():
-    text = "\n".join(p.read_text() for p in sorted(DATA.glob("*.txt")))
-    return " ".join(text.split())
+    files = sorted(DATA.glob("*.txt"))
+    if not files:
+        raise FileNotFoundError(f"No .txt corpus files found in {DATA}. Ensure ../data contains training files.")
+    text = "\n".join(p.read_text() for p in files)
+    cleaned = " ".join(text.split())
+    if not cleaned:
+        raise ValueError(f"Corpus files in {DATA} are empty.")
+    return cleaned
 
 
 def train_char_lm(text, steps=1500):
@@ -310,7 +316,7 @@ def build_char_lm():
     desc.default_function_name = "generate"
     ct.utils.save_multifunction(desc, str(MODELS / "CharLM.mlpackage"))
     for part in ("_charlm_generate.mlpackage", "_charlm_score.mlpackage"):
-        shutil.rmtree(MODELS / part)
+        shutil.rmtree(MODELS / part, ignore_errors=True)
 
     print(f"CharLM: vocab {vocab_size}, context {CTX}, saved with 2 functions")
 

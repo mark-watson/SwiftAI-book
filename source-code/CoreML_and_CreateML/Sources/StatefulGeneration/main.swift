@@ -55,6 +55,8 @@ func tensor(_ values: [Int32], shape: [Int]) -> MLTensor {
 
 func generateWithState(_ model: MLModel, prompt: [Int32], count: Int,
                        vocab: CharVocab) async throws -> String {
+    guard !prompt.isEmpty else { return "" }
+    let prompt = Array(prompt.suffix(context - 1))
     let state = model.makeState()
     var rng = SeededGenerator(seed: 1)
     var logits: MLTensor?
@@ -111,7 +113,9 @@ func generateByRecomputing(_ model: MLModel, prompt: [Int32], count: Int,
 /// Average log-probability per character: higher means "looks like the
 /// training text". A cheap in-distribution signal for a guardrail.
 func meanLogProb(_ model: MLModel, text: String, vocab: CharVocab) async throws -> Float {
-    let ids = vocab.encode(text)
+    let rawIds = vocab.encode(text)
+    guard rawIds.count >= 2 else { return 0 }
+    let ids = Array(rawIds.suffix(context))
     let padded = window(ids, pad: vocab.index[" "]!)
     let out = try await model.prediction(from: ["input_ids": tensor(padded, shape: [1, context])])
     let logProbs = await out["log_probs"]!.shapedArray(of: Float.self)
@@ -120,7 +124,7 @@ func meanLogProb(_ model: MLModel, text: String, vocab: CharVocab) async throws 
     for t in first..<(context - 1) {
         total += logProbs[0, t, Int(padded[t + 1])].scalar!
     }
-    return total / Float(max(ids.count - 1, 1))
+    return total / Float(ids.count - 1)
 }
 
 // MARK: - main

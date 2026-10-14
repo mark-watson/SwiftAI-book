@@ -5,6 +5,17 @@ public struct Passage: Sendable {
     public let text: String
 }
 
+public enum DocumentError: Error, CustomStringConvertible {
+    case missingDataFile(URL)
+
+    public var description: String {
+        switch self {
+        case .missingDataFile(let url):
+            "Data file not found at \(url.path). Ensure ../data contains the required text files."
+        }
+    }
+}
+
 /// Loads ../data/*.txt; the file name ("sports", "health", ...) is the topic.
 public enum Documents {
     public static let topics = ["chemistry", "economics", "health", "sports"]
@@ -16,6 +27,9 @@ public enum Documents {
         var result: [Passage] = []
         for topic in topics {
             let url = Paths.sharedData.appending(path: "\(topic).txt")
+            guard FileManager.default.fileExists(atPath: url.path) else {
+                throw DocumentError.missingDataFile(url)
+            }
             let text = try String(contentsOf: url, encoding: .utf8)
             for paragraph in text.components(separatedBy: "\n\n") {
                 let cleaned = paragraph

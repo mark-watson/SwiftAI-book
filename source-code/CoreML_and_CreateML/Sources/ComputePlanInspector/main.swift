@@ -171,7 +171,11 @@ let unitChoices: [String: MLComputeUnits] = [
     "cpuAndNeuralEngine": .cpuAndNeuralEngine,
 ]
 var unitsName = "all"
-if let i = args.firstIndex(of: "--units"), i + 1 < args.count {
+if let i = args.firstIndex(of: "--units") {
+    guard i + 1 < args.count else {
+        print("missing value for --units; choose from \(unitChoices.keys.sorted())")
+        exit(1)
+    }
     unitsName = args[i + 1]
     args.removeSubrange(i...(i + 1))
 }
