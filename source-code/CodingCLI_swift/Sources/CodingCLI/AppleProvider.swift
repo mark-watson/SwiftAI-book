@@ -15,6 +15,10 @@ import FoundationModels
 @Generable struct ReadFileArgs {
     @Guide(description: "File path relative to the working directory.")
     var path: String
+    @Guide(description: "Optional 1-based line number to start reading at.")
+    var offset: Int?
+    @Guide(description: "Optional maximum number of lines to return.")
+    var limit: Int?
 }
 
 @Generable struct ListDirArgs {
@@ -82,7 +86,10 @@ struct ReadFileTool: Tool {
     let name = "read_file"
     var description: String { toolDescription(name) }
     func call(arguments: ReadFileArgs) async throws -> String {
-        recorder.run(name, ["path": .string(arguments.path)])
+        var args: [String: JSON] = ["path": .string(arguments.path)]
+        if let o = arguments.offset { args["offset"] = .int(o) }
+        if let l = arguments.limit { args["limit"] = .int(l) }
+        return recorder.run(name, .object(args))
     }
 }
 

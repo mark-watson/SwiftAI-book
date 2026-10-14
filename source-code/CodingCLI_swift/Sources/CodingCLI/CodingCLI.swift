@@ -102,13 +102,6 @@ struct CodingCLI {
         let agent = Agent()
         let config = HarnessConfig.shared
 
-        // 1) Harness JSON config, then legacy flat config, then env.
-        config.load()
-        agent.applyHarnessFlags()
-        agent.applyLegacyConfig(LegacyConfig.load())
-        agent.applyEnvOverrides()
-
-        // 2) CLI flags (highest precedence).
         let opts = CLI.parse(Array(CommandLine.arguments.dropFirst()))
         if opts.help {
             print(CLI.usage)
@@ -118,6 +111,24 @@ struct CodingCLI {
             print("\(CLI.program) \(Agent.version)")
             exitWith(ExitCode.ok)
         }
+        // --cwd must take effect before config loading so the target
+        // project's .local_coding_harness.json is the one that is read.
+        if let dir = opts.cwd, !dir.isEmpty {
+            var isDir: ObjCBool = false
+            guard FileManager.default.fileExists(atPath: dir, isDirectory: &isDir), isDir.boolValue,
+                  FileManager.default.changeCurrentDirectoryPath(dir) else {
+                printError("error: --cwd directory does not exist: \(dir)")
+                exitWith(ExitCode.badArgs)
+            }
+        }
+
+        // 1) Harness JSON config, then legacy flat config, then env.
+        config.load()
+        agent.applyHarnessFlags()
+        agent.applyLegacyConfig(LegacyConfig.load())
+        agent.applyEnvOverrides()
+
+        // 2) CLI flags (highest precedence).
         if opts.debug { Settings.debug = true }
         if opts.quiet { Settings.quiet = true }
         if opts.plain { Settings.color = false }
@@ -138,14 +149,6 @@ struct CodingCLI {
                 exitWith(ExitCode.badArgs)
             }
             agent.modelOverride = t
-        }
-        if let dir = opts.cwd, !dir.isEmpty {
-            var isDir: ObjCBool = false
-            guard FileManager.default.fileExists(atPath: dir, isDirectory: &isDir), isDir.boolValue,
-                  FileManager.default.changeCurrentDirectoryPath(dir) else {
-                printError("error: --cwd directory does not exist: \(dir)")
-                exitWith(ExitCode.badArgs)
-            }
         }
 
         // 3) One-shot if any prompt was given, otherwise the REPL.

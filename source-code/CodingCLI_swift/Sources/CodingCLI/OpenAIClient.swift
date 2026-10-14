@@ -148,7 +148,7 @@ enum OpenAIClient {
             let msg = parsed.flatMap(apiErrorMessage) ?? String(decoding: raw, as: UTF8.self)
             throw AgentError("HTTP \(http.statusCode): \(msg)")
         }
-        let data = try await parseSSE(bytes.lines)
+        let data = try await parseSSE(SSELines(bytes))
         if Settings.debug { print("[DEBUG] response: \(data.serialized())") }
         if let msg = apiErrorMessage(data) { throw AgentError("API error: \(msg)") }
         openaiStats.accumulate(data["usage"])
@@ -158,6 +158,12 @@ enum OpenAIClient {
     // Reconstruct the equivalent non-streaming chat-completions response from
     // an SSE stream. The message carries accumulated content, reasoning_content
     // (DeepSeek), and tool_calls exactly like a non-streaming response.
+    //
+    // Per the SSE spec an event's payload is all of its `data:` lines joined
+    // with "\n", ended by a blank line. Most providers send one line per
+    // event, so a buffer that already parses as a JSON object is used right
+    // away; an event split across several lines is completed by the blank
+    // line (or the next line that makes the buffer parse).
     static func parseSSE<S: AsyncSequence>(_ lines: S) async throws -> JSON where S.Element == String {
         var content = ""
         var reasoning = ""
@@ -167,13 +173,17 @@ enum OpenAIClient {
         // index -> (id, type, name, arguments)
         var calls: [Int: (id: String, type: String, name: String, args: String)] = [:]
 
-        lineLoop: for try await raw in lines {
-            let line = raw.trimmingCharacters(in: .whitespacesAndNewlines)
-            if line.isEmpty || line.hasPrefix(":") { continue }   // keep-alive / comment
-            guard line.hasPrefix("data:") else { continue }
-            let body = line.dropFirst(5).trimmingCharacters(in: .whitespaces)
-            if body == "[DONE]" { break lineLoop }
-            guard let chunk = try? JSON.parse(body), chunk.object != nil else { continue }
+        var dataLines: [String] = []
+
+        // The buffered event's JSON object, if the buffer holds a complete one.
+        func bufferedChunk() -> JSON? {
+            for joined in [dataLines.joined(separator: "\n"), dataLines.joined()] {
+                if let c = try? JSON.parse(joined), c.object != nil { return c }
+            }
+            return nil
+        }
+
+        func apply(_ chunk: JSON) throws {
             if let msg = apiErrorMessage(chunk) { throw AgentError("API error: \(msg)") }
             if let s = chunk["id"]?.string { id = s }
             if let s = chunk["model"]?.string { model = s }
@@ -194,6 +204,27 @@ enum OpenAIClient {
                 }
             }
         }
+
+        lineLoop: for try await raw in lines {
+            let line = raw.hasSuffix("\r") ? String(raw.dropLast()) : raw
+            if line.trimmingCharacters(in: .whitespaces).isEmpty {
+                // End of event: a buffer that still does not parse is dropped.
+                if !dataLines.isEmpty, let chunk = bufferedChunk() { try apply(chunk) }
+                dataLines = []
+                continue
+            }
+            if line.hasPrefix(":") { continue }   // keep-alive / comment
+            guard line.hasPrefix("data:") else { continue }   // event:, id:, retry:
+            var body = line.dropFirst(5)
+            if body.hasPrefix(" ") { body = body.dropFirst() }
+            if dataLines.isEmpty && body.trimmingCharacters(in: .whitespaces) == "[DONE]" { break lineLoop }
+            dataLines.append(String(body))
+            if let chunk = bufferedChunk() {
+                try apply(chunk)
+                dataLines = []
+            }
+        }
+        if !dataLines.isEmpty, let chunk = bufferedChunk() { try apply(chunk) }
 
         var message: JSON = ["role": "assistant", "content": .string(content),
                              "reasoning_content": .string(reasoning)]
@@ -237,4 +268,31 @@ enum OpenAIClient {
         default: return { try await postStreaming(p, $0) }
         }
     }
+}
+
+// Lines of an HTTP byte stream, split on "\n" with any trailing "\r" kept for
+// the caller to strip. Unlike `AsyncBytes.lines`, empty lines are yielded,
+// since in SSE a blank line marks the end of an event.
+struct SSELines<Base: AsyncSequence>: AsyncSequence where Base.Element == UInt8 {
+    typealias Element = String
+    let base: Base
+    init(_ base: Base) { self.base = base }
+
+    struct AsyncIterator: AsyncIteratorProtocol {
+        var it: Base.AsyncIterator
+        var done = false
+
+        mutating func next() async throws -> String? {
+            if done { return nil }
+            var buf: [UInt8] = []
+            while let b = try await it.next() {
+                if b == UInt8(ascii: "\n") { return String(decoding: buf, as: UTF8.self) }
+                buf.append(b)
+            }
+            done = true
+            return buf.isEmpty ? nil : String(decoding: buf, as: UTF8.self)
+        }
+    }
+
+    func makeAsyncIterator() -> AsyncIterator { AsyncIterator(it: base.makeAsyncIterator()) }
 }

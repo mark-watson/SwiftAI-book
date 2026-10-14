@@ -27,7 +27,13 @@ enum Subprocess {
 
     // Returns stdout followed by stderr, and the exit code. Throws when the
     // executable cannot be found or launched.
-    static func run(_ exe: String, _ args: [String]) throws -> (output: String, code: Int32) {
+    //
+    // `timeout` (seconds) terminates a command that runs too long; the result
+    // then ends with a note and exit code 124, as with timeout(1). Each stream
+    // keeps at most `maxOutputBytes`, and the rest is drained and discarded so
+    // a noisy command can neither fill a pipe nor exhaust memory.
+    static func run(_ exe: String, _ args: [String], timeout: TimeInterval? = nil,
+                    maxOutputBytes: Int = 1_000_000) throws -> (output: String, code: Int32) {
         guard let exePath = findExecutable(exe) else {
             throw AgentError("Executable not found: \(exe)")
         }
@@ -38,24 +44,72 @@ enum Subprocess {
         p.standardOutput = outPipe
         p.standardError = errPipe
         p.standardInput = FileHandle.nullDevice
-        try p.run()
-        // Drain stderr on another thread so neither pipe can fill and deadlock.
-        let errBox = DataBox()
-        let group = DispatchGroup()
-        group.enter()
-        DispatchQueue.global().async {
-            errBox.data = errPipe.fileHandleForReading.readDataToEndOfFile()
-            group.leave()
+        let exited = DispatchSemaphore(value: 0)
+        p.terminationHandler = { _ in exited.signal() }
+
+        // Read both pipes as data arrives so neither can fill and deadlock.
+        let outBox = DataBox(limit: maxOutputBytes), errBox = DataBox(limit: maxOutputBytes)
+        let eof = DispatchGroup()
+        for (pipe, box) in [(outPipe, outBox), (errPipe, errBox)] {
+            eof.enter()
+            pipe.fileHandleForReading.readabilityHandler = { h in
+                let chunk = h.availableData
+                if chunk.isEmpty {
+                    h.readabilityHandler = nil
+                    eof.leave()
+                } else {
+                    box.append(chunk)
+                }
+            }
         }
-        let outData = outPipe.fileHandleForReading.readDataToEndOfFile()
-        group.wait()
-        p.waitUntilExit()
-        let out = String(decoding: outData, as: UTF8.self)
-            + String(decoding: errBox.data, as: UTF8.self)
+        try p.run()
+
+        var timedOut = false
+        if let timeout, exited.wait(timeout: .now() + timeout) == .timedOut {
+            timedOut = true
+            p.terminate()
+            if exited.wait(timeout: .now() + 2) == .timedOut {
+                kill(p.processIdentifier, SIGKILL)
+                exited.wait()
+            }
+        } else if timeout == nil {
+            exited.wait()
+        }
+        // A background grandchild can hold the pipes open after the command
+        // exits, so EOF gets only a short grace period.
+        if eof.wait(timeout: .now() + 1) == .timedOut {
+            outPipe.fileHandleForReading.readabilityHandler = nil
+            errPipe.fileHandleForReading.readabilityHandler = nil
+        }
+
+        var out = outBox.text + errBox.text
+        if timedOut {
+            out += "\n[command timed out after \(Int(timeout!))s and was terminated]\n"
+            return (out, 124)
+        }
         return (out, p.terminationStatus)
     }
 
-    private final class DataBox: @unchecked Sendable { var data = Data() }
+    private final class DataBox: @unchecked Sendable {
+        private let lock = NSLock()
+        private var data = Data()
+        private var dropped = 0
+        let limit: Int
+        init(limit: Int) { self.limit = limit }
+
+        func append(_ chunk: Data) {
+            lock.lock(); defer { lock.unlock() }
+            let room = max(0, limit - data.count)
+            data.append(chunk.prefix(room))
+            dropped += chunk.count - min(room, chunk.count)
+        }
+
+        var text: String {
+            lock.lock(); defer { lock.unlock() }
+            let s = String(decoding: data, as: UTF8.self)
+            return dropped == 0 ? s : s + "\n... (output truncated, \(dropped) more bytes discarded)\n"
+        }
+    }
 }
 
 // ---------------------------------------------------------------------------

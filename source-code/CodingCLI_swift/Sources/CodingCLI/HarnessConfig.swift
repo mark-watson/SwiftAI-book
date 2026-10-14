@@ -51,6 +51,10 @@ import Foundation
 //
 // Merge rules: nested objects merge recursively, local keys override global
 // keys; anything that is not an object is replaced wholesale.
+//
+// Each file is checked against the known keys at load time, and unknown keys
+// (usually typos such as "temprature") are reported as warnings on stderr
+// with the closest known key, since the harness would otherwise ignore them.
 
 enum ProviderType: String {
     case openai, mlx, apple
@@ -118,10 +122,16 @@ final class HarnessConfig {
     // Any harness config file loaded at all?
     var loaded: Bool { !(config.object ?? [:]).isEmpty }
 
+    // A missing file is silently nil; an unreadable one is reported.
     private static func readJSONFile(_ url: URL) -> JSON? {
-        guard let data = try? Data(contentsOf: url),
-              let v = try? JSON.parse(data),
-              v.object != nil else { return nil }
+        guard let data = try? Data(contentsOf: url) else { return nil }
+        guard let v = try? JSON.parse(data), v.object != nil else {
+            printError("warning: ignoring \(url.path): not a valid JSON object")
+            return nil
+        }
+        for w in ConfigSchema.unknownKeys(v) {
+            printError("warning: \(url.path): \(w)")
+        }
         return v
     }
 
@@ -213,7 +223,7 @@ final class HarnessConfig {
 // Contents: a flat JSON object, e.g.
 //   {"provider": "mlx", "model": "my-model", "quiet": true, "plain": true,
 //    "debug": false, "search": true, "search-engine": "exa"}
-// Unknown keys are ignored.
+// Unknown keys are ignored, with a warning.
 enum LegacyConfig {
     static var path: URL {
         let env = ProcessInfo.processInfo.environment
@@ -228,8 +238,79 @@ enum LegacyConfig {
     }
 
     static func load() -> JSON {
-        guard let data = try? Data(contentsOf: path),
-              let v = try? JSON.parse(data), v.object != nil else { return [:] }
+        guard let data = try? Data(contentsOf: path) else { return [:] }
+        guard let v = try? JSON.parse(data), v.object != nil else {
+            printError("warning: ignoring \(path.path): not a valid JSON object")
+            return [:]
+        }
+        for w in ConfigSchema.check(v, ConfigSchema.legacy, "") {
+            printError("warning: \(path.path): \(w)")
+        }
         return v
+    }
+}
+
+// Known config keys, used only to warn about unknown ones.
+enum ConfigSchema {
+    static let topLevel: Set<String> = ["default_provider", "providers", "search", "mcpServers",
+                                        "debug", "quiet", "plain"]
+    static let provider: Set<String> = ["type", "endpoint", "api_key_env", "model", "generation", "pricing"]
+    static let providerTypes: Set<String> = ["openai", "mlx", "ollama", "omlx", "sushi",
+                                             "apple", "apple-intelligence", "foundationmodels"]
+    static let generation: Set<String> = ["temperature", "max_tokens"]
+    static let pricing: Set<String> = ["input", "cached_input", "output"]
+    static let search: Set<String> = ["engine", "enabled"]
+    // "type" is accepted for Claude Desktop / Claude Code compatibility.
+    static let mcpServer: Set<String> = ["command", "args", "env", "disabled", "timeout", "type"]
+    static let legacy: Set<String> = ["provider", "AGENT_PROVIDER", "model", "MODEL", "quiet", "plain",
+                                      "debug", "search", "search-engine"]
+
+    // One message per unknown key in a harness config file, with its path.
+    static func unknownKeys(_ cfg: JSON) -> [String] {
+        var out = check(cfg, topLevel, "")
+        for (name, p) in (cfg["providers"]?.object ?? [:]).sorted(by: { $0.key < $1.key }) {
+            let at = "providers.\(name)"
+            out += check(p, provider, at)
+            out += check(p["generation"], generation, at + ".generation")
+            out += check(p["pricing"], pricing, at + ".pricing")
+            if let t = p["type"]?.string, !providerTypes.contains(t.lowercased()) {
+                out.append("\(at).type: unknown provider type '\(t)', treated as \"openai\" (known: openai, mlx, apple)")
+            }
+        }
+        out += check(cfg["search"], search, "search")
+        for (name, m) in (cfg["mcpServers"]?.object ?? [:]).sorted(by: { $0.key < $1.key }) {
+            out += check(m, mcpServer, "mcpServers.\(name)")
+        }
+        return out
+    }
+
+    static func check(_ obj: JSON?, _ known: Set<String>, _ at: String) -> [String] {
+        (obj?.object ?? [:]).keys.sorted().filter { !known.contains($0) }.map { key in
+            let path = at.isEmpty ? key : "\(at).\(key)"
+            let hint = closest(key, known).map { " (did you mean \"\($0)\"?)" } ?? ""
+            return "unknown key \"\(path)\" is ignored\(hint)"
+        }
+    }
+
+    // The known key within edit distance 2 (or a third of the key's length,
+    // whichever is larger) of `key`, if any.
+    static func closest(_ key: String, _ known: Set<String>) -> String? {
+        let limit = max(2, key.count / 3)
+        return known.map { ($0, editDistance(key.lowercased(), $0.lowercased())) }
+            .filter { $0.1 <= limit }
+            .min { $0.1 != $1.1 ? $0.1 < $1.1 : $0.0 < $1.0 }?.0
+    }
+
+    static func editDistance(_ a: String, _ b: String) -> Int {
+        let a = Array(a), b = Array(b)
+        var prev = Array(0...b.count)
+        for (i, ca) in a.enumerated() {
+            var cur = [i + 1]
+            for (j, cb) in b.enumerated() {
+                cur.append(min(prev[j + 1] + 1, cur[j] + 1, prev[j] + (ca == cb ? 0 : 1)))
+            }
+            prev = cur
+        }
+        return prev[b.count]
     }
 }

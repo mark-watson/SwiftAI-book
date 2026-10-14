@@ -11,6 +11,7 @@ This is a Swift port of the feature set of the Racket `racket-coding-agent` proj
 ## Features
 
 - **Agentic loop** with six tools: `read_file`, `list_dir`, `grep`, `run_shell` (whitelisted: `make`, `ls`, `pwd`, `cat`, `uv`), `propose_edit`, and `fetch_url` (reads a web page as plain text; prompts containing a URL are routed to the tool loop)
+- **Context-safe tools** — `read_file` pages large files (`offset`/`limit`), `grep` and `run_shell` output is capped and commands time out; `run_shell` splits arguments with shell quoting rules but runs no shell (no pipes or redirects), and `make` accepts only targets declared in the Makefile (no flags like `-f`/`--eval`, no `VAR=value`)
 - **Colorized unified diffs** with `y/n/s` approval before any file is touched; `--dry-run` never writes, `-y` auto-approves (still showing the diff)
 - **`make check` gate** — runs after every accepted edit and reports failures back to the model
 - **Safety guards** — stale-base / no-op / empty-file checks on edits; hidden files (`.env`, `foo~`, `#foo#`) refused; repeated identical tool calls stop the loop
@@ -37,8 +38,6 @@ Optional environment variables: `FIREWORKS_API_KEY`, `DEEPSEEK_API_KEY` (or what
 
     swift build              # or: make build
     make install             # release build copied to /usr/local/bin (PREFIX=... to change)
-
-Shell completions for bash, zsh, and fish are in `completions/`.
 
 ## Usage
 
@@ -77,6 +76,8 @@ Two JSON config layers are merged at startup — project-local wins over global,
 
 * **Global:** `~/.coding_harness.json`
 * **Local:** `.local_coding_harness.json` in the project directory
+
+Unknown keys (typos such as `temprature`) and unrecognized provider types are reported as warnings at startup, with the closest known key, rather than silently ignored.
 
 See `coding_harness.example.json` for a full example:
 
@@ -195,10 +196,13 @@ CodingCLI_swift/
 ├── Package.swift
 ├── Makefile                   # build / check / install (make check gates every accepted edit)
 ├── coding_harness.example.json
-├── completions/               # bash, zsh, fish
 └── Sources/CodingCLI/
     ├── CodingCLI.swift        # @main entry point, CLI flag parsing
-    ├── Agent.swift            # REPL, slash commands, skills, context, intent routing, one-shot mode
+    ├── Agent.swift            # provider dispatch, conversation state, one-shot mode, REPL
+    ├── Intent.swift           # intent classification, web search, intent-routed model calls
+    ├── SlashCommands.swift    # slash command dispatch, /tokens, /help
+    ├── Context.swift          # /history, /context, /compact, /summary
+    ├── Skills.swift           # ~/.agents/skills loading
     ├── ChatLoop.swift         # provider-agnostic agentic tool-calling loop
     ├── OpenAIClient.swift     # OpenAI-compatible SSE + MLX clients, token/cost stats
     ├── AppleProvider.swift    # Apple Intelligence provider, FoundationModels tools, /summary

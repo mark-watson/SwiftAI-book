@@ -9,6 +9,8 @@ struct ToolParam {
     let name: String
     let type: String
     let description: String
+    // Optional params are left out of "required" and reach the handler as "".
+    var optional = false
 }
 
 struct ToolSpec {
@@ -28,6 +30,15 @@ enum Tools {
 
     static let shellWhitelist: Set<String> = ["make", "ls", "pwd", "cat", "uv"]
     static let maxCheckOutputChars = 2000
+    // Caps that keep one tool result from flooding the context window.
+    static let maxReadChars = 40_000
+    static let defaultReadLines = 1000
+    static let maxReadFileBytes = 20_000_000
+    static let maxGrepChars = 20_000
+    static let maxShellChars = 20_000
+    static let grepTimeout: TimeInterval = 30
+    static let shellTimeout: TimeInterval = 120
+    static let makeTimeout: TimeInterval = 600
     static let enabledTools = ["read_file", "list_dir", "grep", "run_shell", "propose_edit", "fetch_url"]
 
     static func define(_ name: String, _ params: [ToolParam], _ description: String,
@@ -66,7 +77,7 @@ enum Tools {
                     "parameters": [
                         "type": "object",
                         "properties": .object(props),
-                        "required": .array(tool.params.map { .string($0.name) }),
+                        "required": .array(tool.params.filter { !$0.optional }.map { .string($0.name) }),
                     ],
                 ],
             ]
@@ -82,11 +93,14 @@ enum Tools {
         // expected argument list -- small models frequently emit malformed or
         // truncated arguments, and silently receiving nothing sends them into
         // retry loops.
-        let missing = tool.params.filter { args[$0.name]?.isTruthy != true }.map(\.name)
+        let missing = tool.params.filter { !$0.optional && args[$0.name]?.isTruthy != true }.map(\.name)
         if !missing.isEmpty {
             return "Error: tool '\(name)' missing required argument(s): \(missing.joined(separator: ", ")). Expected arguments (JSON object): \(tool.params.map(\.name).joined(separator: ", "))"
         }
-        let positional = tool.params.map { args[$0.name]?.textValue ?? args[$0.name]!.serialized() }
+        let positional = tool.params.map { p -> String in
+            guard let v = args[p.name], v.isTruthy else { return "" }
+            return v.textValue ?? v.serialized()
+        }
         return tool.handler(positional)
     }
 
@@ -133,16 +147,58 @@ enum Tools {
         name.hasSuffix("~") || (name.hasPrefix("#") && name.hasSuffix("#")) || name.hasPrefix(".")
     }
 
-    static func stripShellQuotes(_ s: String) -> String {
-        guard s.count >= 2, let f = s.first, let l = s.last,
-              (f == "\"" && l == "\"") || (f == "'" && l == "'") else { return s }
-        return String(s.dropFirst().dropLast())
+    // Splits a command line the way a POSIX shell would for simple words:
+    // '...' is literal, "..." honors \" \\ \$ \` escapes, and a backslash
+    // outside quotes escapes the next character. No shell runs the result, so
+    // unquoted pipes, redirects, and command separators are rejected rather
+    // than passed through as arguments.
+    static func shellSplit(_ command: String) -> Result<[String], AgentError> {
+        var tokens: [String] = []
+        var cur = ""
+        var inToken = false
+        var it = command.makeIterator()
+        while let c = it.next() {
+            switch c {
+            case " ", "\t", "\n":
+                if inToken { tokens.append(cur); cur = ""; inToken = false }
+            case "'":
+                inToken = true
+                var closed = false
+                while let d = it.next() {
+                    if d == "'" { closed = true; break }
+                    cur.append(d)
+                }
+                if !closed { return .failure(AgentError("unterminated single quote")) }
+            case "\"":
+                inToken = true
+                var closed = false
+                while let d = it.next() {
+                    if d == "\"" { closed = true; break }
+                    if d == "\\", let e = it.next() {
+                        if !"\"\\$`".contains(e) { cur.append(d) }
+                        cur.append(e)
+                    } else {
+                        cur.append(d)
+                    }
+                }
+                if !closed { return .failure(AgentError("unterminated double quote")) }
+            case "\\":
+                inToken = true
+                if let e = it.next() { cur.append(e) }
+            case "|", ";", "&", "<", ">", "`", "$", "(", ")":
+                return .failure(AgentError("shell operator '\(c)' is not supported: commands run directly, without a shell (no pipes, redirects, substitutions, or chaining). Quote it if it is a literal argument."))
+            default:
+                inToken = true
+                cur.append(c)
+            }
+        }
+        if inToken { tokens.append(cur) }
+        return .success(tokens)
     }
 
     static func isHiddenArg(_ s: String) -> Bool {
-        let cleaned = stripShellQuotes(s)
-        if cleaned.hasPrefix("-") { return false }
-        let base = (cleaned as NSString).lastPathComponent
+        if s.hasPrefix("-") { return false }
+        let base = (s as NSString).lastPathComponent
         if base == "." || base == ".." { return false }
         return isHidden(base)
     }
@@ -164,15 +220,50 @@ enum Tools {
 
     // ---- Tool implementations ----
 
-    static func readFile(_ path: String) -> String {
+    // Returns lines [offset, offset+limit) of the file (1-based offset). The
+    // whole file comes back verbatim when it fits; otherwise a trailing note
+    // gives the range shown and the offset to continue from.
+    static func readFile(_ path: String, offset: String = "", limit: String = "") -> String {
         if isHidden((path as NSString).lastPathComponent) {
             return "refusing to read hidden/internal file: \(path)"
         }
+        guard let start = offset.isEmpty ? 1 : Int(offset), start >= 1 else {
+            return "Error: offset must be a positive line number (got '\(offset)')"
+        }
+        guard let count = limit.isEmpty ? defaultReadLines : Int(limit), count >= 1 else {
+            return "Error: limit must be a positive number of lines (got '\(limit)')"
+        }
+        if let size = (try? FileManager.default.attributesOfItem(atPath: path))?[.size] as? Int,
+           size > maxReadFileBytes {
+            return "refusing to read \(path): \(size) bytes is too large (limit \(maxReadFileBytes)). Use grep to find the relevant lines."
+        }
+        let text: String
         do {
-            return try String(contentsOfFile: path, encoding: .utf8)
+            text = try String(contentsOfFile: path, encoding: .utf8)
         } catch {
             return "Error reading \(path): \(error.localizedDescription)"
         }
+        var lines = text.split(separator: "\n", omittingEmptySubsequences: false)
+        if text.hasSuffix("\n") { lines.removeLast() }
+        let total = lines.count
+        if start == 1 && total <= count && text.count <= maxReadChars { return text }
+        if start > max(total, 1) {
+            return "Error: offset \(start) is past the end of \(path) (\(total) lines)"
+        }
+        // Take whole lines up to both the line limit and the character cap.
+        var out = ""
+        var end = start - 1
+        while end < min(total, start - 1 + count) {
+            let line = lines[end]
+            if !out.isEmpty && out.count + line.count + 1 > maxReadChars { break }
+            out += line + "\n"
+            end += 1
+        }
+        if out.count > maxReadChars {
+            out = String(out.prefix(maxReadChars)) + "\n... (line \(start) truncated)\n"
+        }
+        let more = end < total ? "; call read_file with offset=\(end + 1) to continue" : ""
+        return out + "[\(path): lines \(start)-\(end) of \(total)\(more). propose_edit needs the file's full contents as 'old'.]"
     }
 
     static func listDir(_ path: String) -> String {
@@ -191,37 +282,97 @@ enum Tools {
 
     static func grep(_ pattern: String, _ path: String) -> String {
         do {
-            return try Subprocess.run("grep", ["-rnE", pattern, path]).output
+            let (out, code) = try Subprocess.run("grep", ["-rnE", "--", pattern, path], timeout: grepTimeout)
+            if code == 1 && out.isEmpty { return "no matches" }
+            return truncate(out, maxGrepChars)
         } catch {
             return "Error running grep: \(error)"
         }
     }
 
     static func runShell(_ command: String) -> String {
-        let tokens = command.split(whereSeparator: { $0 == " " || $0 == "\t" || $0 == "\n" }).map(String.init)
+        let tokens: [String]
+        switch shellSplit(command) {
+        case .success(let t): tokens = t
+        case .failure(let e): return "refused: \(e.description)"
+        }
         guard let cmd = tokens.first else { return "empty command" }
         if !shellWhitelist.contains(cmd) {
             return "Command '\(cmd)' not whitelisted. Allowed: \(shellWhitelist.sorted().joined(separator: ", "))"
         }
-        // `uv run` executes arbitrary code, which could write files behind a
-        // --dry-run preview, so it is unavailable in that mode.
-        if Settings.dryRun && cmd == "uv" {
-            return "refused: 'uv' is disabled in --dry-run mode, where no files may be written. The user only wants to preview the proposed diffs."
+        // `uv run` and `make` execute arbitrary code, which could write files
+        // behind a --dry-run preview, so they are unavailable in that mode.
+        if Settings.dryRun && (cmd == "uv" || cmd == "make") {
+            return "refused: '\(cmd)' is disabled in --dry-run mode, where no files may be written. The user only wants to preview the proposed diffs."
         }
         if cmd != "ls", let bad = tokens.dropFirst().first(where: isHiddenArg) {
             return "refusing to run command referencing hidden/internal file: \(bad)"
         }
+        if cmd == "make", let err = validateMakeArgs(Array(tokens.dropFirst())) {
+            return "refused: \(err)"
+        }
         do {
-            let (out, code) = try Subprocess.run(cmd, Array(tokens.dropFirst()))
-            return (cmd == "ls" ? filterLsOutput(out) : out) + "(exit \(code))"
+            let (out, code) = try Subprocess.run(cmd, Array(tokens.dropFirst()),
+                                                 timeout: cmd == "make" ? makeTimeout : shellTimeout)
+            return truncate(cmd == "ls" ? filterLsOutput(out) : out, maxShellChars) + "(exit \(code))"
         } catch {
             return "Error running command: \(error)"
         }
     }
 
+    // `make` runs whatever a Makefile says, and flags or VAR=value arguments
+    // could point it at another makefile or override its recipes (SHELL=...,
+    // --eval). Only a few harmless flags and targets declared in the
+    // project's own Makefile are allowed.
+    static let makeSafeFlags: Set<String> = ["-n", "--dry-run", "-s", "--silent", "-k", "--keep-going", "-q", "--question"]
+
+    static func makefileTargets() -> Set<String>? {
+        guard let text = ["GNUmakefile", "makefile", "Makefile"].lazy
+            .compactMap({ try? String(contentsOfFile: $0, encoding: .utf8) }).first else { return nil }
+        var targets: Set<String> = []
+        for line in text.split(separator: "\n") {
+            guard let first = line.first, first != "\t", first != "#", first != ".",
+                  let colon = line.firstIndex(of: ":") else { continue }
+            // Skip variable assignments (`X := y`, `X ::= y`).
+            let after = line[line.index(after: colon)...]
+            if after.hasPrefix("=") || after.hasPrefix(":=") { continue }
+            let names = line[..<colon].split(separator: " ").map(String.init)
+            if names.contains(where: { $0.contains("=") || $0.contains("$") || $0.contains("%") }) { continue }
+            targets.formUnion(names)
+        }
+        return targets
+    }
+
+    static func validateMakeArgs(_ args: [String]) -> String? {
+        let targetPattern = "^[A-Za-z0-9_][A-Za-z0-9_.-]*$"
+        var targets: [String] = []
+        for a in args {
+            if makeSafeFlags.contains(a) || a.range(of: "^-j[0-9]*$", options: .regularExpression) != nil {
+                continue
+            }
+            if a.hasPrefix("-") {
+                return "make flag '\(a)' is not allowed (allowed: \(makeSafeFlags.sorted().joined(separator: " ")), -jN)"
+            }
+            if a.contains("=") {
+                return "make variable assignments ('\(a)') are not allowed"
+            }
+            guard a.range(of: targetPattern, options: .regularExpression) != nil else {
+                return "'\(a)' is not a valid make target name"
+            }
+            targets.append(a)
+        }
+        guard let declared = makefileTargets() else {
+            return "no Makefile in the working directory"
+        }
+        if let unknown = targets.first(where: { !declared.contains($0) }) {
+            return "make target '\(unknown)' is not declared in the Makefile. Available targets: \(declared.sorted().joined(separator: ", "))"
+        }
+        return nil
+    }
+
     static func runMakeCheck() -> (output: String, code: Int32) {
         do {
-            return try Subprocess.run("make", ["check"])
+            return try Subprocess.run("make", ["check"], timeout: makeTimeout)
         } catch {
             return ("make check error: \(error)", 1)
         }
@@ -303,9 +454,11 @@ enum Tools {
 
     static func registerAll() {
         define("read_file",
-               [ToolParam(name: "path", type: "string", description: "File path relative to the working directory.")],
-               "Read and return the contents of a file. Refuses to read hidden/internal files (~, #...#, and dotfiles).",
-               { readFile($0[0]) })
+               [ToolParam(name: "path", type: "string", description: "File path relative to the working directory."),
+                ToolParam(name: "offset", type: "integer", description: "Optional 1-based line number to start reading at (default 1).", optional: true),
+                ToolParam(name: "limit", type: "integer", description: "Optional maximum number of lines to return (default \(defaultReadLines)).", optional: true)],
+               "Read and return the contents of a file. Large files are returned in pages of lines with a note saying how to continue. Refuses to read hidden/internal files (~, #...#, and dotfiles).",
+               { readFile($0[0], offset: $0[1], limit: $0[2]) })
         define("list_dir",
                [ToolParam(name: "path", type: "string", description: "Directory path. Use \".\" for the working directory.")],
                "List files and subdirectories (with trailing /) in a directory. Hidden/internal files (~, #...#, and dotfiles) are excluded.",
@@ -313,11 +466,11 @@ enum Tools {
         define("grep",
                [ToolParam(name: "pattern", type: "string", description: "Extended regex pattern to search for."),
                 ToolParam(name: "path", type: "string", description: "Directory or file path to search.")],
-               "Recursively grep files for PATTERN. Wraps `grep -rnE`.",
+               "Recursively grep files for PATTERN. Wraps `grep -rnE`; long output is truncated, so prefer specific patterns and paths.",
                { grep($0[0], $0[1]) })
         define("run_shell",
                [ToolParam(name: "command", type: "string", description: "Shell command. Only whitelisted commands may run: make, ls, pwd, cat, uv.")],
-               "Run a whitelisted shell command and return its combined output. Refuses commands that reference hidden/internal files.",
+               "Run a whitelisted command (no shell: quoting works, but pipes, redirects, and chaining do not) and return its combined output, truncated if long. make accepts only targets declared in the Makefile. Refuses commands that reference hidden/internal files.",
                { runShell($0[0]) })
         define("propose_edit",
                [ToolParam(name: "path", type: "string", description: "Path to the file to edit or create."),
