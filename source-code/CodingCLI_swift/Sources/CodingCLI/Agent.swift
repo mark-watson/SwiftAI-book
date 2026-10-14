@@ -40,10 +40,19 @@ final class Agent {
         - run_shell only accepts whitelisted commands: make, ls, pwd, cat, uv.
         - You CAN read web pages: when the user mentions a URL or web site, call fetch_url
           and answer from its contents. Never claim you cannot access the internet.
-        - When you are done, reply with a short natural-language summary of what changed.
+        - When you are done, reply with a short natural-language summary of what changed.{mcp}
+        """
+
+    static let mcpPromptNote = """
+
+        - Tools named mcp__<server>__<tool> come from MCP servers (for example iMCP for the
+          user's macOS calendar, contacts, reminders, messages, location, maps, and weather).
+          Use them whenever the user asks about that kind of personal or local data.
         """
 
     static let generalSystemPrompt = "You are a helpful assistant. Answer the user's question clearly and concisely using the web search results provided. Do not reference files, directories, or code editing tools unless the user explicitly asks about code."
+
+    static let generalMCPNote = " You also have MCP tools (named mcp__<server>__<tool>) for the user's own data and local apps such as calendar, contacts, reminders, messages, location, maps, and weather: call them when the question concerns that data, and prefer them over the search results."
 
     static let compactSystemPrompt = "You are a context compactor for a coding assistant. Summarize the conversation transcript into a compact brief that will replace it. Preserve: the user's goals and instructions, decisions made, files created or modified (with paths), important code and tool-output details, and outstanding tasks. Write dense bullets, no preamble."
 
@@ -68,7 +77,7 @@ final class Agent {
 
     static let slashCommands = [
         "/reset", "/history", "/context", "/compact", "/summary", "/model", "/provider",
-        "/debug", "/search", "/tokens", "/help", "/skills", "/quit",
+        "/debug", "/search", "/tokens", "/mcp", "/help", "/skills", "/quit",
     ]
     static let searchEngines = ["brave", "exa"]
 
@@ -189,8 +198,9 @@ final class Agent {
     // Conversation helpers
 
     func resetConversation() {
-        let prompt = Self.systemPromptTemplate.replacingOccurrences(
-            of: "{cwd}", with: FileManager.default.currentDirectoryPath)
+        let prompt = Self.systemPromptTemplate
+            .replacingOccurrences(of: "{cwd}", with: FileManager.default.currentDirectoryPath)
+            .replacingOccurrences(of: "{mcp}", with: MCP.toolNames.isEmpty ? "" : Self.mcpPromptNote)
         messages = [["role": "system", "content": .string(prompt)]]
     }
 
@@ -430,6 +440,8 @@ final class Agent {
         case "/search":
             searchEnabled.toggle()
             print("Web search \(searchEnabled ? "ON" : "OFF") (engine: \(searchEngine))")
+        case "/mcp":
+            MCP.printStatus()
         case "/help":
             print(Self.helpText)
         case "/skills":
@@ -491,6 +503,7 @@ final class Agent {
           /search brave     enable Brave search
           /search exa       enable Exa search
           /tokens           show session token usage and estimated cost
+          /mcp              list MCP servers and their tools
           /skills           list available skills in ~/.agents/skills
           /<skill-name>     load that skill into the conversation
           /quit             exit
@@ -564,21 +577,36 @@ final class Agent {
 
     func sendToModel(_ userLine: String) async throws {
         let intent = await classifyIntent(userLine)
-        let label = ["general": "web search, no coding tools",
-                     "coding": "coding + web fetch tools, no search",
-                     "hybrid": "coding tools + web search if /search is on"][intent]!
+        let mcp = MCP.toolNames.isEmpty ? "" : " + MCP tools"
+        let label = ["general": "web search\(mcp), no coding tools",
+                     "coding": "coding + web fetch tools\(mcp), no search",
+                     "hybrid": "coding tools\(mcp) + web search if /search is on"][intent]!
         if !Settings.quiet { print("[intent: \(intent) → \(label)]") }
         let reply: String
         switch intent {
         case "general":
             let content = await maybeSearch(userLine, force: true) ?? userLine
-            reply = try await llmChat([["role": "system", "content": .string(Self.generalSystemPrompt)],
-                                       ["role": "user", "content": .string(content)]])
+            let mcpTools = MCP.toolNames
+            if mcpTools.isEmpty {
+                reply = try await llmChat([["role": "system", "content": .string(Self.generalSystemPrompt)],
+                                           ["role": "user", "content": .string(content)]])
+            } else {
+                // MCP tools (calendar, weather, ...) answer many "general"
+                // questions better than a web search.
+                reply = try await llmChatWithTools(
+                    [["role": "system", "content": .string(Self.generalSystemPrompt + Self.generalMCPNote)],
+                     ["role": "user", "content": .string(content)]], mcpTools).0
+            }
         default:
             let content = intent == "hybrid"
                 ? (await maybeSearch(userLine, force: false) ?? userLine) : userLine
+            // The on-device Apple model's context is too small for the coding
+            // tools plus every MCP tool, so it gets MCP tools only on the
+            // general route.
+            let tools = Tools.enabledTools
+                + (config.activeProvider?.type == .apple ? [] : MCP.toolNames)
             let (r, updated) = try await llmChatWithTools(
-                messages + [["role": "user", "content": .string(content)]], Tools.enabledTools)
+                messages + [["role": "user", "content": .string(content)]], tools)
             messages = updated
             reply = r
         }
@@ -605,6 +633,7 @@ final class Agent {
 
     func runOneShot(_ prompt: String) async -> Never {
         Tools.registerAll()
+        MCP.startAll(config.config)
         resetConversation()
         let code: Int32
         do {
@@ -656,6 +685,7 @@ final class Agent {
 
     func runREPL() async {
         Tools.registerAll()
+        MCP.startAll(config.config)
         resetConversation()
         if LineInput.available {
             LineInput.setHistoryFile(LineInput.defaultHistoryFile)

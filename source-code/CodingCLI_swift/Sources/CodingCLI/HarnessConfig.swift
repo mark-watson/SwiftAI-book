@@ -29,8 +29,13 @@ import Foundation
 //     }
 //   },
 //   "search": { "engine": "brave", "enabled": false },
+//   "mcpServers": {
+//     "iMCP": { "command": "/Applications/iMCP.app/Contents/MacOS/imcp-server" }
+//   },
 //   "debug": false, "quiet": false, "plain": false
 // }
+//
+// "mcpServers" uses the Claude Desktop / Claude Code format; see MCP.swift.
 //
 // Provider "type" is "openai" (OpenAI-style streaming chat completions:
 // Fireworks.ai, DeepSeek, and compatible endpoints), "mlx" (non-streaming

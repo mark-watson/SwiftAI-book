@@ -16,6 +16,7 @@ This is a Swift port of the feature set of the Racket `racket-coding-agent` proj
 - **Safety guards** — stale-base / no-op / empty-file checks on edits; hidden files (`.env`, `foo~`, `#foo#`) refused; repeated identical tool calls stop the loop
 - **Intent classifier** (keyword heuristic + LLM fallback) routes general questions to web search and coding tasks to the tools
 - **Web search** with Brave or Exa
+- **MCP servers** — tools from any stdio [Model Context Protocol](https://modelcontextprotocol.io) server declared under `mcpServers` in the global or local config, including [iMCP](https://github.com/mattt/iMCP) for macOS Calendar, Contacts, Reminders, Messages, Location, Maps, and Weather
 - **Skills** — `/<name>` loads `~/.agents/skills/<name>/SKILL.md` into the conversation
 - **Context tools** — `/context` shows a per-message breakdown, `/compact` summarizes history to save tokens, `/summary` summarizes the source files in the current directory
 - **Token accounting** — `/tokens` with cost estimates (including cached-input pricing) from the provider config
@@ -99,6 +100,9 @@ See `coding_harness.example.json` for a full example:
     }
   },
   "search": { "engine": "brave", "enabled": false },
+  "mcpServers": {
+    "iMCP": { "command": "/Applications/iMCP.app/Contents/MacOS/imcp-server" }
+  },
   "quiet": false, "plain": false, "debug": false
 }
 ```
@@ -121,6 +125,44 @@ Legacy settings (precedence CLI > env > legacy file > harness config):
 * File: `$XDG_CONFIG_HOME/coding-agent/config.json` or `~/.config/coding-agent/config.json`, a flat object such as `{"provider": "mlx", "model": "m", "quiet": true, "plain": true, "debug": false, "search": true, "search-engine": "exa"}`. Its `provider` applies only when there is no harness config.
 * Env: `CODING_AGENT_PROVIDER` / `AGENT_PROVIDER`, `CODING_AGENT_MODEL`, `CODING_AGENT_QUIET`, `CODING_AGENT_PLAIN`, `CODING_AGENT_DEBUG`.
 
+## MCP servers
+
+CodingCLI is an MCP client. Servers go under `mcpServers` in `~/.coding_harness.json` or `.local_coding_harness.json`, in the same format that Claude Desktop and Claude Code use. Only the stdio transport is supported.
+
+```json
+"mcpServers": {
+  "iMCP":  { "command": "/Applications/iMCP.app/Contents/MacOS/imcp-server" },
+  "files": { "command": "npx", "args": ["-y", "@modelcontextprotocol/server-filesystem", "."],
+             "env": { "DEBUG": "0" }, "timeout": 60 }
+}
+```
+
+| Key | Meaning |
+|---|---|
+| `command` | Executable (absolute path, or a name looked up on `PATH`) |
+| `args` | Argument list (optional) |
+| `env` | Extra environment variables (optional) |
+| `timeout` | Seconds to wait for each request; default 30 (the `initialize` handshake waits at least 60) |
+| `disabled` | `true` skips the server, so a project-local file can switch off a global server |
+
+Each server starts once, when the REPL or a one-shot run begins. Its tools are registered as `mcp__<server>__<tool>`. A server that fails to start prints a warning and is skipped. `/mcp` lists the running servers and their tools, and `--debug` also logs the JSON-RPC traffic and server stderr.
+
+MCP tools are offered on every route. On the coding and hybrid routes they sit next to the six built-in tools. On the general route, which normally does only web search, the model can call MCP tools as well, so questions such as "what's the weather" or "what's on my calendar today" are answered from your own data. The on-device `apple` provider has a small context window, so it gets MCP tools only on the general route. MCP tool calls are not gated by the diff approval prompt; control what a server can do in its own settings.
+
+### iMCP (macOS)
+
+[iMCP](https://github.com/mattt/iMCP) is a menu-bar app that serves your Calendar, Contacts, Location, Maps, Messages, Reminders, Weather, and more over MCP.
+
+1. Install iMCP from its GitHub releases page, launch it, and turn on the services you want from its menu-bar icon. Grant the macOS permissions it asks for.
+2. Add the entry shown above to `~/.coding_harness.json`. The server command is also shown in the iMCP menu.
+3. Start CodingCLI. The first time it connects, iMCP shows an approval dialog. Click **Allow**, and optionally check "Always trust this client". CodingCLI waits up to 60 seconds for that approval.
+
+```
+> what's on my calendar tomorrow?
+[intent: general → web search + MCP tools, no coding tools]
+* mcp__iMCP__<calendar tool> {...}
+```
+
 ## REPL commands
 
 | Command | Description |
@@ -137,6 +179,7 @@ Legacy settings (precedence CLI > env > legacy file > harness config):
 | `/search` | Toggle web search on/off |
 | `/search brave` / `/search exa` | Enable web search with that engine |
 | `/tokens` | Show session token usage and estimated cost |
+| `/mcp` | List running MCP servers and their tools |
 | `/skills` | List skills in `~/.agents/skills` |
 | `/<skill-name>` | Load that skill into the conversation |
 | `/quit` | Exit (an empty line at EOF also exits) |
@@ -164,6 +207,7 @@ CodingCLI_swift/
     ├── HarnessConfig.swift    # hierarchical JSON config, provider profiles, legacy config
     ├── Search.swift           # Brave and Exa web search
     ├── WebFetch.swift         # fetch_url: download a page, HTML -> plain text
+    ├── MCP.swift              # MCP stdio client: servers from "mcpServers", tools as mcp__server__tool
     ├── LineInput.swift        # libedit line editing, history, Tab completion
     └── JSON.swift             # JSON value type
 ```

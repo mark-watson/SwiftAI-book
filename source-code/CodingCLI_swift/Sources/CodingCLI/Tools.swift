@@ -17,6 +17,10 @@ struct ToolSpec {
     let params: [ToolParam]
     // Positional string arguments, in `params` order.
     let handler: ([String]) -> String
+    // MCP tools: the server's JSON Schema and a handler taking the raw
+    // argument object (`params` and `handler` are then unused).
+    var schema: JSON? = nil
+    var rawHandler: (([String: JSON]) -> String)? = nil
 }
 
 enum Tools {
@@ -32,10 +36,24 @@ enum Tools {
                                   params: params, handler: handler)
     }
 
+    static func defineMCP(_ name: String, description: String, schema: JSON,
+                          handler: @escaping ([String: JSON]) -> String) {
+        registry[name] = ToolSpec(name: name, description: description, params: [],
+                                  handler: { _ in "" }, schema: schema, rawHandler: handler)
+    }
+
     // OpenAI-style "tools" array for the given tool names.
     static func render(_ names: [String]) -> [JSON] {
         names.compactMap { name in
             guard let tool = registry[name] else { return nil }
+            if let schema = tool.schema {
+                return [
+                    "type": "function",
+                    "function": ["name": .string(tool.name),
+                                 "description": .string(tool.description),
+                                 "parameters": schema],
+                ]
+            }
             var props: [String: JSON] = [:]
             for p in tool.params {
                 props[p.name] = ["type": .string(p.type), "description": .string(p.description)]
@@ -59,6 +77,7 @@ enum Tools {
 
     static func callTool(_ name: String, _ args: [String: JSON]) -> String {
         guard let tool = registry[name] else { return "Error: tool '\(name)' raised: Unknown tool: \(name)" }
+        if let raw = tool.rawHandler { return raw(args) }
         // Missing required args? Return an actionable error describing the
         // expected argument list -- small models frequently emit malformed or
         // truncated arguments, and silently receiving nothing sends them into

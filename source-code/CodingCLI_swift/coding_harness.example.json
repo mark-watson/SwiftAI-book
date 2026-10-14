@@ -58,5 +58,10 @@
         "max_tokens": 32000
       }
     }
+  },
+  "mcpServers": {
+    "iMCP": {
+      "command": "/Applications/iMCP.app/Contents/MacOS/imcp-server"
+    }
   }
 }

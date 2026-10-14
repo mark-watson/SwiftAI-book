@@ -132,6 +132,59 @@ struct FetchURLTool: Tool {
     }
 }
 
+// An MCP tool exposed to FoundationModels. Its arguments arrive as
+// GeneratedContent shaped by a schema converted from the server's JSON Schema.
+struct MCPAppleTool: Tool {
+    typealias Arguments = GeneratedContent
+    let recorder: AppleToolRecorder
+    let name: String
+    let description: String
+    let parameters: GenerationSchema
+
+    init?(recorder: AppleToolRecorder, name: String) {
+        guard let spec = Tools.registry[name], let schema = spec.schema,
+              let gs = try? GenerationSchema(root: Self.dynamicSchema(schema, name: name),
+                                             dependencies: []) else { return nil }
+        self.recorder = recorder
+        self.name = name
+        self.description = spec.description
+        self.parameters = gs
+    }
+
+    func call(arguments: GeneratedContent) async throws -> String {
+        recorder.run(name, (try? JSON.parse(arguments.jsonString)) ?? [:])
+    }
+
+    // JSON Schema -> DynamicGenerationSchema, covering the subset MCP servers
+    // use for tool inputs: objects, arrays, string enums, and scalars.
+    static func dynamicSchema(_ s: JSON, name: String) -> DynamicGenerationSchema {
+        let type = s["type"]?.string
+            ?? s["type"]?.array?.compactMap(\.string).first { $0 != "null" }
+        let desc = s["description"]?.string
+        switch type {
+        case "object":
+            let required = Set((s["required"]?.array ?? []).compactMap(\.string))
+            let props = (s["properties"]?.object ?? [:]).sorted { $0.key < $1.key }.map { k, v in
+                DynamicGenerationSchema.Property(name: k, description: v["description"]?.string,
+                                                 schema: dynamicSchema(v, name: "\(name)_\(k)"),
+                                                 isOptional: !required.contains(k))
+            }
+            return DynamicGenerationSchema(name: name, description: desc, properties: props)
+        case "array":
+            return DynamicGenerationSchema(arrayOf: dynamicSchema(s["items"] ?? ["type": "string"],
+                                                                  name: name + "_item"))
+        case "integer": return DynamicGenerationSchema(type: Int.self)
+        case "number": return DynamicGenerationSchema(type: Double.self)
+        case "boolean": return DynamicGenerationSchema(type: Bool.self)
+        default:
+            let choices = (s["enum"]?.array ?? []).compactMap(\.string)
+            return choices.isEmpty
+                ? DynamicGenerationSchema(type: String.self)
+                : DynamicGenerationSchema(name: name, description: desc, anyOf: choices)
+        }
+    }
+}
+
 enum AppleProvider {
     // The on-device model has a small context window, so only the tail of the
     // earlier conversation is replayed into each new session.
@@ -206,7 +259,10 @@ enum AppleProvider {
             "fetch_url": FetchURLTool(recorder: recorder),
         ]
         let (instructions, prompt) = split(messages)
-        let session = LanguageModelSession(tools: names.compactMap { all[$0] },
+        let tools: [any Tool] = names.compactMap { n in
+            all[n] ?? MCPAppleTool(recorder: recorder, name: n)
+        }
+        let session = LanguageModelSession(tools: tools,
                                            instructions: instructions.isEmpty ? nil : instructions)
         var out = messages
         func record() {
