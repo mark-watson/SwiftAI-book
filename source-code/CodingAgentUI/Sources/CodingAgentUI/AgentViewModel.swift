@@ -29,7 +29,8 @@ struct TranscriptItem: Identifiable, Equatable {
     let kind: TranscriptKind
     /// Short label: role, tool name, or file path.
     let title: String
-    let body: String
+    /// `var` because consecutive `.log` events are coalesced into one row.
+    var body: String
     /// Secondary text (tool arguments, a note), possibly empty.
     var detail: String = ""
     let time = Date()
@@ -52,6 +53,10 @@ private struct ApprovalGateBridge: ApprovalGate {
 final class AgentViewModel {
     // ---- Transcript ----
     var transcript: [TranscriptItem] = []
+    /// Bumped for every line that reaches the transcript, including lines merged
+    /// into an existing row. The view scrolls on this rather than on
+    /// `transcript.count`, which does not change when a log block grows.
+    var transcriptRevision = 0
     var draft = ""
     var isBusy = false
     var lastOutcome: TurnOutcome?
@@ -84,6 +89,9 @@ final class AgentViewModel {
     private var turnTask: Task<Void, Never>?
     private var drainTask: Task<Void, Never>?
     private var approvalContinuation: CheckedContinuation<ApprovalDecision, Never>?
+    /// Row that a following `.log` line may append to. Cleared at turn
+    /// boundaries so output from two commands never shares one row.
+    private var openLogRow: UUID?
 
     /// Longest tool output kept in the transcript. The model still receives the
     /// full result; this only bounds what the UI holds on to.
@@ -125,6 +133,7 @@ final class AgentViewModel {
             directory = path
             refresh()
             transcript.removeAll()
+            openLogRow = nil
             append(kind: .status, title: "Workspace", body: "Working directory: \(path)")
             if let w = workspace {
                 if !w.hasMakefile {
@@ -166,6 +175,9 @@ final class AgentViewModel {
             runCommand(text)
             return
         }
+        // Echo the prompt so the transcript reads as a conversation. The kit
+        // emits events for the model's work, not for the user's input.
+        append(kind: .user, title: "You", body: text)
         beginTurn()
         turnTask = Task { finish(await agent.send(text)) }
     }
@@ -199,6 +211,7 @@ final class AgentViewModel {
     private func beginTurn() {
         isBusy = true
         lastOutcome = nil
+        openLogRow = nil
     }
 
     func cancel() {
@@ -283,6 +296,7 @@ final class AgentViewModel {
     func resetConversation() {
         agent.reset()
         transcript.removeAll()
+        openLogRow = nil
         refresh()
         append(kind: .status, title: "Agent", body: "Conversation reset.")
     }
@@ -304,7 +318,8 @@ final class AgentViewModel {
     private func append(_ event: ConsoleEvent) {
         switch event {
         case .log(let text):
-            append(kind: .log, title: "Agent", body: text)
+            // A log line, not a whole row: see appendLog(_:).
+            appendLog(text)
         case .debug(let text):
             append(kind: .debug, title: "Debug", body: text)
         case .error(let text):
@@ -329,8 +344,31 @@ final class AgentViewModel {
     }
 
     private func append(kind: TranscriptKind, title: String, body: String, detail: String = "") {
+        // Any non-log row ends the run a following log line could join.
+        openLogRow = nil
         transcript.append(TranscriptItem(kind: kind, title: title,
                                          body: Self.stripANSI(body), detail: detail))
+        transcriptRevision += 1
+    }
+
+    /// Coalesces consecutive `.log` lines into one "Agent" row.
+    ///
+    /// `Console.print` mirrors the CLI's `print`, so output that used to be one
+    /// line per call -- /tokens, /context, /mcp, /skills, MCP startup -- would
+    /// otherwise become one collapsible dropdown per line. A run of log lines
+    /// now shares a single row, joined with newlines; any other kind of event,
+    /// and the start of a new turn, ends the run.
+    private func appendLog(_ text: String) {
+        let body = Self.stripANSI(text)
+        if let id = openLogRow, let last = transcript.last, last.id == id {
+            transcript[transcript.count - 1].body += "\n" + body
+            transcriptRevision += 1
+            return
+        }
+        let item = TranscriptItem(kind: .log, title: "Agent", body: body)
+        openLogRow = item.id
+        transcript.append(item)
+        transcriptRevision += 1
     }
 
     private func clip(_ s: String) -> String {

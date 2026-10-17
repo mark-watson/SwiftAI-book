@@ -22,6 +22,9 @@ struct ContentView: View {
             .animation(.easeOut(duration: 0.18), value: model.pendingApproval?.id)
         }
         .navigationTitle("Coding Agent")
+        // Default for controls and labels that do not set a font of their own
+        // (buttons, pickers, list rows): the app-wide bump in Typography.swift.
+        .font(AppFont.body)
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Button {

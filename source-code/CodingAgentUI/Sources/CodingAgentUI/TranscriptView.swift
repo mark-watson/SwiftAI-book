@@ -82,7 +82,9 @@ struct TranscriptView: View {
                 .padding(14)
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .onChange(of: model.transcript.count) {
+            // Log lines are merged into an existing row, so the count can stay
+            // the same while the transcript grows: scroll on the revision.
+            .onChange(of: model.transcriptRevision) {
                 proxy.scrollTo("bottom", anchor: .bottom)
             }
             .onChange(of: model.pendingApproval?.id) {
@@ -96,7 +98,7 @@ private struct EmptyTranscriptHint: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             Label("No conversation yet", systemImage: "sparkles")
-                .font(.title3.weight(.semibold))
+                .font(AppFont.title3)
             Text("""
             Ask for a change in the field below. The agent reads files with \
             read_file, list_dir, and grep, then proposes edits you approve one \
@@ -105,7 +107,7 @@ private struct EmptyTranscriptHint: View {
             Type / for commands, or use the sidebar to switch provider, model, \
             and mode.
             """)
-            .font(.callout)
+            .font(AppFont.callout)
             .foregroundStyle(.secondary)
             .frame(maxWidth: 520, alignment: .leading)
         }
@@ -131,24 +133,24 @@ struct TranscriptRow: View {
         HStack(alignment: .firstTextBaseline, spacing: 6) {
             if !item.kind.label.isEmpty {
                 Image(systemName: item.kind.systemImage)
-                    .font(.caption2)
+                    .font(AppFont.caption2)
                     .foregroundStyle(item.kind.color)
                 Text(item.kind.label)
-                    .font(.caption.weight(.semibold))
+                    .font(AppFont.captionStrong)
                     .foregroundStyle(item.kind.color)
             }
             // For tool rows the title is the tool name; for diffs, the path.
             if item.kind == .toolCall || item.kind == .toolResult || item.kind == .diff
                 || item.kind == .decision {
                 Text(item.title)
-                    .font(.caption.monospaced())
+                    .font(AppFont.monoCaption)
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
                     .truncationMode(.middle)
             }
             if !item.detail.isEmpty {
                 Text(item.detail)
-                    .font(.caption2)
+                    .font(AppFont.caption2)
                     .padding(.horizontal, 5).padding(.vertical, 1)
                     .background(.quaternary, in: Capsule())
             }
@@ -158,7 +160,7 @@ struct TranscriptRow: View {
                     expanded.toggle()
                 } label: {
                     Image(systemName: expanded ? "chevron.up" : "chevron.down")
-                        .font(.caption2)
+                        .font(AppFont.caption2)
                 }
                 .buttonStyle(.plain)
                 .foregroundStyle(.tertiary)
@@ -176,17 +178,17 @@ struct TranscriptRow: View {
             mono(item.body, maxHeight: item.kind == .toolResult ? 240 : 160)
         case .status, .intent:
             Text(item.body)
-                .font(.caption)
+                .font(AppFont.caption)
                 .foregroundStyle(.secondary)
                 .textSelection(.enabled)
         case .error:
             Text(item.body)
-                .font(.callout)
+                .font(AppFont.callout)
                 .foregroundStyle(.red)
                 .textSelection(.enabled)
         case .user:
             Text(item.body)
-                .font(.body)
+                .font(AppFont.body)
                 .textSelection(.enabled)
                 .padding(8)
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -194,12 +196,12 @@ struct TranscriptRow: View {
                             in: RoundedRectangle(cornerRadius: 7))
         case .assistant:
             Text(item.body)
-                .font(.body)
+                .font(AppFont.body)
                 .textSelection(.enabled)
                 .frame(maxWidth: .infinity, alignment: .leading)
         default:
             Text(item.body)
-                .font(.callout)
+                .font(AppFont.callout)
                 .textSelection(.enabled)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
@@ -208,7 +210,7 @@ struct TranscriptRow: View {
     private func mono(_ text: String, maxHeight: CGFloat) -> some View {
         ScrollView {
             Text(text.isEmpty ? "(empty)" : text)
-                .font(.system(.caption, design: .monospaced))
+                .font(AppFont.monoCaption)
                 .foregroundStyle(.secondary)
                 .textSelection(.enabled)
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -271,13 +273,13 @@ struct DiffView: View {
         VStack(alignment: .leading, spacing: 0) {
             if lines.isEmpty || (lines.count == 1 && lines[0].text.isEmpty) {
                 Text("No textual difference (the file would be rewritten with identical bytes).")
-                    .font(.caption)
+                    .font(AppFont.caption)
                     .foregroundStyle(.secondary)
                     .padding(8)
             } else {
                 ForEach(Array(lines.enumerated()), id: \.offset) { _, line in
                     Text(line.text.isEmpty ? " " : line.text)
-                        .font(.system(.caption, design: .monospaced))
+                        .font(AppFont.monoCaption)
                         .foregroundStyle(line.color)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.horizontal, 8)

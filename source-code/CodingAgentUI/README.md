@@ -33,6 +33,7 @@ Configuration is the CLI's: `~/.coding_harness.json` merged with `.local_coding_
 ## Build, Run, Test
 
     make open           # PREFERRED: assemble build/CodingAgentUI.app and launch it
+    make install        # assemble the .app and copy it to /Applications
     make app            # assemble the .app bundle without launching
     make run            # run the bare debug executable
     make build          # swift build
@@ -64,12 +65,73 @@ Verify focus from another terminal with:
 If that prints something other than `CodingAgentUI`, click the window once; if
 it still will not take focus, use `make open`.
 
+Note that `make open` and the installed `coding-ui` alias launch through
+LaunchServices and therefore do not see your shell environment; see
+“Making environment variables visible to the app” below.
+
 Neither path is sandboxed, so the agent reads and writes the directory you pick,
 exactly as the CLI does. Every write still goes through the approval gate.
 
 On launch the working directory is the directory the app was started from, which
 for a bundled launch is `/`. Use **Change Directory…** in the sidebar to point it
 at a project.
+
+### Installing into /Applications and the `coding-ui` alias
+
+`make install` builds the release bundle and replaces
+`/Applications/CodingAgentUI.app`. Quit the app first: replacing a bundle that is
+still running leaves the old process alive with no bundle behind it. If
+`/Applications` is not writable, the target stops and prints the `sudo` command
+to use, so the build itself still runs as your user rather than as root.
+
+Add the launcher alias to `~/.zshrc`:
+
+    alias coding-ui='open /Applications/CodingAgentUI.app'
+
+Then `source ~/.zshrc` and run `coding-ui`.
+
+### Making environment variables visible to the app
+
+`open` hands the launch to LaunchServices, so an app started with `coding-ui`,
+`make open`, the Dock, or Finder does **not** inherit your shell environment.
+The app reads these variables when it starts:
+
+- the active provider's `api_key_env` (the built-in `openai` fallback is
+  `FIREWORKS_API_KEY`)
+- `BRAVE_SEARCH_API_KEY` and `EXA_SEARCH_API_KEY` for web search
+- `CODING_AGENT_PROVIDER`, `CODING_AGENT_MODEL`, `CODING_AGENT_QUIET`,
+  `CODING_AGENT_PLAIN`, and `CODING_AGENT_DEBUG`
+
+With no key visible, an OpenAI profile is not ready — the sidebar says
+“Set … in the environment, then relaunch” — and only the on-device `apple`
+provider works. Two ways to fix it:
+
+**Publish the values to the GUI session.** `launchctl setenv` changes the
+environment that launchd gives to apps launched afterwards:
+
+    launchctl setenv FIREWORKS_API_KEY "sk-..."
+    launchctl setenv BRAVE_SEARCH_API_KEY "..."
+    coding-ui
+
+Quit the app before changing a value, and use `launchctl unsetenv NAME` to
+remove one. The values last until logout. To publish the variables you already
+export in your shell, use a function instead of the plain alias:
+
+    coding-ui() {
+        [ -n "$FIREWORKS_API_KEY" ] && launchctl setenv FIREWORKS_API_KEY "$FIREWORKS_API_KEY"
+        [ -n "$BRAVE_SEARCH_API_KEY" ] && launchctl setenv BRAVE_SEARCH_API_KEY "$BRAVE_SEARCH_API_KEY"
+        open /Applications/CodingAgentUI.app
+    }
+
+**Or run the executable directly**, which is an ordinary process and therefore
+does inherit the shell environment:
+
+    FIREWORKS_API_KEY="sk-..." \
+        /Applications/CodingAgentUI.app/Contents/MacOS/CodingAgentUI
+
+`make run` also sees your shell environment for the same reason. MCP servers are
+children of the app, so they inherit the same variables; a server can override
+them with the `"env"` object in its `mcpServers` entry.
 
 ## How the CLI code becomes library code
 

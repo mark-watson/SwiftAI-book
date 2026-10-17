@@ -33,16 +33,16 @@ struct ApprovalCard: View {
             Image(systemName: request.isNewFile ? "doc.badge.plus" : "pencil.line")
                 .foregroundStyle(.orange)
             Text(request.isNewFile ? "Create file" : "Proposed edit")
-                .font(.headline)
+                .font(AppFont.headline)
             Text(request.path)
-                .font(.system(.callout, design: .monospaced))
+                .font(AppFont.monoCallout)
                 .foregroundStyle(.secondary)
                 .lineLimit(1)
                 .truncationMode(.middle)
                 .help(request.path)
             Spacer()
             Label("Agent is waiting", systemImage: "hourglass")
-                .font(.caption)
+                .font(AppFont.caption)
                 .foregroundStyle(.secondary)
         }
     }
@@ -61,11 +61,11 @@ struct ApprovalCard: View {
             HStack(spacing: 10) {
                 if model.options.dryRun {
                     Label("Dry run — nothing will be written", systemImage: "eye")
-                        .font(.caption)
+                        .font(AppFont.caption)
                         .foregroundStyle(.secondary)
                 } else if model.options.autoApprove {
                     Label("Auto-approve is on — edits apply without asking", systemImage: "bolt")
-                        .font(.caption)
+                        .font(AppFont.caption)
                         .foregroundStyle(.secondary)
                 }
                 Spacer()

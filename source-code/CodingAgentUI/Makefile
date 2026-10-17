@@ -1,6 +1,7 @@
-.PHONY: help build release run app open check lint test clean diff-sources
+.PHONY: help build release run app open install check lint test clean diff-sources
 
 APP_BUNDLE := build/CodingAgentUI.app
+INSTALL_APP := /Applications/CodingAgentUI.app
 
 help:
 	@echo "Targets:"
@@ -9,6 +10,7 @@ help:
 	@echo "  run           build and run the bare executable"
 	@echo "  app           assemble build/CodingAgentUI.app around the release build"
 	@echo "  open          build the .app bundle and launch it with open(1)"
+	@echo "  install       build the .app bundle and copy it to /Applications"
 	@echo "  test          run the CodingAgentKit tests (approval gate, events, facade)"
 	@echo "  check         build; the agent runs this after every accepted edit"
 	@echo "  lint          alias for check"
@@ -36,6 +38,23 @@ app: release
 
 open: app
 	open $(APP_BUNDLE)
+
+# Install for LaunchServices and the Dock. Replacing a bundle that is running
+# leaves the old process alive with no bundle behind it, so quit first.
+install: app
+	@if pgrep -x CodingAgentUI >/dev/null; then \
+		echo "CodingAgentUI is running — quit it before installing."; \
+		exit 1; \
+	fi
+	@if [ ! -w /Applications ] || { [ -e "$(INSTALL_APP)" ] && [ ! -w "$(INSTALL_APP)" ]; }; then \
+		echo "No write access to $(INSTALL_APP). Run:"; \
+		echo "  sudo rm -rf $(INSTALL_APP) && sudo ditto $(APP_BUNDLE) $(INSTALL_APP)"; \
+		exit 1; \
+	fi
+	@rm -rf "$(INSTALL_APP)"
+	@ditto "$(APP_BUNDLE)" "$(INSTALL_APP)"
+	@echo "Installed $(INSTALL_APP)"
+	@echo "Launch it with: open $(INSTALL_APP)"
 
 # Serial on purpose: the agent keeps its state in process-wide statics.
 test:

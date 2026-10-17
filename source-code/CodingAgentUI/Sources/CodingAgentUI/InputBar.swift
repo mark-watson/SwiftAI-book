@@ -20,7 +20,7 @@ struct InputBar: View {
                                 focused = true
                             } label: {
                                 Text(suggestion)
-                                    .font(.caption.monospaced())
+                                    .font(AppFont.monoCaption)
                                     .padding(.horizontal, 8).padding(.vertical, 3)
                                     .background(.quaternary, in: Capsule())
                             }
@@ -33,7 +33,7 @@ struct InputBar: View {
             HStack(alignment: .bottom, spacing: 10) {
                 TextField(promptPlaceholder, text: $model.draft, axis: .vertical)
                     .textFieldStyle(.plain)
-                    .font(.body)
+                    .font(AppFont.body)
                     .lineLimit(1...6)
                     .padding(8)
                     .background(Color(nsColor: .textBackgroundColor),
@@ -46,7 +46,7 @@ struct InputBar: View {
                     if model.isBusy { model.cancel() } else { model.send() }
                 } label: {
                     Image(systemName: model.isBusy ? "stop.circle.fill" : "arrow.up.circle.fill")
-                        .font(.system(size: 26))
+                        .font(.system(size: 28))
                         .foregroundStyle(model.isBusy ? Color.red : Color.accentColor)
                         .symbolEffect(.pulse, isActive: model.isBusy)
                 }
@@ -75,29 +75,29 @@ struct InputBar: View {
         HStack(spacing: 10) {
             if model.isBusy {
                 ProgressView().controlSize(.small)
-                Text("Working…").font(.caption).foregroundStyle(.secondary)
+                Text("Working…").font(AppFont.caption).foregroundStyle(.secondary)
             } else if let outcome = model.lastOutcome, outcome != .ok {
                 Label(AgentViewModel.describe(outcome), systemImage: "exclamationmark.circle")
-                    .font(.caption)
+                    .font(AppFont.caption)
                     .foregroundStyle(outcome == .interrupted ? Color.secondary : Color.orange)
             } else {
                 Label("\(model.activeProvider) · \(model.currentModel)", systemImage: "cpu")
-                    .font(.caption)
+                    .font(AppFont.caption)
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
                     .truncationMode(.middle)
             }
             Spacer()
             if model.options.dryRun {
-                Text("dry run").font(.caption2).padding(.horizontal, 6).padding(.vertical, 1)
+                Text("dry run").font(AppFont.caption2).padding(.horizontal, 6).padding(.vertical, 1)
                     .background(.quaternary, in: Capsule())
             }
             if model.options.autoApprove {
-                Text("auto-approve").font(.caption2).padding(.horizontal, 6).padding(.vertical, 1)
+                Text("auto-approve").font(AppFont.caption2).padding(.horizontal, 6).padding(.vertical, 1)
                     .background(Color.orange.opacity(0.2), in: Capsule())
             }
             Text("\(model.context.messages) msgs · ≈\(model.context.estimatedTokens) tok")
-                .font(.caption2)
+                .font(AppFont.caption2)
                 .foregroundStyle(.tertiary)
         }
     }

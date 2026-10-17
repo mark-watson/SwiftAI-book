@@ -34,7 +34,7 @@ struct SidebarView: View {
                     .foregroundStyle(.secondary)
                 Text((model.workspace?.directory ?? model.directory)
                     .replacingOccurrences(of: NSHomeDirectory(), with: "~"))
-                    .font(.system(.caption, design: .monospaced))
+                    .font(AppFont.monoCaption)
                     .lineLimit(2)
                     .truncationMode(.middle)
                     .help(model.workspace?.directory ?? model.directory)
@@ -62,7 +62,7 @@ struct SidebarView: View {
 
     private func statusTag(_ text: String, ok: Bool) -> some View {
         Text(text)
-            .font(.caption2)
+            .font(AppFont.caption2)
             .foregroundStyle(ok ? Color.secondary : Color.orange)
     }
 
@@ -76,20 +76,20 @@ struct SidebarView: View {
                 }
             }
             if let info = model.providers.first(where: { $0.name == model.activeProvider }) {
-                LabeledContent("Type") { Text(info.kind.rawValue).font(.caption) }
+                LabeledContent("Type") { Text(info.kind.rawValue).font(AppFont.caption) }
                 if !info.isReady, let env = info.apiKeyEnv {
                     Text("Set \(env) in the environment, then relaunch.")
-                        .font(.caption)
+                        .font(AppFont.caption)
                         .foregroundStyle(.orange)
                 }
                 if info.kind == .apple, let warning = model.appleWarning {
-                    Text(warning).font(.caption).foregroundStyle(.orange)
+                    Text(warning).font(AppFont.caption).foregroundStyle(.orange)
                 }
             }
 
             TextField("Model", text: $modelDraft)
                 .textFieldStyle(.roundedBorder)
-                .font(.system(.caption, design: .monospaced))
+                .font(AppFont.monoCaption)
                 .onSubmit { model.setModel(modelDraft) }
             if !model.configuredModels.isEmpty {
                 DisclosureGroup("Configured models") {
@@ -98,13 +98,13 @@ struct SidebarView: View {
                             modelDraft = id
                             model.setModel(id)
                         } label: {
-                            Text(id).font(.caption.monospaced()).lineLimit(1)
+                            Text(id).font(AppFont.monoCaption).lineLimit(1)
                         }
                         .buttonStyle(.plain)
                         .foregroundStyle(id == model.currentModel ? Color.accentColor : Color.primary)
                     }
                 }
-                .font(.caption)
+                .font(AppFont.caption)
             }
             Button("Apply Model") { model.setModel(modelDraft) }
                 .disabled(modelDraft.trimmingCharacters(in: .whitespaces).isEmpty
@@ -131,7 +131,7 @@ struct SidebarView: View {
                 }
                 .pickerStyle(.segmented)
                 Text("Needs \(model.options.searchEngine == .brave ? "BRAVE" : "EXA")_SEARCH_API_KEY.")
-                    .font(.caption2)
+                    .font(AppFont.caption2)
                     .foregroundStyle(.secondary)
             }
             boolToggle("Show tool calls", \.showToolChatter)
@@ -143,7 +143,7 @@ struct SidebarView: View {
         Toggle(title, isOn: Binding(
             get: { model.options[keyPath: keyPath] },
             set: { newValue in model.update { $0[keyPath: keyPath] = newValue } }))
-            .font(.callout)
+            .font(AppFont.callout)
     }
 
     private var engineBinding: Binding<SearchEngine> {
@@ -156,25 +156,25 @@ struct SidebarView: View {
     private var sessionSection: some View {
         Section("Session") {
             let t = model.tokens
-            LabeledContent("Messages") { Text("\(model.context.messages)").font(.caption) }
+            LabeledContent("Messages") { Text("\(model.context.messages)").font(AppFont.caption) }
             LabeledContent("Context") {
                 Text("\(model.context.chars) chars ≈ \(model.context.estimatedTokens) tok")
-                    .font(.caption)
+                    .font(AppFont.caption)
             }
             if t.totalTokens > 0 || t.promptTokens > 0 {
-                LabeledContent("Prompt") { Text("\(t.promptTokens)").font(.caption) }
-                LabeledContent("Completion") { Text("\(t.completionTokens)").font(.caption) }
+                LabeledContent("Prompt") { Text("\(t.promptTokens)").font(AppFont.caption) }
+                LabeledContent("Completion") { Text("\(t.completionTokens)").font(AppFont.caption) }
                 if t.cachedTokens > 0 {
-                    LabeledContent("Cached") { Text("\(t.cachedTokens)").font(.caption) }
+                    LabeledContent("Cached") { Text("\(t.cachedTokens)").font(AppFont.caption) }
                 }
                 if let cost = t.estimatedCostUSD {
                     LabeledContent("Est. cost") {
-                        Text(String(format: "$%.6f", cost)).font(.caption)
+                        Text(String(format: "$%.6f", cost)).font(AppFont.caption)
                     }
                 }
             }
             if !t.note.isEmpty {
-                Text(t.note).font(.caption2).foregroundStyle(.secondary)
+                Text(t.note).font(AppFont.caption2).foregroundStyle(.secondary)
             }
             HStack(spacing: 8) {
                 Button("Reset") { model.resetConversation() }
@@ -186,7 +186,7 @@ struct SidebarView: View {
                     .disabled(model.isBusy)
                     .help("Summarize the source files in this directory (/summary)")
             }
-            .font(.caption)
+            .font(AppFont.caption)
         }
     }
 
@@ -198,7 +198,7 @@ struct SidebarView: View {
                 DisclosureGroup {
                     ForEach(server.tools, id: \.self) { tool in
                         Text(tool)
-                            .font(.caption2.monospaced())
+                            .font(AppFont.monoCaption2)
                             .foregroundStyle(.secondary)
                     }
                 } label: {
@@ -206,12 +206,12 @@ struct SidebarView: View {
                         Circle()
                             .fill(server.running ? Color.green : Color.secondary)
                             .frame(width: 6, height: 6)
-                        Text(server.name).font(.callout)
+                        Text(server.name).font(AppFont.callout)
                         Spacer()
-                        Text("\(server.tools.count)").font(.caption2).foregroundStyle(.secondary)
+                        Text("\(server.tools.count)").font(AppFont.caption2).foregroundStyle(.secondary)
                     }
                 }
-                .font(.caption)
+                .font(AppFont.caption)
             }
         }
     }
@@ -225,10 +225,10 @@ struct SidebarView: View {
                     model.runCommand("/\(skill.name)")
                 } label: {
                     VStack(alignment: .leading, spacing: 1) {
-                        Text("/\(skill.name)").font(.caption.monospaced())
+                        Text("/\(skill.name)").font(AppFont.monoCaption)
                         if let summary = skill.summary {
                             Text(summary)
-                                .font(.caption2)
+                                .font(AppFont.caption2)
                                 .foregroundStyle(.secondary)
                                 .lineLimit(2)
                         }
@@ -249,8 +249,8 @@ struct SidebarView: View {
                     model.runCommand(command)
                 } label: {
                     HStack(alignment: .firstTextBaseline, spacing: 6) {
-                        Text(command).font(.caption.monospaced())
-                        Text(help).font(.caption2).foregroundStyle(.secondary)
+                        Text(command).font(AppFont.monoCaption)
+                        Text(help).font(AppFont.caption2).foregroundStyle(.secondary)
                     }
                 }
                 .buttonStyle(.plain)
