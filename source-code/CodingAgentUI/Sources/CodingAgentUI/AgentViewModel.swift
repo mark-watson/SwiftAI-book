@@ -70,16 +70,16 @@ final class AgentViewModel {
     var providers: [ProviderInfo] = []
     var activeProvider = ""
     var currentModel = ""
-    var configuredModels: [String] = []
     var options = AgentOptions()
     var tokens = TokenUsage.none
     var context = ContextSummary.empty
     var mcpServers: [MCPServerInfo] = []
     var skills: [SkillInfo] = []
     var appleWarning: String?
-    /// Defaults to the launch directory, as the CLI does. A bundled app starts
-    /// at "/", so the first thing to do is pick a project.
-    var directory = FileManager.default.currentDirectoryPath
+    /// The app opens in the user's home directory. A bundled launch starts at
+    /// "/", which is not a usable project root; **Change Directory…** in the
+    /// sidebar moves it to a project.
+    var directory = FileManager.default.homeDirectoryForCurrentUser.path
     var directoryPickerPresented = false
 
     let agent = CodingAgent()
@@ -92,6 +92,11 @@ final class AgentViewModel {
     /// Row that a following `.log` line may append to. Cleared at turn
     /// boundaries so output from two commands never shares one row.
     private var openLogRow: UUID?
+    /// The provider and model the user picked explicitly. A directory switch
+    /// reloads the harness config, so these are re-applied afterwards; nil
+    /// means "whatever the (new) config's default is".
+    private var explicitProvider: String?
+    private var explicitModel: String?
 
     /// Longest tool output kept in the transcript. The model still receives the
     /// full result; this only bounds what the UI holds on to.
@@ -131,6 +136,7 @@ final class AgentViewModel {
         do {
             workspace = try await agent.setWorkingDirectory(path)
             directory = path
+            restoreSelection()
             refresh()
             transcript.removeAll()
             openLogRow = nil
@@ -150,12 +156,25 @@ final class AgentViewModel {
         }
     }
 
+    /// Re-applies the user's explicit provider/model picks after a directory
+    /// switch reloaded the config (which clears the active provider name). If
+    /// they never picked either, the new directory's config default applies.
+    private func restoreSelection() {
+        guard let provider = explicitProvider,
+              agent.providers.contains(where: { $0.name == provider }) else { return }
+        if agent.activeProviderName != provider {
+            agent.selectProvider(provider)
+        }
+        if let model = explicitModel, !model.isEmpty, model != agent.currentModel {
+            agent.setModel(model)
+        }
+    }
+
     /// Re-reads every snapshot the sidebar and status bar show.
     func refresh() {
         providers = agent.providers
         activeProvider = agent.activeProviderName
         currentModel = agent.currentModel
-        configuredModels = agent.configuredModels
         workspace = agent.workspace
         tokens = agent.tokenUsage
         context = agent.contextSummary
@@ -276,7 +295,12 @@ final class AgentViewModel {
     // Provider, model, options
 
     func selectProvider(_ name: String) {
-        activeProvider = agent.selectProvider(name)
+        // A provider pick also chooses that profile's model, so any model
+        // override chosen for the previous provider no longer applies.
+        let selected = agent.selectProvider(name)
+        explicitProvider = selected
+        explicitModel = nil
+        activeProvider = selected
         currentModel = agent.currentModel
         refresh()
         append(kind: .status, title: "Provider", body: "Provider: \(activeProvider) (model: \(currentModel))")
@@ -285,6 +309,12 @@ final class AgentViewModel {
     func setModel(_ id: String) {
         agent.setModel(id)
         currentModel = agent.currentModel
+        if !id.trimmingCharacters(in: .whitespaces).isEmpty {
+            // Remember which provider this model belongs to, so a directory
+            // switch restores both rather than the new config's default model.
+            explicitProvider = agent.activeProviderName
+            explicitModel = currentModel
+        }
         append(kind: .status, title: "Model", body: "Model: \(currentModel)")
     }
 

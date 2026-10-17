@@ -44,11 +44,6 @@ struct SidebarView: View {
 
             if let w = model.workspace {
                 configRow("Global config", path: w.globalConfigPath, exists: w.globalConfigExists)
-                configRow("Project config", path: w.localConfigPath, exists: w.localConfigExists)
-                LabeledContent("make check") {
-                    statusTag(w.hasMakefile ? "Makefile found" : "no Makefile",
-                              ok: w.hasMakefile)
-                }
             }
         }
     }
@@ -91,21 +86,6 @@ struct SidebarView: View {
                 .textFieldStyle(.roundedBorder)
                 .font(AppFont.monoCaption)
                 .onSubmit { model.setModel(modelDraft) }
-            if !model.configuredModels.isEmpty {
-                DisclosureGroup("Configured models") {
-                    ForEach(model.configuredModels, id: \.self) { id in
-                        Button {
-                            modelDraft = id
-                            model.setModel(id)
-                        } label: {
-                            Text(id).font(AppFont.monoCaption).lineLimit(1)
-                        }
-                        .buttonStyle(.plain)
-                        .foregroundStyle(id == model.currentModel ? Color.accentColor : Color.primary)
-                    }
-                }
-                .font(AppFont.caption)
-            }
             Button("Apply Model") { model.setModel(modelDraft) }
                 .disabled(modelDraft.trimmingCharacters(in: .whitespaces).isEmpty
                           || modelDraft == model.currentModel)

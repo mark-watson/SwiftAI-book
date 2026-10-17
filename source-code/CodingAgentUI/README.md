@@ -72,9 +72,9 @@ LaunchServices and therefore do not see your shell environment; see
 Neither path is sandboxed, so the agent reads and writes the directory you pick,
 exactly as the CLI does. Every write still goes through the approval gate.
 
-On launch the working directory is the directory the app was started from, which
-for a bundled launch is `/`. Use **Change Directory…** in the sidebar to point it
-at a project.
+On launch the working directory is your home directory (`~`), whichever way the
+app was started. Use **Change Directory…** in the sidebar to point it at a
+project.
 
 ### Installing into /Applications and the `coding-ui` alias
 
@@ -178,7 +178,7 @@ let outcome = await agent.send("fix the bug in calc.py")
 - **One agent at a time, calls serialized.** The statics are process-wide, so switching directories while a turn is in flight would race. The view model enforces this: one turn at a time, and directory switching is refused while busy.
 - **`chdir` is process-global.** The agent resolves relative tool paths against the process working directory, which is why picking a project changes it for the whole app.
 - **Text arrives per turn, not per token.** The OpenAI client accumulates its SSE stream into one message before returning, so the transcript grows in whole replies rather than streaming characters.
-- **`make check` still gates every accepted edit.** In a directory with no Makefile the check fails and the agent reports the edit as applied-but-check-failed; the sidebar flags this when you pick a project. The file is still written.
+- **`make check` still gates every accepted edit.** In a directory with no Makefile the check fails and the agent reports the edit as applied-but-check-failed; the app says so in the transcript when you change directory. The file is still written.
 - **Kit drift.** Because the sources are a copy, edits to `CodingCLI_swift` do not propagate. `make diff-sources` shows what has diverged; the `Console`, `Approval`, and facade changes are expected to appear in that diff.
 
 ## Project Structure

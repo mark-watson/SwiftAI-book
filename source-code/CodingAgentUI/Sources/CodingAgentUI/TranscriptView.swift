@@ -160,10 +160,12 @@ struct TranscriptRow: View {
                     expanded.toggle()
                 } label: {
                     Image(systemName: expanded ? "chevron.up" : "chevron.down")
-                        .font(AppFont.caption2)
+                        .font(.system(size: 15, weight: .semibold))
+                        .frame(width: 22, height: 18)
+                        .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
-                .foregroundStyle(.tertiary)
+                .foregroundStyle(.secondary)
                 .help(expanded ? "Collapse" : "Expand")
             }
         }
